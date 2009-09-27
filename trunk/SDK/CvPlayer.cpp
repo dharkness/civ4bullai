@@ -97,7 +97,9 @@ CvPlayer::CvPlayer()
 /**                                                                                              */
 /**                                                                                              */
 /*************************************************************************************************/
+#ifdef _MOD_AIAUTOPLAY
 	m_bDisableHuman = false;
+#endif
 /*************************************************************************************************/
 /** AI_AUTO_PLAY_MOD                        END                                                  */
 /*************************************************************************************************/
@@ -1386,14 +1388,18 @@ void CvPlayer::changeCiv( CivilizationTypes eNewCiv )
 
 		// Forces update of units flags
 		EraTypes eEra = getCurrentEra();
+#ifdef _MOD_AIAUTOPLAY
 		bool bAuto = m_bDisableHuman;
 		m_bDisableHuman = true;
+#endif
 		//setCurrentEra((EraTypes)((eEra + 1)%GC.getNumEraInfos()));
 		setCurrentEra((EraTypes)0);
 		setCurrentEra((EraTypes)(GC.getNumEraInfos() - 1));
 
 		setCurrentEra(eEra);
+#ifdef _MOD_AIAUTOPLAY
 		m_bDisableHuman = bAuto;
+#endif
 		gDLL->getInterfaceIFace()->makeInterfaceDirty();
 		
 
