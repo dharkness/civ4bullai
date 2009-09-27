@@ -3930,7 +3930,6 @@ void CvGame::setAIAutoPlay(int iNewValue)
 			GET_PLAYER(getActivePlayer()).killUnits();
 			GET_PLAYER(getActivePlayer()).killCities();
 		}
-=======
 #endif
 /*************************************************************************************************/
 /** AI_AUTO_PLAY_MOD                            END                                              */
