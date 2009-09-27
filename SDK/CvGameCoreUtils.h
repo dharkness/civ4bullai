@@ -266,6 +266,9 @@ bool isLimitedProject(ProjectTypes eProject);													// Exposed to Python
 
 __int64 getBinomialCoefficient(int iN, int iK);
 int getCombatOdds(CvUnit* pAttacker, CvUnit* pDefender);							// Exposed to Python
+// BUG - Advanced Combat Odds - start
+float getCombatOddsSpecific(CvUnit* pAttacker, CvUnit* pDefender, int n_A, int n_D);
+// BUG - Advanced Combat Odds - end
 
 int getEspionageModifier(TeamTypes eOurTeam, TeamTypes eTargetTeam);							// Exposed to Python
 

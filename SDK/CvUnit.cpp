@@ -27,6 +27,10 @@
 #include "CvPopupInfo.h"
 #include "CvArtFileMgr.h"
 
+// BUG - start
+#include "CvBugOptions.h"
+// BUG - end
+
 // Public Functions...
 
 
@@ -441,6 +445,15 @@ void CvUnit::convert(CvUnit* pUnit)
 	setExperience(std::max(0, (pUnit->getExperience() * iOurModifier) / iOldModifier));
 
 	setName(pUnit->getNameNoDesc());
+// BUG - Unit Name - start
+	if (pUnit->isDescInName() && getBugOptionBOOL("MiscHover__UpdateUnitNameOnUpgrade", true, "BUG_UPDATE_UNIT_NAME_ON_UPGRADE"))
+	{
+		CvWString szUnitType(pUnit->m_pUnitInfo->getDescription());
+
+		//szUnitType.Format(L"%s", pUnit->m_pUnitInfo->getDescription());
+		m_szName.replace(m_szName.find(szUnitType), szUnitType.length(), m_pUnitInfo->getDescription());
+	}
+// BUG - Unit Name - end
 	setLeaderUnitType(pUnit->getLeaderUnitType());
 
 	CvUnit* pTransportUnit = pUnit->getTransportUnit();
@@ -609,6 +622,10 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer)
 	eOwner = getOwnerINLINE();
 	eCapturingPlayer = getCapturingPlayer();
 	eCaptureUnitType = ((eCapturingPlayer != NO_PLAYER) ? getCaptureUnitType(GET_PLAYER(eCapturingPlayer).getCivilizationType()) : NO_UNIT);
+// BUG - Unit Captured Event - start
+	PlayerTypes eFromPlayer = getOwner();
+	UnitTypes eCapturedUnitType = getUnitType();
+// BUG - Unit Captured Event - end
 
 	setXY(INVALID_PLOT_COORD, INVALID_PLOT_COORD, true);
 
@@ -626,6 +643,10 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer)
 
 			if (pkCapturedUnit != NULL)
 			{
+// BUG - Unit Captured Event - start
+				CvEventReporter::getInstance().unitCaptured(eFromPlayer, eCapturedUnitType, pkCapturedUnit);
+// BUG - Unit Captured Event - end
+
 				szBuffer = gDLL->getText("TXT_KEY_MISC_YOU_CAPTURED_UNIT", GC.getUnitInfo(eCaptureUnitType).getTextKeyWide());
 				gDLL->getInterfaceIFace()->addMessage(eCapturingPlayer, true, GC.getEVENT_MESSAGE_TIME(), szBuffer, "AS2D_UNITCAPTURE", MESSAGE_TYPE_INFO, pkCapturedUnit->getButton(), (ColorTypes)GC.getInfoTypeForString("COLOR_GREEN"), pPlot->getX_INLINE(), pPlot->getY_INLINE());
 
@@ -1137,6 +1158,9 @@ void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, CvBattleDefinition&
 					flankingStrikeCombat(pPlot, iAttackerStrength, iAttackerFirepower, iAttackerKillOdds, iDefenderDamage, pDefender);
 
 					changeExperience(GC.getDefineINT("EXPERIENCE_FROM_WITHDRAWL"), pDefender->maxXPValue(), true, pPlot->getOwnerINLINE() == getOwnerINLINE(), !pDefender->isBarbarian());
+// BUG - Combat Events - start
+					CvEventReporter::getInstance().combatRetreat(this, pDefender);
+// BUG - Combat Events - end
 					break;
 				}
 
@@ -1169,6 +1193,9 @@ void CvUnit::resolveCombat(CvUnit* pDefender, CvPlot* pPlot, CvBattleDefinition&
 				{
 					changeExperience(GC.getDefineINT("EXPERIENCE_FROM_WITHDRAWL"), pDefender->maxXPValue(), true, pPlot->getOwnerINLINE() == getOwnerINLINE(), !pDefender->isBarbarian());
 					pDefender->setDamage(combatLimit(), getOwnerINLINE());
+// BUG - Combat Events - start
+					CvEventReporter::getInstance().combatWithdrawal(this, pDefender);
+// BUG - Combat Events - end
 					break;
 				}
 
@@ -1550,7 +1577,6 @@ void CvUnit::updateCombat(bool bQuick)
 			gDLL->getInterfaceIFace()->addMessage(getOwnerINLINE(), true, GC.getEVENT_MESSAGE_TIME(), szBuffer, "AS2D_OUR_WITHDRAWL", MESSAGE_TYPE_INFO, NULL, (ColorTypes)GC.getInfoTypeForString("COLOR_GREEN"), pPlot->getX_INLINE(), pPlot->getY_INLINE());
 			szBuffer = gDLL->getText("TXT_KEY_MISC_ENEMY_UNIT_WITHDRAW", getNameKey(), pDefender->getNameKey());
 			gDLL->getInterfaceIFace()->addMessage(pDefender->getOwnerINLINE(), true, GC.getEVENT_MESSAGE_TIME(), szBuffer, "AS2D_THEIR_WITHDRAWL", MESSAGE_TYPE_INFO, NULL, (ColorTypes)GC.getInfoTypeForString("COLOR_RED"), pPlot->getX_INLINE(), pPlot->getY_INLINE());
-
 			changeMoves(std::max(GC.getMOVE_DENOMINATOR(), pPlot->movementCost(this, plot())));
 			checkRemoveSelectionAfterAttack();
 
@@ -1636,7 +1662,13 @@ bool CvUnit::isActionRecommended(int iAction)
 		}
 	}
 
+// BUG - Sentry Actions - start
+#ifdef _MOD_SENTRY
+	if ((GC.getActionInfo(iAction).getMissionType() == MISSION_HEAL) || (GC.getActionInfo(iAction).getMissionType() == MISSION_SENTRY_WHILE_HEAL))
+#else
 	if (GC.getActionInfo(iAction).getMissionType() == MISSION_HEAL)
+#endif
+// BUG - Sentry Actions - end
 	{
 		if (isHurt())
 		{
@@ -6671,6 +6703,10 @@ void CvUnit::promote(PromotionTypes ePromotion, int iLeaderUnitId)
 		gDLL->getInterfaceIFace()->playGeneralSound(GC.getPromotionInfo(ePromotion).getSound());
 
 		gDLL->getInterfaceIFace()->setDirty(UnitInfo_DIRTY_BIT, true);
+
+// BUG - Update Plot List - start
+		gDLL->getInterfaceIFace()->setDirty(PlotListButtons_DIRTY_BIT, true);
+// BUG - Update Plot List - end
 	}
 	else
 	{
@@ -7174,7 +7210,10 @@ void CvUnit::upgrade(UnitTypes eUnit)
 		return;
 	}
 
-	GET_PLAYER(getOwnerINLINE()).changeGold(-(upgradePrice(eUnit)));
+// BUG - Upgrade Unit Event - start
+	int iPrice = upgradePrice(eUnit);
+	GET_PLAYER(getOwnerINLINE()).changeGold(-iPrice);
+// BUG - Upgrade Unit Event - end
 
 	pUpgradeUnit = GET_PLAYER(getOwnerINLINE()).initUnit(eUnit, getX_INLINE(), getY_INLINE(), AI_getUnitAIType());
 
@@ -7193,6 +7232,10 @@ void CvUnit::upgrade(UnitTypes eUnit)
 			pUpgradeUnit->setExperience(GC.getDefineINT("MAX_EXPERIENCE_AFTER_UPGRADE"));
 		}
 	}
+
+// BUG - Upgrade Unit Event - start
+	CvEventReporter::getInstance().unitUpgraded(this, pUpgradeUnit, iPrice);
+// BUG - Upgrade Unit Event - end
 }
 
 
@@ -7370,6 +7413,11 @@ BuildTypes CvUnit::getBuildType() const
 		switch (getGroup()->headMissionQueueNode()->m_data.eMissionType)
 		{
 		case MISSION_MOVE_TO:
+// BUG - Sentry Actions - start
+#ifdef _MOD_SENTRY
+		case MISSION_MOVE_TO_SENTRY:
+#endif
+// BUG - Sentry Actions - end
 			break;
 
 		case MISSION_ROUTE_TO:
@@ -7388,6 +7436,13 @@ BuildTypes CvUnit::getBuildType() const
 		case MISSION_SEAPATROL:
 		case MISSION_HEAL:
 		case MISSION_SENTRY:
+// BUG - Sentry Actions - start
+#ifdef _MOD_SENTRY
+		case MISSION_SENTRY_WHILE_HEAL:
+		case MISSION_SENTRY_NAVAL_UNITS:
+		case MISSION_SENTRY_LAND_UNITS:
+#endif
+// BUG - Sentry Actions - end
 		case MISSION_AIRLIFT:
 		case MISSION_NUKE:
 		case MISSION_RECON:
@@ -11035,11 +11090,24 @@ const CvWString CvUnit::getName(uint uiForm) const
 	{
 		return m_pUnitInfo->getDescription(uiForm);
 	}
+// BUG - Unit Name - start
+	else if (isDescInName())
+	{
+		return m_szName;
+	}
+// BUG - Unit Name - end
 
 	szBuffer.Format(L"%s (%s)", m_szName.GetCString(), m_pUnitInfo->getDescription(uiForm));
 
 	return szBuffer;
 }
+
+// BUG - Unit Name - start
+bool CvUnit::isDescInName() const
+{
+	return (m_szName.find(m_pUnitInfo->getDescription()) != -1);
+}
+// BUG - Unit Name - end
 
 
 const wchar* CvUnit::getNameKey() const
@@ -11794,6 +11862,11 @@ void CvUnit::collateralCombat(const CvPlot* pPlot, CvUnit* pSkipUnit)
 			{
 				iTheirStrength = pBestUnit->baseCombatStr();
 
+				if (iCollateralStrength == 0)
+				{
+					iCollateralStrength = baseCombatStr();
+				}
+
 				iStrengthFactor = ((iCollateralStrength + iTheirStrength + 1) / 2);
 
 				iCollateralDamage = (GC.getDefineINT("COLLATERAL_COMBAT_DAMAGE") * (iCollateralStrength + iStrengthFactor)) / (iTheirStrength + iStrengthFactor);
@@ -11818,7 +11891,11 @@ void CvUnit::collateralCombat(const CvPlot* pPlot, CvUnit* pSkipUnit)
 
 				if (pBestUnit->getDamage() != iUnitDamage)
 				{
+// BUG - Combat Events - start
+					int iDamageDone = iUnitDamage - pBestUnit->getDamage();
 					pBestUnit->setDamage(iUnitDamage, getOwnerINLINE());
+					CvEventReporter::getInstance().combatLogCollateral(this, pBestUnit, iDamageDone);
+// BUG - Combat Events - end
 					iDamageCount++;
 				}
 			}
@@ -11900,6 +11977,9 @@ void CvUnit::flankingStrikeCombat(const CvPlot* pPlot, int iAttackerStrength, in
 		int iIndexHit = GC.getGameINLINE().getSorenRandNum(listFlankedUnits.size(), "Pick Flanked Unit");
 		CvUnit* pUnit = listFlankedUnits[iIndexHit].first;
 		int iDamage = listFlankedUnits[iIndexHit].second;
+// BUG - Combat Events - start
+		int iDamageDone = iDamage - pUnit->getDamage();
+// BUG - Combat Events - end
 		pUnit->setDamage(iDamage, getOwnerINLINE());
 		if (pUnit->isDead())
 		{
@@ -11910,6 +11990,9 @@ void CvUnit::flankingStrikeCombat(const CvPlot* pPlot, int iAttackerStrength, in
 
 			pUnit->kill(false); 
 		}
+// BUG - Combat Events - start
+		CvEventReporter::getInstance().combatLogFlanking(this, pUnit, iDamageDone);
+// BUG - Combat Events - end
 		
 		listFlankedUnits.erase(std::remove(listFlankedUnits.begin(), listFlankedUnits.end(), listFlankedUnits[iIndexHit]));
 	}

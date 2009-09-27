@@ -30,6 +30,10 @@
 #include "CvDLLEngineIFaceBase.h"
 #include "CvDLLPythonIFaceBase.h"
 
+// BUG - start
+#include "BugMod.h"
+// BUG - end
+
 // Public Functions...
 
 CvGame::CvGame()
@@ -285,6 +289,26 @@ void CvGame::setInitialItems()
 	}
 }
 
+// BUG - MapFinder - start
+// from HOF Mod - Dianthus
+bool CvGame::canRegenerateMap() const
+{
+	if (GC.getGameINLINE().getElapsedGameTurns() != 0) return false;
+	if (GC.getGameINLINE().isGameMultiPlayer()) return false;
+	if (GC.getInitCore().getWBMapScript()) return false;
+
+	// EF: TODO clear contact at start of regenerateMap()?
+	for (int iI = 1; iI < MAX_CIV_TEAMS; iI++)
+	{
+		CvTeam& team=GET_TEAM((TeamTypes)iI);
+		for (int iJ = 0; iJ < iI; iJ++)
+		{
+			if (team.isHasMet((TeamTypes)iJ)) return false;
+		}
+	}
+	return true;
+}
+// BUG - MapFinder - end
 
 void CvGame::regenerateMap()
 {
@@ -348,6 +372,13 @@ void CvGame::regenerateMap()
 
 	gDLL->getEngineIFace()->AutoSave(true);
 
+// BUG - AutoSave - start
+	gDLL->getPythonIFace()->callFunction(PYBugModule, "gameStartSave");
+// BUG - AutoSave - end
+
+	// EF - This doesn't work until after the game has had time to update.
+	//      Centering on the starting location is now done by MapFinder using BugUtil.delayCall().
+	//      Must leave this here for non-BUG
 	if (NO_PLAYER != getActivePlayer())
 	{
 		CvPlot* pPlot = GET_PLAYER(getActivePlayer()).getStartingPlot();
@@ -358,7 +389,6 @@ void CvGame::regenerateMap()
 		}
 	}
 }
-
 
 void CvGame::uninit()
 {
@@ -1402,7 +1432,6 @@ void CvGame::normalizeRemoveBadTerrain()
 		}
 	}
 }
-
 
 void CvGame::normalizeAddFoodBonuses()
 {
@@ -3886,13 +3915,8 @@ void CvGame::setAIAutoPlay(int iNewValue)
 /**                                                                                              */
 /*************************************************************************************************/
 // Multiplayer compatibility idea from Jeckel
-/* original code
-		if ((iOldValue == 0) && (getAIAutoPlay() > 0))
-		{
-			GET_PLAYER(getActivePlayer()).killUnits();
-			GET_PLAYER(getActivePlayer()).killCities();
-		}
-*/
+#ifdef _MOD_AIAUTOPLAY
+		// Multiplayer compatibility idea from Jeckel
 		for( int iI = 0; iI < MAX_CIV_PLAYERS; iI++ )
 		{
 			if( GET_PLAYER((PlayerTypes)iI).isHuman() || GET_PLAYER((PlayerTypes)iI).isHumanDisabled() )
@@ -3900,6 +3924,14 @@ void CvGame::setAIAutoPlay(int iNewValue)
 				GET_PLAYER(getActivePlayer()).setHumanDisabled((getAIAutoPlay() != 0));
 			}
 		}
+#else
+		if ((iOldValue == 0) && (getAIAutoPlay() > 0))
+		{
+			GET_PLAYER(getActivePlayer()).killUnits();
+			GET_PLAYER(getActivePlayer()).killCities();
+		}
+=======
+#endif
 /*************************************************************************************************/
 /** AI_AUTO_PLAY_MOD                            END                                              */
 /*************************************************************************************************/
@@ -4662,7 +4694,9 @@ void CvGame::setWinner(TeamTypes eNewWinner, VictoryTypes eNewVictory)
 /**                                                                                              */
 /**                                                                                              */
 /*************************************************************************************************/
+#ifdef _MOD_AIAUTOPLAY
 		CvEventReporter::getInstance().victory(eNewWinner, eNewVictory);
+#endif
 /*************************************************************************************************/
 /** AI_AUTO_PLAY_MOD                        END                                                  */
 /*************************************************************************************************/
@@ -4692,9 +4726,9 @@ void CvGame::setWinner(TeamTypes eNewWinner, VictoryTypes eNewVictory)
 /**                                                                                              */
 /**                                                                                              */
 /*************************************************************************************************/
-/* original code
+#ifndef _MOD_AIAUTOPLAY
 		CvEventReporter::getInstance().victory(eNewWinner, eNewVictory);
-*/
+#endif
 /*************************************************************************************************/
 /** AI_AUTO_PLAY_MOD                        END                                                  */
 /*************************************************************************************************/
@@ -4722,6 +4756,10 @@ void CvGame::setGameState(GameStateTypes eNewValue)
 		if (eNewValue == GAMESTATE_OVER)
 		{
 			CvEventReporter::getInstance().gameEnd();
+
+// BUG - AutoSave - start
+			gDLL->getPythonIFace()->callFunction(PYBugModule, "gameEndSave");
+// BUG - AutoSave - end
 
 			showEndGameSequence();
 
@@ -9228,3 +9266,62 @@ bool CvGame::pythonIsBonusIgnoreLatitudes() const
 	return false;
 }
 
+// BUG - MapFinder - start
+#include "ximage.h"
+
+// from HOF Mod - Dianthus
+bool CvGame::takeJPEGScreenShot(std::string fileName) const
+{
+	HWND hwnd = GetDesktopWindow();
+	RECT r;
+	GetWindowRect(hwnd,&r);
+
+	int xScreen,yScreen;	//check if the window is out of the screen or maximixed <Qiang>
+	int xshift = 0, yshift = 0;
+	xScreen = GetSystemMetrics(SM_CXSCREEN);
+	yScreen = GetSystemMetrics(SM_CYSCREEN);
+	if(r.right > xScreen)
+			r.right = xScreen;
+	if(r.bottom > yScreen)
+			r.bottom = yScreen;
+	if(r.left < 0){
+			xshift = -r.left;
+			r.left = 0;
+	}
+	if(r.top < 0){
+			yshift = -r.top;
+			r.top = 0;
+	}
+
+	int w=r.right-r.left;
+	int h=r.bottom-r.top;
+	if(w <= 0 || h <= 0) return false;
+
+	// bring the window at the top most level
+	// TODO ::SetWindowPos(hwnd,HWND_TOPMOST,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
+
+	// prepare the DCs
+	HDC dstDC = ::GetDC(NULL);
+	HDC srcDC = ::GetWindowDC(hwnd); //full window (::GetDC(hwnd); = clientarea)
+	HDC memDC = ::CreateCompatibleDC(dstDC);
+
+	// copy the screen to the bitmap
+	HBITMAP bm =::CreateCompatibleBitmap(dstDC, w, h);
+	HBITMAP oldbm = (HBITMAP)::SelectObject(memDC,bm);
+	::BitBlt(memDC, 0, 0, w, h, srcDC, xshift, yshift, SRCCOPY);
+
+	// restore the position
+	// TODO ::SetWindowPos(hwnd,HWND_NOTOPMOST,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
+	// TODO ::SetWindowPos(m_hWnd,HWND_TOP,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
+
+	CxImage image;
+	image.CreateFromHBITMAP(bm);
+	bool result = image.Save((const TCHAR*)fileName.c_str(),CXIMAGE_FORMAT_JPG);
+
+	// free objects
+	DeleteObject(SelectObject(memDC,oldbm));
+	DeleteObject(memDC);
+
+	return result;
+}
+// BUG - MapFinder - end

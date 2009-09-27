@@ -2137,6 +2137,13 @@ void CyPlayer::AI_setExtraGoldTarget(int iNewValue)
 	}
 }
 
+// BUG - Refuses to Talk - start
+bool CyPlayer::AI_isWillingToTalk(int /*PlayerTypes*/ ePlayer)
+{
+	return m_pPlayer ? m_pPlayer->AI_isWillingToTalk((PlayerTypes)ePlayer) : false;
+}
+// BUG - Refuses to Talk - end
+
 
 int CyPlayer::getScoreHistory(int iTurn) const
 {

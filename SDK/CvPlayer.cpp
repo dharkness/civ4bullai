@@ -770,7 +770,9 @@ void CvPlayer::reset(PlayerTypes eID, bool bConstructorCall)
 /**                                                                                              */
 /**                                                                                              */
 /*************************************************************************************************/
+#ifdef _MOD_AIAUTOPLAY
 	m_bDisableHuman = false;
+#endif
 /*************************************************************************************************/
 /** AI_AUTO_PLAY_MOD                        END                                                  */
 /*************************************************************************************************/
@@ -3007,6 +3009,7 @@ bool CvPlayer::hasTrait(TraitTypes eTrait) const
 /**                                                                                              */
 /**                                                                                              */
 /*************************************************************************************************/
+#ifdef _MOD_AIAUTOPLAY
 void CvPlayer::setHumanDisabled( bool newVal )
 {
 	m_bDisableHuman = newVal;
@@ -3016,6 +3019,7 @@ bool CvPlayer::isHumanDisabled( )
 {
 	return m_bDisableHuman;
 }
+#endif
 /*************************************************************************************************/
 /** AI_AUTO_PLAY_MOD                            END                                              */
 /*************************************************************************************************/
@@ -3041,11 +3045,13 @@ void CvPlayer::updateHuman()
 /*
 		m_bHuman = GC.getInitCore().getHuman(getID());
 */
+#ifdef _MOD_AIAUTOPLAY
 		if( m_bDisableHuman )
 		{
 			m_bHuman = false;
 		}
 		else
+#endif
 		{
 			m_bHuman = GC.getInitCore().getHuman(getID());
 		}
@@ -6920,6 +6926,11 @@ int CvPlayer::calculateTotalExports(YieldTypes eYield) const
 
 	for (pLoopCity = firstCity(&iLoop); pLoopCity != NULL; pLoopCity = nextCity(&iLoop))
 	{
+// BUG - Fractional Trade Routes - start
+#ifdef _MOD_FRACTRADE
+		int iCityExports = 0;
+#endif
+
 		for (iTradeLoop = 0; iTradeLoop < pLoopCity->getTradeRoutes(); iTradeLoop++)
 		{
 			pTradeCity = pLoopCity->getTradeCity(iTradeLoop);
@@ -6927,10 +6938,19 @@ int CvPlayer::calculateTotalExports(YieldTypes eYield) const
 			{
 				if (pTradeCity->getOwnerINLINE() != getID())
 				{
+#ifdef _MOD_FRACTRADE
+					iCityExports += pLoopCity->calculateTradeYield(eYield, pLoopCity->calculateTradeProfitTimes100(pTradeCity));
+#else
 					iTotalExports += pLoopCity->calculateTradeYield(eYield, pLoopCity->calculateTradeProfit(pTradeCity));
+#endif
 				}
 			}
 		}
+
+#ifdef _MOD_FRACTRADE
+		iTotalExports += iCityExports / 100;
+#endif
+// BUG - Fractional Trade Routes - end
 	}
 
 	return iTotalExports;
@@ -6949,6 +6969,11 @@ int CvPlayer::calculateTotalImports(YieldTypes eYield) const
 	{
 		if (iPlayerLoop != getID())
 		{
+// BUG - Fractional Trade Routes - start
+#ifdef _MOD_FRACTRADE
+			int iCityImports = 0;
+#endif
+
 			for (pLoopCity = GET_PLAYER((PlayerTypes) iPlayerLoop).firstCity(&iLoop); pLoopCity != NULL; pLoopCity = GET_PLAYER((PlayerTypes) iPlayerLoop).nextCity(&iLoop))
 			{
 				for (iTradeLoop = 0; iTradeLoop < pLoopCity->getTradeRoutes(); iTradeLoop++)
@@ -6958,11 +6983,20 @@ int CvPlayer::calculateTotalImports(YieldTypes eYield) const
 					{
 						if (pTradeCity->getOwnerINLINE() == getID())
 						{
+#ifdef _MOD_FRACTRADE
+							iCityImports += pLoopCity->calculateTradeYield(eYield, pLoopCity->calculateTradeProfitTimes100(pTradeCity));
+#else
 							iTotalImports += pLoopCity->calculateTradeYield(eYield, pLoopCity->calculateTradeProfit(pTradeCity));
+#endif
 						}
 					}
 				}
 			}
+
+#ifdef _MOD_FRACTRADE
+			iTotalImports += iCityImports / 100;
+#endif
+// BUG - Fractional Trade Routes - end
 		}
 	}
 	return iTotalImports;
@@ -9010,6 +9044,39 @@ void CvPlayer::changeWorkerSpeedModifier(int iChange)
 {
 	m_iWorkerSpeedModifier = (m_iWorkerSpeedModifier + iChange);
 }
+
+// BUG - Partial Builds - start
+/*
+ * Returns the work rate for the first unit that can build <eBuild>.
+ */
+int CvPlayer::getWorkRate(BuildTypes eBuild) const
+{
+	int iRate = 0;
+	CvCivilizationInfo& kCiv = GC.getCivilizationInfo(getCivilizationType());
+
+	for (int iI = 0; iI < GC.getNumUnitClassInfos(); iI++)
+	{
+		CvUnitInfo& kUnit = GC.getUnitInfo((UnitTypes)kCiv.getCivilizationUnits(iI));
+
+		if (kUnit.getBuilds(eBuild))
+		{
+			iRate = kUnit.getWorkRate();
+			break;
+		}
+	}
+
+	iRate *= std::max(0, getWorkerSpeedModifier() + 100);
+	iRate /= 100;
+
+	if (!isHuman() && !isBarbarian())
+	{
+		iRate *= std::max(0, (GC.getHandicapInfo(GC.getGameINLINE().getHandicapType()).getAIWorkRateModifier() + 100));
+		iRate /= 100;
+	}
+
+	return iRate;
+}
+// BUG - Partial Builds - end
 
 
 int CvPlayer::getImprovementUpgradeRateModifier() const
@@ -21544,6 +21611,42 @@ UnitTypes CvPlayer::getTechFreeUnit(TechTypes eTech) const
 
 	return eUnit;
 }
+
+
+// BUG - Trade Totals - start
+/*
+ * Adds the yield and count for each trade route with eWithPlayer.
+ *
+ * The yield and counts are not reset to zero.
+ * If Fractional Trade Routes is enabled and bRound is false, the yield values are left times 100.
+ */
+void CvPlayer::calculateTradeTotals(YieldTypes eIndex, int& iDomesticYield, int& iDomesticRoutes, int& iForeignYield, int& iForeignRoutes, PlayerTypes eWithPlayer, bool bRound, bool bBase) const
+{
+	int iIter;
+
+	for (CvCity* pCity = firstCity(&iIter); NULL != pCity; pCity = nextCity(&iIter))
+	{
+		pCity->calculateTradeTotals(eIndex, iDomesticYield, iDomesticRoutes, iForeignYield, iForeignRoutes, eWithPlayer, bRound, bBase);
+	}
+}
+
+/*
+ * Returns the total trade yield with eWithPlayer.
+ *
+ * If Fractional Trade Routes is enabled, the yield value is left times 100.
+ * UNUSED
+ */
+int CvPlayer::calculateTotalTradeYield(YieldTypes eIndex, PlayerTypes eWithPlayer, bool bRound, bool bBase) const
+{
+	int iDomesticYield = 0;
+	int iDomesticRoutes = 0;
+	int iForeignYield = 0;
+	int iForeignRoutes = 0;
+	
+	calculateTradeTotals(eIndex, iDomesticYield, iDomesticRoutes, iForeignYield, iForeignRoutes, eWithPlayer, bRound, bBase);
+	return iDomesticYield + iForeignRoutes;
+}
+// BUG - Trade Totals - end
 
 
 void CvPlayer::buildTradeTable(PlayerTypes eOtherPlayer, CLinkList<TradeData>& ourList) const

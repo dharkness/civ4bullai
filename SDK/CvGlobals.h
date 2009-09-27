@@ -872,6 +872,14 @@ public:
 	DllExport int getNumGraphicLevels() const;
 	DllExport int getNumGlobeLayers() const;
 
+// BUG - DLL Info - start
+	bool isBull() const;
+	int getBullApiVersion() const;
+
+	const wchar* getBullName() const;
+	const wchar* getBullVersion() const;
+// BUG - DLL Info - end
+
 	void deleteInfoArrays();
 
 protected:

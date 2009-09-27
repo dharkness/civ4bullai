@@ -281,6 +281,19 @@ public:
 	bool isEventActive(int /*EventTriggerTypes*/ eTrigger);
 	void doControl(int iControl);
 
+// BUG - MapFinder - start
+	bool canRegenerateMap() const;
+	bool regenerateMap();
+
+	void saveGame(std::string fileName) const;
+	bool takeJPEGScreenShot(std::string fileName) const;
+// BUG - MapFinder - end
+
+// BUG - EXE/DLL Paths - start
+	std::string getDLLPath() const;
+	std::string getExePath() const;
+// BUG - EXE/DLL Paths - end
+
 protected:
 	CvGame* m_pGame;
 };
