@@ -9,10 +9,10 @@ PSDK = C:\Program Files\Microsoft Platform SDK
 
 ### Civ4 SDK Paths
 
-CIV = C:\Mods\BTS\BULLAI\trunk\SDK
-SDK = $(CIV)
-BOOST = $(SDK)\Boost-1.32.0
-PYTHON = $(SDK)\Python24
+CIV = C:\Program Files\Firaxis Games\Sid Meier's Civilization 4\Beyond the Sword\Mods\BULLAI
+SDK = $(CIV)\SDK
+BOOST = C:\Program Files\Firaxis Games\Sid Meier's Civilization 4\Beyond the Sword\CvGameCoreDLL\Boost-1.32.0
+PYTHON = C:\Program Files\Firaxis Games\Sid Meier's Civilization 4\Beyond the Sword\CvGameCoreDLL\Python24
 BUFFY = $(CIV)
 
 ### Tools
@@ -118,17 +118,17 @@ distclean-custom:
 depend_Debug:
 Debug-before:
 Debug-after:
-	-@if exist "$(@:-after=)\CvGameCoreDLL.dll" copy "$(@:-after=)\CvGameCoreDLL.dll" "$(CIV)\Assets"
+	-@if exist "$(@:-after=)\CvGameCoreDLL.dll" copy "$(@:-after=)\CvGameCoreDLL.dll" "$(CIV)\Assets\"
 
 depend_Final_Release:
 Final_Release-before:
 Final_Release-after:
-	-@if exist "$(@:-after=)\CvGameCoreDLL.dll" copy "$(@:-after=)\CvGameCoreDLL.dll" "$(CIV)\Assets"
+	-@if exist "$(@:-after=)\CvGameCoreDLL.dll" copy "$(@:-after=)\CvGameCoreDLL.dll" "$(CIV)\Assets\"
 
 depend_BUFFY_Release:
 BUFFY_Release-before:
 BUFFY_Release-after:
-	-@if exist "$(@:-after=)\CvGameCoreDLL.dll" copy "$(@:-after=)\CvGameCoreDLL.dll" "$(BUFFY)\Assets"
+	-@if exist "$(@:-after=)\CvGameCoreDLL.dll" copy "$(@:-after=)\CvGameCoreDLL.dll" "$(BUFFY)\Assets\"
 
 all: all-before Debug Final_Release BUFFY_Release all-after
 
