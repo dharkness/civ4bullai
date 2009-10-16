@@ -10959,11 +10959,15 @@ bool CvGameTextMgr::setBuildingAdditionalHealthHelp(CvWStringBuffer &szBuffer, c
 {
 	CvWString szLabel;
 
-	for (int i = 0; i < GC.getNumBuildingInfos(); i++)
+	// BUG jdog5000 - need to verify building type is correct for this player to avoid asserts - start
+	for (int i = 0; i < GC.getNumBuildingClassInfos(); i++)
 	{
-		if (city.canConstruct((BuildingTypes)i, false, true, false))
+		
+		BuildingTypes eBuilding = (BuildingTypes)GC.getCivilizationInfo(GET_PLAYER(city.getOwnerINLINE()).getCivilizationType()).getCivilizationBuildings((BuildingClassTypes)i);
+
+		if (city.canConstruct(eBuilding, false, true, false))
 		{
-			int iGood = 0, iBad = 0, iChange = city.getAdditionalHealthByBuilding((BuildingTypes)i, iGood, iBad);
+			int iGood = 0, iBad = 0, iChange = city.getAdditionalHealthByBuilding(eBuilding, iGood, iBad);
 			
 			if (iGood != 0 || iBad != 0)
 			{
@@ -10973,7 +10977,7 @@ bool CvGameTextMgr::setBuildingAdditionalHealthHelp(CvWStringBuffer &szBuffer, c
 					bStarted = true;
 				}
 
-				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo((BuildingTypes)i).getDescription());
+				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo(eBuilding).getDescription());
 				setResumableGoodBadChangeHelp(szBuffer, szLabel, L": ", L"", iGood, gDLL->getSymbolID(HEALTHY_CHAR), iBad, gDLL->getSymbolID(UNHEALTHY_CHAR), false, true);
 			}
 		}
@@ -11382,11 +11386,15 @@ bool CvGameTextMgr::setBuildingAdditionalHappinessHelp(CvWStringBuffer &szBuffer
 {
 	CvWString szLabel;
 
-	for (int i = 0; i < GC.getNumBuildingInfos(); i++)
+	// BUG jdog5000 - need to verify building type is correct for this player to avoid asserts - start
+	for (int i = 0; i < GC.getNumBuildingClassInfos(); i++)
 	{
-		if (city.canConstruct((BuildingTypes)i, false, true, false))
+		
+		BuildingTypes eBuilding = (BuildingTypes)GC.getCivilizationInfo(GET_PLAYER(city.getOwnerINLINE()).getCivilizationType()).getCivilizationBuildings((BuildingClassTypes)i);
+
+		if (city.canConstruct(eBuilding, false, true, false))
 		{
-			int iGood = 0, iBad = 0, iChange = city.getAdditionalHappinessByBuilding((BuildingTypes)i, iGood, iBad);
+			int iGood = 0, iBad = 0, iChange = city.getAdditionalHappinessByBuilding(eBuilding, iGood, iBad);
 			
 			if (iGood != 0 || iBad != 0)
 			{
@@ -11396,7 +11404,7 @@ bool CvGameTextMgr::setBuildingAdditionalHappinessHelp(CvWStringBuffer &szBuffer
 					bStarted = true;
 				}
 
-				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo((BuildingTypes)i).getDescription());
+				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo(eBuilding).getDescription());
 				setResumableGoodBadChangeHelp(szBuffer, szLabel, L": ", L"", iGood, gDLL->getSymbolID(HAPPY_CHAR), iBad, gDLL->getSymbolID(UNHAPPY_CHAR), false, true);
 			}
 		}
@@ -14311,11 +14319,15 @@ bool CvGameTextMgr::setBuildingAdditionalYieldHelp(CvWStringBuffer &szBuffer, co
 	CvYieldInfo& info = GC.getYieldInfo(eIndex);
 	CvWString szLabel;
 
-	for (int i = 0; i < GC.getNumBuildingInfos(); i++)
+	// BUG jdog5000 - need to verify building type is correct for this player to avoid asserts - start
+	for (int i = 0; i < GC.getNumBuildingClassInfos(); i++)
 	{
-		if (city.canConstruct((BuildingTypes)i, false, true, false))
+		
+		BuildingTypes eBuilding = (BuildingTypes)GC.getCivilizationInfo(GET_PLAYER(city.getOwnerINLINE()).getCivilizationType()).getCivilizationBuildings((BuildingClassTypes)i);
+
+		if (city.canConstruct(eBuilding, false, true, false))
 		{
-			int iChange = city.getAdditionalYieldByBuilding(eIndex, (BuildingTypes)i);
+			int iChange = city.getAdditionalYieldByBuilding(eIndex, eBuilding);
 
 			if (iChange != 0)
 			{
@@ -14325,7 +14337,7 @@ bool CvGameTextMgr::setBuildingAdditionalYieldHelp(CvWStringBuffer &szBuffer, co
 					bStarted = true;
 				}
 
-				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo((BuildingTypes)i).getDescription());
+				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo(eBuilding).getDescription());
 				setResumableValueChangeHelp(szBuffer, szLabel, L": ", L"", iChange, info.getChar(), false, true);
 			}
 		}
@@ -14341,11 +14353,15 @@ bool CvGameTextMgr::setBuildingAdditionalCommerceHelp(CvWStringBuffer &szBuffer,
 	CvCommerceInfo& info = GC.getCommerceInfo(eIndex);
 	CvWString szLabel;
 
-	for (int i = 0; i < GC.getNumBuildingInfos(); i++)
+	// BUG jdog5000 - need to verify building type is correct for this player to avoid asserts - start
+	for (int i = 0; i < GC.getNumBuildingClassInfos(); i++)
 	{
-		if (city.canConstruct((BuildingTypes)i, false, true, false))
+		
+		BuildingTypes eBuilding = (BuildingTypes)GC.getCivilizationInfo(GET_PLAYER(city.getOwnerINLINE()).getCivilizationType()).getCivilizationBuildings((BuildingClassTypes)i);
+		
+		if (city.canConstruct(eBuilding, false, true, false))
 		{
-			int iChange = city.getAdditionalCommerceTimes100ByBuilding(eIndex, (BuildingTypes)i);
+			int iChange = city.getAdditionalCommerceTimes100ByBuilding(eIndex, eBuilding);
 
 			if (iChange != 0)
 			{
@@ -14355,11 +14371,12 @@ bool CvGameTextMgr::setBuildingAdditionalCommerceHelp(CvWStringBuffer &szBuffer,
 					bStarted = true;
 				}
 
-				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo((BuildingTypes)i).getDescription());
+				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo(eBuilding).getDescription());
 				setResumableValueTimes100ChangeHelp(szBuffer, szLabel, L": ", L"", iChange, info.getChar(), true);
 			}
 		}
 	}
+	// BUG jdog5000 - need to verify building type is correct for this player to avoid asserts - end
 
 	return bStarted;
 }
@@ -14371,11 +14388,15 @@ bool CvGameTextMgr::setBuildingSavedMaintenanceHelp(CvWStringBuffer &szBuffer, c
 	CvCommerceInfo& info = GC.getCommerceInfo(COMMERCE_GOLD);
 	CvWString szLabel;
 
-	for (int i = 0; i < GC.getNumBuildingInfos(); i++)
+	// BUG jdog5000 - need to verify building type is correct for this player to avoid asserts - start
+	for (int i = 0; i < GC.getNumBuildingClassInfos(); i++)
 	{
-		if (city.canConstruct((BuildingTypes)i, false, true, false))
+		
+		BuildingTypes eBuilding = (BuildingTypes)GC.getCivilizationInfo(GET_PLAYER(city.getOwnerINLINE()).getCivilizationType()).getCivilizationBuildings((BuildingClassTypes)i);
+
+		if (city.canConstruct(eBuilding, false, true, false))
 		{
-			int iChange = city.getSavedMaintenanceTimes100ByBuilding((BuildingTypes)i);
+			int iChange = city.getSavedMaintenanceTimes100ByBuilding(eBuilding);
 			
 			if (iChange != 0)
 			{
@@ -14385,7 +14406,7 @@ bool CvGameTextMgr::setBuildingSavedMaintenanceHelp(CvWStringBuffer &szBuffer, c
 					bStarted = true;
 				}
 
-				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo((BuildingTypes)i).getDescription());
+				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo(eBuilding).getDescription());
 				setResumableValueTimes100ChangeHelp(szBuffer, szLabel, L": ", L"", iChange, info.getChar(), true);
 			}
 		}
@@ -15541,11 +15562,15 @@ bool CvGameTextMgr::setBuildingAdditionalGreatPeopleHelp(CvWStringBuffer &szBuff
 {
 	CvWString szLabel;
 
-	for (int i = 0; i < GC.getNumBuildingInfos(); i++)
+	// BUG jdog5000 - need to verify building type is correct for this player to avoid asserts - start
+	for (int i = 0; i < GC.getNumBuildingClassInfos(); i++)
 	{
-		if (city.canConstruct((BuildingTypes)i, false, true, false))
+		
+		BuildingTypes eBuilding = (BuildingTypes)GC.getCivilizationInfo(GET_PLAYER(city.getOwnerINLINE()).getCivilizationType()).getCivilizationBuildings((BuildingClassTypes)i);
+
+		if (city.canConstruct(eBuilding, false, true, false))
 		{
-			int iChange = city.getAdditionalGreatPeopleRateByBuilding((BuildingTypes)i);
+			int iChange = city.getAdditionalGreatPeopleRateByBuilding(eBuilding);
 			
 			if (iChange != 0)
 			{
@@ -15555,7 +15580,7 @@ bool CvGameTextMgr::setBuildingAdditionalGreatPeopleHelp(CvWStringBuffer &szBuff
 					bStarted = true;
 				}
 
-				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo((BuildingTypes)i).getDescription());
+				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo(eBuilding).getDescription());
 				setResumableValueChangeHelp(szBuffer, szLabel, L": ", L"", iChange, gDLL->getSymbolID(GREAT_PEOPLE_CHAR), false, true);
 			}
 		}
