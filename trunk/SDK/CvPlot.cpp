@@ -25,15 +25,15 @@
 #include "CyArgsList.h"
 #include "CvDLLPythonIFaceBase.h"
 #include "CvEventReporter.h"
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      11/30/08                                jdog5000      */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      11/30/08                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 #include "FAStarNode.h"
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 #define STANDARD_MINIMAP_ALPHA		(0.6f)
 
@@ -44,16 +44,16 @@ CvPlot::CvPlot()
 {
 	m_aiYield = new short[NUM_YIELD_TYPES];
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 	// Plot danger cache
 	m_abIsTeamBorderCache = new bool[MAX_TEAMS];
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	m_aiCulture = NULL;
 	m_aiFoundValue = NULL;
@@ -91,16 +91,16 @@ CvPlot::~CvPlot()
 
 	SAFE_DELETE_ARRAY(m_aiYield);
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 	// Plot danger cache
 	SAFE_DELETE_ARRAY(m_abIsTeamBorderCache);
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 }
 
@@ -229,11 +229,11 @@ void CvPlot::reset(int iX, int iY, bool bConstructorCall)
 		m_aiYield[iI] = 0;
 	}
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 	// Plot danger cache
 	m_bIsActivePlayerNoDangerCache = false;
 
@@ -241,9 +241,9 @@ void CvPlot::reset(int iX, int iY, bool bConstructorCall)
 	{
 		m_abIsTeamBorderCache[iI] = false;
 	}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 }
 
 
@@ -476,10 +476,28 @@ void CvPlot::doImprovement()
 			{
 				if (GET_TEAM(getTeam()).isHasTech((TechTypes)(GC.getBonusInfo((BonusTypes) iI).getTechReveal())))
 				{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       10/22/09                                jdog5000      */
+/*                                                                                              */
+/* Gamespeed scaling                                                                            */
+/************************************************************************************************/
+/* original bts code
 					if (GC.getImprovementInfo(getImprovementType()).getImprovementBonusDiscoverRand(iI) > 0)
 					{
 						if (GC.getGameINLINE().getSorenRandNum(GC.getImprovementInfo(getImprovementType()).getImprovementBonusDiscoverRand(iI), "Bonus Discovery") == 0)
 						{
+*/
+					int iOdds = GC.getImprovementInfo(getImprovementType()).getImprovementBonusDiscoverRand(iI);
+					iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent();
+					iOdds /= 100;
+
+					if( iOdds > 0 )
+					{
+						if( GC.getGameINLINE().getSorenRandNum(iOdds, "Bonus Discovery") == 0)
+						{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 							setBonusType((BonusTypes)iI);
 
 							pCity = GC.getMapINLINE().findCity(getX_INLINE(), getY_INLINE(), getOwnerINLINE(), NO_TEAM, false);
@@ -2908,11 +2926,11 @@ int CvPlot::getNumCultureRangeCities(PlayerTypes ePlayer) const
 	return iCount;
 }
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      02/02/09                                jdog5000      */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      01/10/10                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 bool CvPlot::isHasPathToEnemyCity( TeamTypes eAttackerTeam, bool bIgnoreBarb )
 {
 	PROFILE_FUNC();
@@ -2942,9 +2960,9 @@ bool CvPlot::isHasPathToEnemyCity( TeamTypes eAttackerTeam, bool bIgnoreBarb )
 	// First check capitals
 	for (iI = 0; !bFound && iI < MAX_CIV_PLAYERS; iI++)
 	{
-		if (GET_PLAYER((PlayerTypes)iI).isAlive() && isPotentialEnemy(eAttackerTeam,GET_PLAYER((PlayerTypes)iI).getTeam()) )
+		if (GET_PLAYER((PlayerTypes)iI).isAlive() && GET_TEAM(eAttackerTeam).AI_getWarPlan(GET_PLAYER((PlayerTypes)iI).getTeam()) != NO_WARPLAN )
 		{
-			if( !bIgnoreBarb || (GET_PLAYER((PlayerTypes)iI).isBarbarian() || GET_PLAYER((PlayerTypes)iI).isMinorCiv()) )
+			if( !bIgnoreBarb || !(GET_PLAYER((PlayerTypes)iI).isBarbarian() || GET_PLAYER((PlayerTypes)iI).isMinorCiv()) )
 			{
 				pLoopCity = GET_PLAYER((PlayerTypes)iI).getCapitalCity();
 				
@@ -2967,9 +2985,9 @@ bool CvPlot::isHasPathToEnemyCity( TeamTypes eAttackerTeam, bool bIgnoreBarb )
 	// Check all other cities
 	for (iI = 0; !bFound && iI < MAX_PLAYERS; iI++)
 	{
-		if (GET_PLAYER((PlayerTypes)iI).isAlive() && isPotentialEnemy(eAttackerTeam,GET_PLAYER((PlayerTypes)iI).getTeam()) )
+		if (GET_PLAYER((PlayerTypes)iI).isAlive() && GET_TEAM(eAttackerTeam).AI_getWarPlan(GET_PLAYER((PlayerTypes)iI).getTeam()) != NO_WARPLAN )
 		{
-			if( !bIgnoreBarb || (GET_PLAYER((PlayerTypes)iI).isBarbarian() || GET_PLAYER((PlayerTypes)iI).isMinorCiv()) )
+			if( !bIgnoreBarb || !(GET_PLAYER((PlayerTypes)iI).isBarbarian() || GET_PLAYER((PlayerTypes)iI).isMinorCiv()) )
 			{
 				for (pLoopCity = GET_PLAYER((PlayerTypes)iI).firstCity(&iLoop); !bFound && pLoopCity != NULL; pLoopCity = GET_PLAYER((PlayerTypes)iI).nextCity(&iLoop))
 				{
@@ -3070,15 +3088,15 @@ int CvPlot::calculatePathDistanceToPlot( TeamTypes eTeam, CvPlot* pTargetPlot )
 
 	return iPathDistance;
 }
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 	// Plot danger cache
 bool CvPlot::isActivePlayerNoDangerCache() const
 {
@@ -3111,9 +3129,9 @@ void CvPlot::invalidateIsTeamBorderCache()
 		m_abIsTeamBorderCache[iI] = false;
 	}
 }
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 PlayerTypes CvPlot::calculateCulturalOwner() const
 {
@@ -4011,49 +4029,64 @@ bool CvPlot::at(int iX, int iY) const
 }
 
 
+// BUG - Lat/Long Coordinates - start
+#define MINUTES_PER_DEGREE	60
+#define MIN_LONGITUDE		-180
+#define MAX_LONGITUDE		180
+
+int CvPlot::calculateMinutes(int iPlotIndex, int iPlotCount, bool bWrap, int iDegreeMin, int iDegreeMax) const
+{
+	if (!bWrap)
+	{
+		iPlotCount--;
+	}
+	return iPlotIndex * (iDegreeMax - iDegreeMin) * MINUTES_PER_DEGREE / iPlotCount + iDegreeMin * MINUTES_PER_DEGREE;
+}
+
+int CvPlot::getLongitudeMinutes() const
+{
+	if (GC.getMapINLINE().isWrapXINLINE())
+	{
+		// normal and toroidal
+		return calculateMinutes(getX_INLINE(), GC.getMapINLINE().getGridWidthINLINE(), true, MIN_LONGITUDE, MAX_LONGITUDE);
+	}
+	else if (!GC.getMapINLINE().isWrapYINLINE())
+	{
+		// flat
+		return calculateMinutes(getX_INLINE(), GC.getMapINLINE().getGridWidthINLINE(), false, MIN_LONGITUDE, MAX_LONGITUDE);
+	}
+	else
+	{
+		// tilted axis
+		return calculateMinutes(getY_INLINE(), GC.getMapINLINE().getGridHeightINLINE(), true, MIN_LONGITUDE, MAX_LONGITUDE);
+	}
+}
+
+int CvPlot::getLatitudeMinutes() const
+{
+	if (GC.getMapINLINE().isWrapXINLINE())
+	{
+		// normal and toroidal
+		return calculateMinutes(getY_INLINE(), GC.getMapINLINE().getGridHeightINLINE(), GC.getMapINLINE().isWrapYINLINE(), GC.getMapINLINE().getBottomLatitude(), GC.getMapINLINE().getTopLatitude());
+	}
+	else if (!GC.getMapINLINE().isWrapYINLINE())
+	{
+		// flat
+		return calculateMinutes(getY_INLINE(), GC.getMapINLINE().getGridHeightINLINE(), false, GC.getMapINLINE().getBottomLatitude(), GC.getMapINLINE().getTopLatitude());
+	}
+	else
+	{
+		// tilted axis
+		return calculateMinutes(getX_INLINE(), GC.getMapINLINE().getGridWidthINLINE(), false, GC.getMapINLINE().getBottomLatitude(), GC.getMapINLINE().getTopLatitude());
+	}
+}
+
 int CvPlot::getLatitude() const
 {
-/*************************************************************************************************/
-/** UNOFFICIAL_PATCH                       07/12/09                       Temudjin & jdog5000    */
-/**                                                                                              */
-/** Bugfix                                                                                       */
-/*************************************************************************************************/
-/* orginal bts code		
-	int iLatitude;
-
-	if (GC.getMapINLINE().isWrapXINLINE() || !(GC.getMapINLINE().isWrapYINLINE()))
-	{
-		iLatitude = ((getY_INLINE() * 100) / GC.getMapINLINE().getGridHeightINLINE());
-	}
-	else
-	{
-		iLatitude = ((getX_INLINE() * 100) / GC.getMapINLINE().getGridWidthINLINE());
-	}
-
-	iLatitude = ((iLatitude * (GC.getMapINLINE().getTopLatitude() - GC.getMapINLINE().getBottomLatitude())) / 100);
-
-	return abs(iLatitude + GC.getMapINLINE().getBottomLatitude());
-*/
-	int iLatitude;
-	double fLatitude;
-
-	if (GC.getMapINLINE().isWrapXINLINE() || !(GC.getMapINLINE().isWrapYINLINE()))
-	{
-		fLatitude = ((getY_INLINE() * 1.0) / (GC.getMapINLINE().getGridHeightINLINE()-1));
-	}
-	else
-	{
-		fLatitude = ((getX_INLINE() * 1.0) / (GC.getMapINLINE().getGridWidthINLINE()-1));
-	}
-
-	fLatitude = fLatitude * (GC.getMapINLINE().getTopLatitude() - GC.getMapINLINE().getBottomLatitude());
-
-	iLatitude =(int)(fLatitude + 0.5);
-	return abs( (iLatitude + GC.getMapINLINE().getBottomLatitude()));
-/*************************************************************************************************/
-/** UNOFFICIAL_PATCH                        END                                                  */
-/*************************************************************************************************/
+	return abs(getLatitudeMinutes() / MINUTES_PER_DEGREE);
 }
+// BUG - Lat/Long Coordinates - end
+
 
 
 int CvPlot::getFOWIndex() const
@@ -4072,16 +4105,16 @@ CvArea* CvPlot::area() const
 	return m_pPlotArea;
 }
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						01/02/09		jdog5000		*/
-/**																				*/
-/**		General AI																*/
+/* 	BETTER_BTS_AI_MOD						01/02/09		jdog5000		*/
+/* 																			*/
+/* 	General AI																*/
 /********************************************************************************/
 /* original BTS code
 CvArea* CvPlot::waterArea() const
 */
 CvArea* CvPlot::waterArea(bool bNoImpassable) const
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						END								*/
+/* 	BETTER_BTS_AI_MOD						END								*/
 /********************************************************************************/	
 {
 	CvArea* pBestArea;
@@ -4105,16 +4138,16 @@ CvArea* CvPlot::waterArea(bool bNoImpassable) const
 		if (pAdjacentPlot != NULL)
 		{
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						01/02/09		jdog5000		*/
-/**																				*/
-/**		General AI																*/
+/* 	BETTER_BTS_AI_MOD						01/02/09		jdog5000		*/
+/* 																			*/
+/* 	General AI																*/
 /********************************************************************************/
 /* original BTS code
 			if (pAdjacentPlot->isWater())
 */
 			if (pAdjacentPlot->isWater() && (!bNoImpassable || !(pAdjacentPlot->isImpassable())))
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						END								*/
+/* 	BETTER_BTS_AI_MOD						END								*/
 /********************************************************************************/		
 			{
 				iValue = pAdjacentPlot->area()->getNumTiles();
@@ -5010,11 +5043,11 @@ void CvPlot::setOwner(PlayerTypes eNewValue, bool bCheckUnits, bool bUpdatePlotG
 		}
 
 		
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 		// Plot danger cache
 		CvPlot* pLoopPlot;
 		for (int iDX = -(DANGER_RANGE); iDX <= DANGER_RANGE; iDX++)
@@ -5029,9 +5062,9 @@ void CvPlot::setOwner(PlayerTypes eNewValue, bool bCheckUnits, bool bUpdatePlotG
 				}
 			}
 		}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 		
 		updateSymbols();
 	}
@@ -6134,8 +6167,12 @@ int CvPlot::calculateTotalBestNatureYield(TeamTypes eTeam) const
 	return (calculateBestNatureYield(YIELD_FOOD, eTeam) + calculateBestNatureYield(YIELD_PRODUCTION, eTeam) + calculateBestNatureYield(YIELD_COMMERCE, eTeam));
 }
 
-
-int CvPlot::calculateImprovementYieldChange(ImprovementTypes eImprovement, YieldTypes eYield, PlayerTypes ePlayer, bool bOptimal) const
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      10/06/09                                jdog5000      */
+/*                                                                                              */
+/* City AI                                                                                      */
+/************************************************************************************************/
+int CvPlot::calculateImprovementYieldChange(ImprovementTypes eImprovement, YieldTypes eYield, PlayerTypes ePlayer, bool bOptimal, bool bBestRoute) const
 {
 	PROFILE_FUNC();
 
@@ -6174,9 +6211,16 @@ int CvPlot::calculateImprovementYieldChange(ImprovementTypes eImprovement, Yield
 	}
 	else
 	{
-		if (getRouteType() != NO_ROUTE)
+		RouteTypes eRoute = getRouteType();;
+
+		if( bBestRoute && ePlayer != NO_PLAYER )
 		{
-			iYield += GC.getImprovementInfo(eImprovement).getRouteYieldChanges(getRouteType(), eYield);
+			eRoute = GET_PLAYER(ePlayer).getBestRoute(GC.getMapINLINE().plotSorenINLINE(getX_INLINE(), getY_INLINE()));
+		}
+
+		if (eRoute != NO_ROUTE)
+		{
+			iYield += GC.getImprovementInfo(eImprovement).getRouteYieldChanges(eRoute, eYield);
 		}
 	}
 
@@ -6210,7 +6254,9 @@ int CvPlot::calculateImprovementYieldChange(ImprovementTypes eImprovement, Yield
 
 	return iYield;
 }
-
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 int CvPlot::calculateYield(YieldTypes eYield, bool bDisplay) const
 {
@@ -7104,11 +7150,11 @@ void CvPlot::changeBlockadedCount(TeamTypes eTeam, int iChange)
 
 		m_aiBlockadedCount[eTeam] += iChange;
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      06/01/09                                jdog5000      */
-/**                                                                                              */
-/** Bugfix                                                                                       */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      06/01/09                                jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
 		//FAssert(getBlockadedCount(eTeam) >= 0);
 		FAssert(getBlockadedCount(eTeam) == 0 || isWater());
 
@@ -7118,9 +7164,9 @@ void CvPlot::changeBlockadedCount(TeamTypes eTeam, int iChange)
 		{
 			m_aiBlockadedCount[eTeam] = 0;
 		}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 		CvCity* pWorkingCity = getWorkingCity();
 		if (NULL != pWorkingCity)
@@ -8485,7 +8531,19 @@ void CvPlot::doFeature()
 
 		if (iProbability > 0)
 		{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       10/22/09                                jdog5000      */
+/*                                                                                              */
+/* Gamespeed scaling                                                                            */
+/************************************************************************************************/
+/* original bts code
 			if (GC.getGameINLINE().getSorenRandNum(10000, "Feature Disappearance") < iProbability)
+*/
+			int iOdds = (10000*GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getFeatureProductionPercent())/100;
+			if (GC.getGameINLINE().getSorenRandNum(iOdds, "Feature Disappearance") < iProbability)
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 			{
 				setFeatureType(NO_FEATURE);
 			}
@@ -8536,7 +8594,19 @@ void CvPlot::doFeature()
 
 							if (iProbability > 0)
 							{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       10/22/09                                jdog5000      */
+/*                                                                                              */
+/* Gamespeed scaling                                                                            */
+/************************************************************************************************/
+/* original bts code
 								if (GC.getGameINLINE().getSorenRandNum(10000, "Feature Growth") < iProbability)
+*/
+								int iOdds = (10000*GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getFeatureProductionPercent())/100;
+								if( GC.getGameINLINE().getSorenRandNum(iOdds, "Feature Growth") < iProbability )
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 								{
 									setFeatureType((FeatureTypes)iI);
 
@@ -8871,17 +8941,17 @@ void CvPlot::read(FDataStreamBase* pStream)
 
 	pStream->Read(NUM_YIELD_TYPES, m_aiYield);
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 	// Plot danger cache
 	m_bIsActivePlayerNoDangerCache = false;
 	invalidateIsTeamBorderCache();
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	SAFE_DELETE_ARRAY(m_aiCulture);
 	pStream->Read(&cCount);
@@ -10104,9 +10174,9 @@ int CvPlot::airUnitSpaceAvailable(TeamTypes eTeam) const
 }
 
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						10/17/08		jdog5000		*/
-/**																				*/
-/**		Air AI																	*/
+/* 	BETTER_BTS_AI_MOD						10/17/08		jdog5000		*/
+/* 																			*/
+/* 	Air AI																	*/
 /********************************************************************************/
 int CvPlot::countAirInterceptorsActive(TeamTypes eTeam) const
 {
@@ -10130,7 +10200,7 @@ int CvPlot::countAirInterceptorsActive(TeamTypes eTeam) const
 	return iCount;
 }
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						END								*/
+/* 	BETTER_BTS_AI_MOD						END								*/
 /********************************************************************************/
 
 

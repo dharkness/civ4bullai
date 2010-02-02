@@ -25,6 +25,12 @@
 #include "CvBugOptions.h"
 // BUG - end
 
+// BUFFY - start
+#ifdef _BUFFY
+#include "Buffy.h"
+#endif
+// BUFFY - end
+
 CvDLLWidgetData* CvDLLWidgetData::m_pInst = NULL;
 
 CvDLLWidgetData& CvDLLWidgetData::getInstance()
@@ -229,6 +235,9 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 		break;
 
 	case WIDGET_HELP_DEFENSE:
+// BUG - Defense Hover - start
+		parseDefenseHelp(widgetDataStruct, szBuffer);
+// BUG - Defense Hover - end
 		break;
 
 	case WIDGET_HELP_HEALTH:
@@ -1186,7 +1195,20 @@ void CvDLLWidgetData::doTrain(CvWidgetDataStruct &widgetDataStruct)
 
 	if (widgetDataStruct.m_iData2 != FFreeList::INVALID_INDEX)
 	{
-		CvMessageControl::getInstance().sendPushOrder(widgetDataStruct.m_iData2, ORDER_TRAIN, eUnit, false, false, false);
+// Train Units Forever - start
+		bool bAlt;
+		CvUnitInfo& kUnit = GC.getUnitInfo(eUnit);
+
+		if (kUnit.getCombat() || kUnit.getAirCombat())
+		{
+			bAlt = getBugOptionBOOL("CityScreen__ProductionPopupTrainMilitaryUnitsForever", true, "BUG_PRODUCTION_POPUP_TRAIN_MILITARY_UNITS_FOREVER");
+		}
+		else
+		{
+			bAlt = getBugOptionBOOL("CityScreen__ProductionPopupTrainCivilianUnitsForever", false, "BUG_PRODUCTION_POPUP_TRAIN_CIVILIAN_UNITS_FOREVER");
+		}
+		CvMessageControl::getInstance().sendPushOrder(widgetDataStruct.m_iData2, ORDER_TRAIN, eUnit, bAlt, false, false);
+// Train Units Forever - end
 	}
 	else
 	{
@@ -1291,6 +1313,30 @@ void CvDLLWidgetData::doResearch(CvWidgetDataStruct &widgetDataStruct)
 		}
 	}
 
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       12/07/09                            Emperor Fool      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+	// Free Tech Popup Fix
+	if (widgetDataStruct.m_iData2 > 0)
+	{
+		CvPlayer& kPlayer = GET_PLAYER(GC.getGameINLINE().getActivePlayer());
+
+		if (!kPlayer.isChoosingFreeTech())
+		{
+			gDLL->getInterfaceIFace()->addMessage(GC.getGameINLINE().getActivePlayer(), true, GC.getEVENT_MESSAGE_TIME(), gDLL->getText("TXT_KEY_CHEATERS_NEVER_PROSPER"), NULL, MESSAGE_TYPE_MAJOR_EVENT);
+			return;
+		}
+		else
+		{
+			kPlayer.setChoosingFreeTech(false);
+		}
+	}
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
+
 	CvMessageControl::getInstance().sendResearch(((TechTypes)widgetDataStruct.m_iData1), widgetDataStruct.m_iData2, bShift);
 }
 
@@ -1330,11 +1376,11 @@ void CvDLLWidgetData::doContactCiv(CvWidgetDataStruct &widgetDataStruct)
 		return;
 	}
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      01/11/09                                jdog5000      */
-/**                                                                                              */
-/** Player Interface                                                                             */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      01/11/09                                jdog5000      */
+/*                                                                                              */
+/* Player Interface                                                                             */
+/************************************************************************************************/
 	if (gDLL->shiftKey() && !gDLL->altKey())
 	{
 		if (GET_PLAYER((PlayerTypes)widgetDataStruct.m_iData1).isHuman())
@@ -1364,9 +1410,6 @@ void CvDLLWidgetData::doContactCiv(CvWidgetDataStruct &widgetDataStruct)
 				}
 				gDLL->getInterfaceIFace()->setDirty(Score_DIRTY_BIT, true);
 			}
-
-			CvMessageControl::getInstance().sendChangeWar(GET_PLAYER((PlayerTypes)widgetDataStruct.m_iData1).getTeam(), true);
-
 		}
 		else
 		{
@@ -1385,9 +1428,9 @@ void CvDLLWidgetData::doContactCiv(CvWidgetDataStruct &widgetDataStruct)
 		}
 		return;
 	}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	GET_PLAYER(GC.getGameINLINE().getActivePlayer()).contact((PlayerTypes)widgetDataStruct.m_iData1);
 }
@@ -3342,11 +3385,11 @@ void CvDLLWidgetData::parseSetPercentHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, CvWStringBuffer &szBuffer)
 {
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      04/03/09                                jdog5000      */
-/**                                                                                              */
-/** DEBUG                                                                                        */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      04/03/09                                jdog5000      */
+/*                                                                                              */
+/* DEBUG                                                                                        */
+/************************************************************************************************/
 	// do not execute if player is out of range
 	PlayerTypes ePlayer = (PlayerTypes) widgetDataStruct.m_iData1;
 	if (ePlayer >= MAX_PLAYERS)
@@ -3756,9 +3799,9 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 	    iDogpileWarRand /= (iNumMembers + iNumVassals);
 	    
 		// calculate war threshold
-	    int iTotalWarRandThreshold = iHighUnitSpendingPercent * (GC.getGameINLINE().isOption(GAMEOPTION_AGGRESSIVE_AI) ? 4 : 2);
+	    int iTotalWarRandThreshold = iHighUnitSpendingPercent * (bAggressive ? 4 : 2);
 	    iTotalWarRandThreshold /= 3;
-	    iTotalWarRandThreshold += GC.getGameINLINE().isOption(GAMEOPTION_AGGRESSIVE_AI) ? 1 : 0;
+	    iTotalWarRandThreshold += bAggressive ? 1 : 0;
 		
 		// we oppose war if half the non-dagger teammates in financial trouble
 		bool bFinancesOpposeWar = false;
@@ -3840,7 +3883,7 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 				WarPlanTypes eWarPlan = kTeam.AI_getWarPlan(eLoopTeam);
 				if (!kTeam.isAtWar(eLoopTeam) && (eWarPlan == NO_WARPLAN))
 				{
-					if (kTeam.canDeclareWar(eLoopTeam) && kTeam.isHasMet(eLoopTeam))
+					if (kTeam.canEventuallyDeclareWar(eLoopTeam) && kTeam.isHasMet(eLoopTeam))
 					{
 						if( GET_TEAM(eLoopTeam).isAVassal() && !kTeam.AI_isOkayVassalTarget(eLoopTeam) )
 						{
@@ -3925,7 +3968,7 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 						// dogpile war
 						aStartWarInfo[iTeamIndex].bPossibleDogpileWar = false;
 						aStartWarInfo[iTeamIndex].bEnoughDogpilePower = false;
-						if (iNoWarAttitudeProb < 100 && (bFinancesProDogpileWar || !bFinancesOpposeWar))
+						if (iNoWarAttitudeProb < 100 && (bFinancesProDogpileWar || !bFinancesOpposeWar) && kTeam.canDeclareWar(eLoopTeam))
 						{
 							int iNoWarChance = std::max(0, iNoWarAttitudeProb + 20 - (bAggressive ? 10 : 0) - (bFinancesProDogpileWar ? 10 : 0));
 							if (iNoWarChance < 100)
@@ -4211,15 +4254,30 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 				GAMETEXT.getAttitudeString(szBuffer, ePlayer, eActivePlayer);
 
 				szBuffer.append(NEWLINE);
-				GAMETEXT.getEspionageString(szBuffer, ((PlayerTypes)widgetDataStruct.m_iData1), GC.getGameINLINE().getActivePlayer());
+				GAMETEXT.getEspionageString(szBuffer, ((PlayerTypes)widgetDataStruct.m_iData1), eActivePlayer);
+//Fuyu: removing this again
+/*
+// BUG - Other Relations in Scoreboard - start
 
+				GAMETEXT.getOtherRelationsString(szBuffer, ((PlayerTypes)widgetDataStruct.m_iData1), GC.getGameINLINE().getActivePlayer());
+
+// BUG - Other Relations in Scoreboard - end
+*/
+// BUG - Deals in Scoreboard - start
+				if (gDLL->ctrlKey())
+				{
+					GAMETEXT.getActiveDealsString(szBuffer, ((PlayerTypes)widgetDataStruct.m_iData1), GC.getGameINLINE().getActivePlayer());
+				}
+// BUG - Deals in Scoreboard - end
+
+				szBuffer.append(NEWLINE);
 				szBuffer.append(gDLL->getText("TXT_KEY_MISC_CTRL_TRADE"));
 			}
 		}
 		else
 		{
 			szBuffer.append(NEWLINE);
-			GAMETEXT.getEspionageString(szBuffer, ((PlayerTypes)widgetDataStruct.m_iData1), GC.getGameINLINE().getActivePlayer());
+			GAMETEXT.getEspionageString(szBuffer, ((PlayerTypes)widgetDataStruct.m_iData1), eActivePlayer);
 		}
 
 		if (eTeam != eActiveTeam )
@@ -4232,9 +4290,9 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 			for (int iTeam = 0; iTeam < MAX_CIV_TEAMS; ++iTeam)
 			{
 				CvTeamAI& kTeam = GET_TEAM((TeamTypes) iTeam);
-				if (kTeam.isAlive() && !kTeam.isMinorCiv() && iTeam != GC.getGameINLINE().getActiveTeam() && iTeam != GET_PLAYER((PlayerTypes)widgetDataStruct.m_iData1).getTeam())
+				if (kTeam.isAlive() && !kTeam.isMinorCiv() && iTeam != eActiveTeam && iTeam != GET_PLAYER((PlayerTypes)widgetDataStruct.m_iData1).getTeam())
 				{
-					if (GET_TEAM(GC.getGameINLINE().getActiveTeam()).isHasMet(kTeam.getID()))
+					if (kActiveTeam.isHasMet(kTeam.getID()))
 					{
 						if (::atWar((TeamTypes) iTeam, GET_PLAYER((PlayerTypes)widgetDataStruct.m_iData1).getTeam()))
 						{
@@ -4295,9 +4353,9 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 		szBuffer.append(NEWLINE);
 		szBuffer.append(gDLL->getText("TXT_KEY_MISC_SHIFT_SEND_CHAT"));
 	}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 }
 
 
@@ -4533,12 +4591,22 @@ void CvDLLWidgetData::parseTradeItem(CvWidgetDataStruct &widgetDataStruct, CvWSt
 		case TRADE_MAPS:
 			szBuffer.append(gDLL->getText("TXT_KEY_TRADE_MAPS"));
 			break;
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      12/07/09                                jdog5000      */
+/*                                                                                              */
+/* Diplomacy                                                                                    */
+/************************************************************************************************/
 		case TRADE_SURRENDER:
 			szBuffer.append(gDLL->getText("TXT_KEY_TRADE_CAPITULATE"));
+			eWhoDenies = (widgetDataStruct.m_bOption ? eWhoFrom : NO_PLAYER);
 			break;
 		case TRADE_VASSAL:
 			szBuffer.append(gDLL->getText("TXT_KEY_TRADE_VASSAL"));
+			eWhoDenies = (widgetDataStruct.m_bOption ? eWhoFrom : NO_PLAYER);
 			break;
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 		case TRADE_OPEN_BORDERS:
 			szBuffer.append(gDLL->getText("TXT_KEY_TRADE_OPEN_BORDERS"));
 			break;
@@ -4559,7 +4627,45 @@ void CvDLLWidgetData::parseTradeItem(CvWidgetDataStruct &widgetDataStruct, CvWSt
 
 		if (eDenial != NO_DENIAL)
 		{
-			szTempBuffer.Format(L"%s: " SETCOLR L"%s" ENDCOLR, GET_PLAYER(eWhoDenies).getName(), TEXT_COLOR("COLOR_WARNING_TEXT"), GC.getDenialInfo(eDenial).getDescription());
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      12/07/09                                jdog5000      */
+/*                                                                                              */
+/* Diplomacy                                                                                    */
+/************************************************************************************************/
+			if( eWhoDenies == NO_PLAYER )
+			{
+				switch(eDenial)
+				{
+				case DENIAL_POWER_US:
+					eDenial = DENIAL_POWER_YOU;
+					break;
+				case DENIAL_POWER_YOU:
+					eDenial = DENIAL_POWER_US;
+					break;
+				case DENIAL_WAR_NOT_POSSIBLE_US:
+					eDenial = DENIAL_WAR_NOT_POSSIBLE_YOU;
+					break;
+				case DENIAL_WAR_NOT_POSSIBLE_YOU:
+					eDenial = DENIAL_WAR_NOT_POSSIBLE_US;
+					break;
+				case DENIAL_PEACE_NOT_POSSIBLE_US:
+					eDenial = DENIAL_PEACE_NOT_POSSIBLE_YOU;
+					break;
+				case DENIAL_PEACE_NOT_POSSIBLE_YOU:
+					eDenial = DENIAL_PEACE_NOT_POSSIBLE_US;
+					break;
+				default :
+					break;
+				}
+				szTempBuffer.Format(L"%s: " SETCOLR L"%s" ENDCOLR, GET_PLAYER(eWhoTo).getName(), TEXT_COLOR("COLOR_WARNING_TEXT"), GC.getDenialInfo(eDenial).getDescription());
+			}
+			else
+			{
+				szTempBuffer.Format(L"%s: " SETCOLR L"%s" ENDCOLR, GET_PLAYER(eWhoDenies).getName(), TEXT_COLOR("COLOR_WARNING_TEXT"), GC.getDenialInfo(eDenial).getDescription());
+			}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 			szBuffer.append(NEWLINE);
 			szBuffer.append(szTempBuffer);
 		}
@@ -4584,68 +4690,79 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 {
 	CvWString szTempBuffer;
 
-/*************************************************************************************************/
-/** UNOFFICIAL_PATCH                      09/17/09                                jdog5000       */
-/**                                                                                              */
-/**                                                                                              */
-/*************************************************************************************************/
 	// Add string showing version number
-	szTempBuffer.Format(L"%S", "Unofficial 3.19 Patch v1.20");
-	szBuffer.append(szTempBuffer);
-	szBuffer.append(NEWLINE);
-	szBuffer.append(NEWLINE);
-/*************************************************************************************************/
-/** UNOFFICIAL_PATCH                       END                                                   */
-/*************************************************************************************************/
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      09/03/09                                jdog5000      */
-/**                                                                                              */
-/**                                                                                              */
-/*************************************************************************************************/
-	// Add string showing version number
-	szTempBuffer.Format(L"%S", "Better BTS AI v0.81M");
-	szBuffer.append(szTempBuffer);
-	szBuffer.append(NEWLINE);
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
 
-// BUG - Version Info - start
-	// add version strings to flag hover text. Idea borrowed from BetterAI mod.
 	// BTS Version
 	float fVersion = GC.getDefineINT("CIV4_VERSION") / 100.0f;
 	szTempBuffer.Format(SETCOLR L"Beyond the Sword %0.2f" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), fVersion);
 	szBuffer.append(szTempBuffer);
+	szBuffer.append(NEWLINE);
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                      12/07/09                                jdog5000       */
+/*                                                                                              */
+/*                                                                                              */
+/************************************************************************************************/
+	szTempBuffer.Format(L"%S", "Unofficial Patch 1.40");
+	szBuffer.append(szTempBuffer);
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       END                                                   */
+/************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      01/10/10                                jdog5000      */
+/*                                                                                              */
+/*                                                                                              */
+/************************************************************************************************/
+	// Add string showing version number
+	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 0.83");
+	szBuffer.append(szTempBuffer);
+#ifdef LOG_AI
+	szTempBuffer.Format(NEWLINE L"%c", gDLL->getSymbolID(BULLET_CHAR));
+	szBuffer.append(szTempBuffer);
+	szBuffer.append("AI Logging");
+#endif
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+// BUG - Version Info - start
+	// add version strings to flag hover text. Idea borrowed from BetterAI mod.
+#ifdef _BUFFY
+	// BUFFY Version
+	szTempBuffer.Format(NEWLINE SETCOLR L"%s %s [Build %s]" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), 
+			BUFFY_DLL_NAME, BUFFY_DLL_VERSION, BUFFY_DLL_BUILD);
+	szBuffer.append(szTempBuffer);
+#else
 	// BUG Mod version
 	if (isBug())
 	{
 		CvWString szBugNameAndVersion;
 		gDLL->getPythonIFace()->callFunction(PYBugModule, "getModNameAndVersion", NULL, &szBugNameAndVersion);
-		szTempBuffer.Format(NEWLINE SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), szBugNameAndVersion.c_str());
+		szTempBuffer.Format(NEWLINE SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), szBugNameAndVersion.c_str());
 		szBuffer.append(szTempBuffer);
 	}
 	// BUG DLL version
-	szTempBuffer.Format(NEWLINE SETCOLR L"%s %s" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), BUG_DLL_NAME, BUG_DLL_VERSION);
+	szTempBuffer.Format(NEWLINE SETCOLR L"%s %s [Build %s]" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), 
+			BUG_DLL_NAME, BUG_DLL_VERSION, BUG_DLL_BUILD);
 	szBuffer.append(szTempBuffer);
-#ifdef _MOD_AIAUTOPLAY
-	szTempBuffer.Format(NEWLINE SETCOLR L"%cAI AutoPlay" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), gDLL->getSymbolID(BULLET_CHAR));
+#endif
+// BUG - Version Info - start
+
+	// compile-time mods
+	szTempBuffer.Format(NEWLINE L"%c", gDLL->getSymbolID(BULLET_CHAR));
+#ifdef _MOD_FRACTRADE
 	szBuffer.append(szTempBuffer);
+	szBuffer.append(gDLL->getText("TXT_KEY_MOD_FRACTRADE"));
 #endif
 #ifdef _MOD_SENTRY
-	szTempBuffer.Format(NEWLINE SETCOLR L"%cNew Sentry Actions" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), gDLL->getSymbolID(BULLET_CHAR));
 	szBuffer.append(szTempBuffer);
+	szBuffer.append(gDLL->getText("TXT_KEY_MOD_SENTRY"));
 #endif
 #ifdef _MOD_GOVWORKERS
-	szTempBuffer.Format(NEWLINE SETCOLR L"%cGovernors Build Workers" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), gDLL->getSymbolID(BULLET_CHAR));
 	szBuffer.append(szTempBuffer);
+	szBuffer.append(gDLL->getText("TXT_KEY_MOD_GOVWORKERS"));
 #endif
 #ifdef _MOD_GWARM
-	szTempBuffer.Format(NEWLINE SETCOLR L"%cGlobal Warming" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), gDLL->getSymbolID(BULLET_CHAR));
 	szBuffer.append(szTempBuffer);
-#endif
-#ifdef _MOD_FRACTRADE
-	szTempBuffer.Format(NEWLINE SETCOLR L"%cFractional Trade" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), gDLL->getSymbolID(BULLET_CHAR));
-	szBuffer.append(szTempBuffer);
+	szBuffer.append(gDLL->getText("TXT_KEY_MOD_GWARM"));
 #endif
 	// separator line
 	szBuffer.append(NEWLINE L"==============================" NEWLINE);
@@ -4754,7 +4871,7 @@ void CvDLLWidgetData::parseHealthHelp(CvWidgetDataStruct &widgetDataStruct, CvWS
 		{
 			GAMETEXT.setBuildingAdditionalHealthHelp(szBuffer, *pHeadSelectedCity, DOUBLE_SEPARATOR);
 		}
-// BUG - Building Additional Health- end
+// BUG - Building Additional Health - end
 	}
 }
 
@@ -5738,9 +5855,22 @@ void CvDLLWidgetData::parseScoreHelp(CvWidgetDataStruct& widgetDataStruct, CvWSt
 	GAMETEXT.setScoreHelp(szBuffer, (PlayerTypes)widgetDataStruct.m_iData1);
 }
 
-// BUG - Foreign Advisor INFO Trade - start
+// BUG - Trade Hover - start
 void CvDLLWidgetData::parseTradeRoutes(CvWidgetDataStruct& widgetDataStruct, CvWStringBuffer& szBuffer)
 {
 	GAMETEXT.buildTradeString(szBuffer, (PlayerTypes)widgetDataStruct.m_iData1, (PlayerTypes)widgetDataStruct.m_iData2);
+	GAMETEXT.getActiveDealsString(szBuffer, (PlayerTypes)widgetDataStruct.m_iData1, (PlayerTypes)widgetDataStruct.m_iData2);
 }
-// BUG - Foreign Advisor INFO Trade - end
+// BUG - Trade Hover - end
+
+// BUG - Defense Hover - start
+
+void CvDLLWidgetData::parseDefenseHelp(CvWidgetDataStruct& widgetDataStruct, CvWStringBuffer& szBuffer)
+{
+	CvCity* pHeadSelectedCity = gDLL->getInterfaceIFace()->getHeadSelectedCity();
+	if (NULL != pHeadSelectedCity)
+	{
+		GAMETEXT.setDefenseHelp(szBuffer, *pHeadSelectedCity);
+	}
+}
+// BUG - Defense Hover - end

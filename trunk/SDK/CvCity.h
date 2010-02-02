@@ -254,18 +254,18 @@ public:
 	bool isConnectedToCapital(PlayerTypes ePlayer = NO_PLAYER) const;			// Exposed to Python
 	int getArea() const;
 	CvArea* area() const;																						// Exposed to Python
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      01/02/09                                jdog5000      */
-/**                                                                                              */
-/**                                                                                              */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      01/02/09                                jdog5000      */
+/*                                                                                              */
+/*                                                                                              */
+/************************************************************************************************/
 	CvArea* waterArea(bool bNoImpassable = false) const;																			// Exposed to Python
 	CvArea* secondWaterArea() const;
 	CvArea* sharedWaterArea(CvCity* pCity) const;
 	bool isBlockaded() const;
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	CvPlot* getRallyPlot() const;																// Exposed to Python
 	void setRallyPlot(CvPlot* pPlot);
@@ -500,9 +500,15 @@ public:
 
 	int getBuildingDefense() const;																				// Exposed to Python
 	void changeBuildingDefense(int iChange);
+// BUG - Building Additional Defense - start
+	int getAdditionalDefenseByBuilding(BuildingTypes eBuilding) const;											// Exposed to Python
+// BUG - Building Additional Defense - start
 
 	int getBuildingBombardDefense() const;																				// Exposed to Python
 	void changeBuildingBombardDefense(int iChange);
+// BUG - Building Additional Bombard Defense - start
+	int getAdditionalBombardDefenseByBuilding(BuildingTypes eBuilding) const;									// Exposed to Python
+// BUG - Building Additional Bombard Defense - start
 
 	int getFreeExperience() const;																				// Exposed to Python
 	void changeFreeExperience(int iChange);															
@@ -998,18 +1004,18 @@ public:
 	virtual bool AI_isEmphasize(EmphasizeTypes eIndex) = 0;											// Exposed to Python
 	virtual void AI_setEmphasize(EmphasizeTypes eIndex, bool bNewValue) = 0;
 	virtual int AI_getBestBuildValue(int iIndex) = 0;
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      06/25/09                                jdog5000      */
-/**                                                                                              */
-/** Debug                                                                                        */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      06/25/09                                jdog5000      */
+/*                                                                                              */
+/* Debug                                                                                        */
+/************************************************************************************************/
 	virtual int AI_getTargetSize() = 0;
 	virtual int AI_getGoodTileCount() = 0;
 	virtual int AI_getImprovementValue( CvPlot* pPlot, ImprovementTypes eImprovement, int iFoodPriority, int iProductionPriority, int iCommercePriority, int iFoodChange, bool bOriginal = false ) = 0;
 	virtual void AI_getYieldMultipliers( int &iFoodMultiplier, int &iProductionMultiplier, int &iCommerceMultiplier, int &iDesiredFoodChange ) = 0;
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	virtual int AI_totalBestBuildValue(CvArea* pArea) = 0;
 	virtual int AI_countBestBuilds(CvArea* pArea) = 0;													// Exposed to Python
 	virtual BuildTypes AI_getBestBuild(int iIndex) = 0;
@@ -1139,6 +1145,15 @@ protected:
 	bool m_bInfoDirty;
 	bool m_bLayoutDirty;
 	bool m_bPlundered;
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       12/07/09                         denev & jdog5000     */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+	bool m_bPopProductionProcess;
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 
 	PlayerTypes m_eOwner;
 	PlayerTypes m_ePreviousOwner;

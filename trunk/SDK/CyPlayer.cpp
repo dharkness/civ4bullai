@@ -25,11 +25,11 @@ CyPlayer::CyPlayer(CvPlayer* pPlayer) : m_pPlayer(pPlayer)
 {
 }
 
-/*************************************************************************************************/
-/** CHANGE_PLAYER                         08/27/08                                 jdog5000      */
-/**                                                                                              */
-/**                                                                                              */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* CHANGE_PLAYER                         08/27/08                                 jdog5000      */
+/*                                                                                              */
+/*                                                                                              */
+/************************************************************************************************/
 void CyPlayer::changeLeader( int /*LeaderHeadTypes*/ eNewLeader )
 {
 	if( m_pPlayer )
@@ -46,9 +46,9 @@ void CyPlayer::setIsHuman( bool bNewValue )
 	if( m_pPlayer )
 		m_pPlayer->setIsHuman( bNewValue );
 }
-/*************************************************************************************************/
-/** CHANGE_PLAYER                          END                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* CHANGE_PLAYER                          END                                                   */
+/************************************************************************************************/
 
 int CyPlayer::startingPlotRange()
 {
@@ -1213,6 +1213,14 @@ int CyPlayer::getExtraHealth()
 	return m_pPlayer ? m_pPlayer->getExtraHealth() : -1;
 }
 
+// BUG - start
+void CyPlayer::changeExtraHealth(int iChange)
+{
+	if (m_pPlayer)
+		m_pPlayer->changeExtraHealth(iChange);
+}
+// BUG - end
+
 int CyPlayer::getBuildingGoodHealth()
 {
 	return m_pPlayer ? m_pPlayer->getBuildingGoodHealth() : -1;
@@ -2259,3 +2267,11 @@ void  CyPlayer::forcePeace(int iPlayer)
 	if (m_pPlayer)
 		m_pPlayer->forcePeace((PlayerTypes)iPlayer);
 }
+
+// BUG - Reminder Mod - start
+void CyPlayer::addReminder(int iGameTurn, std::wstring szMessage) const
+{
+	if (m_pPlayer)
+		m_pPlayer->addReminder(iGameTurn, CvWString(szMessage));
+}
+// BUG - Reminder Mod - end

@@ -11,6 +11,10 @@
 #include "CvGameTextMgr.h"
 #include "CvMessageControl.h"
 
+// BUG - start
+#include "CvBugOptions.h"
+// BUG - end
+
 void CvGame::updateColoredPlots()
 {
 	PROFILE_FUNC();
@@ -49,11 +53,11 @@ void CvGame::updateColoredPlots()
 		return;
 	}
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      06/25/09                                jdog5000      */
-/**                                                                                              */
-/** Debug                                                                                        */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      06/25/09                                jdog5000      */
+/*                                                                                              */
+/* Debug                                                                                        */
+/************************************************************************************************/
 	// City circles for debugging
 	if (isDebugMode())
 	{
@@ -106,9 +110,9 @@ void CvGame::updateColoredPlots()
 			}
 		}
 	}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 
 	// City circles when in Advanced Start
@@ -323,6 +327,15 @@ void CvGame::updateColoredPlots()
 					{
 						if ((pLoopPlot->area() == pHeadSelectedUnit->area()) || pLoopPlot->isAdjacentToArea(pHeadSelectedUnit->area()))
 						{
+// BUFFY - Don't Recommend Plots in Fog of War - start
+#ifdef _BUFFY
+							if (!pLoopPlot->isVisible(pHeadSelectedUnit->getTeam(), false))
+							{
+								continue;
+							}
+#endif
+// BUFFY - Don't Recommend Plots in Fog of War - end
+
 							if (pHeadSelectedUnit->canFound(pLoopPlot))
 							{
 								if (GET_PLAYER(pHeadSelectedUnit->getOwnerINLINE()).AI_isPlotCitySite(pLoopPlot))
@@ -371,19 +384,19 @@ void CvGame::updateColoredPlots()
 									CvPlot* pLoopPlot = ::plotXY(pLoopUnit->getX_INLINE(), pLoopUnit->getY_INLINE(), i, j);
 									if (NULL != pLoopPlot && pLoopPlot->isRevealed(getActiveTeam(), false))
 									{
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      12/11/08                                jdog5000      */
-/**                                                                                              */
-/** Bugfix                                                                                       */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      12/11/08                                jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
 										if( GC.getMapINLINE().calculatePathDistance(pLoopUnit->plot(),pLoopPlot) > iBlockadeRange )
 										{
 											// No blockading on other side of an isthmus
 											continue;
 										}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 										if (pLoopPlot->isWater() && pLoopPlot->area() == pLoopUnit->area())
 										{
@@ -943,6 +956,10 @@ void CvGame::selectionListMove(CvPlot* pPlot, bool bAlt, bool bShift, bool bCtrl
 		gDLL->getInterfaceIFace()->selectGroup(pHeadSelectedUnit, false, true, false);
 	}
 
+// BUG - Declare War - start
+	bool bAskToDeclareWar = getBugOptionBOOL("Actions__AskDeclareWarUnits", true, "BUG_ASK_DECLARE_WAR_UNITS");
+// BUG - Declare War - end
+
 	pSelectedUnitNode = gDLL->getInterfaceIFace()->headSelectionListNode();
 
 	while (pSelectedUnitNode != NULL)
@@ -951,7 +968,10 @@ void CvGame::selectionListMove(CvPlot* pPlot, bool bAlt, bool bShift, bool bCtrl
 
 		eRivalTeam = pSelectedUnit->getDeclareWarMove(pPlot);
 
-		if (eRivalTeam != NO_TEAM)
+// BUG - Declare War - start
+		// only ask if option is off or moving into rival territory without open borders
+		if (eRivalTeam != NO_TEAM && (pPlot->getTeam() == eRivalTeam || bAskToDeclareWar))
+// BUG - Declare War - end
 		{
 			CvPopupInfo* pInfo = new CvPopupInfo(BUTTONPOPUP_DECLAREWARMOVE);
 			if (NULL != pInfo)

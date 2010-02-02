@@ -260,13 +260,13 @@ public:
 
 	void addPlayer(int /*PlayerTypes*/ eNewPlayer, int /*LeaderHeadTypes*/ eLeader, int /*CivilizationTypes*/ eCiv);
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						8/1/08				jdog5000	*/
-/**																				*/
-/**		Debug																	*/
+/* 	BETTER_BTS_AI_MOD						8/1/08				jdog5000	*/
+/* 																			*/
+/* 	Debug																	*/
 /********************************************************************************/
 	void changeHumanPlayer( int /*PlayerTypes*/ eNewHuman );
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						END								*/
+/* 	BETTER_BTS_AI_MOD						END								*/
 /********************************************************************************/
 	int getCultureThreshold(int /*CultureLevelTypes*/ eLevel);
 
@@ -293,6 +293,13 @@ public:
 	std::string getDLLPath() const;
 	std::string getExePath() const;
 // BUG - EXE/DLL Paths - end
+
+// BUFFY - Security Checks - start
+#ifdef _BUFFY
+	int checkCRCs(std::string fileName_, std::string expectedModCRC_, std::string expectedDLLCRC_, std::string expectedShaderCRC_, std::string expectedPythonCRC_, std::string expectedXMLCRC_) const;
+	int getWarningStatus() const;
+#endif
+// BUFFY - Security Checks - end
 
 protected:
 	CvGame* m_pGame;

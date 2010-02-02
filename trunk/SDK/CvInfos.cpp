@@ -12666,6 +12666,11 @@ m_iGrowthProbability(0),
 m_iDefenseModifier(0),
 m_iAdvancedStartRemoveCost(0),
 m_iTurnDamage(0),
+// BUG - Global Warming Mod - start
+#ifdef _MOD_GWARM
+m_iWarmingDefense(0),
+#endif
+// BUG - Global Warming Mod - end
 m_bNoCoast(false),				
 m_bNoRiver(false),					
 m_bNoAdjacent(false),			
@@ -12747,6 +12752,15 @@ int CvFeatureInfo::getTurnDamage() const
 {
 	return m_iTurnDamage; 
 }
+
+// BUG - Global Warming Mod - start
+#ifdef _MOD_GWARM
+int CvFeatureInfo::getWarmingDefense() const
+{
+	return m_iWarmingDefense; 
+}
+#endif
+// BUG - Global Warming Mod - end
 
 bool CvFeatureInfo::isNoCoast() const	
 {
@@ -12941,6 +12955,11 @@ bool CvFeatureInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_iDefenseModifier, "iDefense");
 	pXML->GetChildXmlValByName(&m_iAdvancedStartRemoveCost, "iAdvancedStartRemoveCost");
 	pXML->GetChildXmlValByName(&m_iTurnDamage, "iTurnDamage");
+// BUG - Global Warming Mod - start
+#ifdef _MOD_GWARM
+	pXML->GetChildXmlValByName(&m_iWarmingDefense, "iWarmingDefense");
+#endif
+// BUG - Global Warming Mod - end
 	pXML->GetChildXmlValByName(&m_iAppearanceProbability, "iAppearance");
 	pXML->GetChildXmlValByName(&m_iDisappearanceProbability, "iDisappearance");
 	pXML->GetChildXmlValByName(&m_iGrowthProbability, "iGrowth");
@@ -18258,15 +18277,15 @@ m_iTrainPercent(0),
 m_iConstructPercent(0),
 m_iCreatePercent(0),
 m_iResearchPercent(0),
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
-/**                                                                                              */
-/** Tech Diffusion                                                                               */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
+/*                                                                                              */
+/* Tech Diffusion                                                                               */
+/************************************************************************************************/
 m_iTechCostModifier(0),
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 m_iBuildPercent(0),
 m_iImprovementPercent(0),
 m_iGreatPeoplePercent(0),
@@ -18355,18 +18374,18 @@ int CvEraInfo::getResearchPercent() const
 	return m_iResearchPercent; 
 }
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
-/**                                                                                              */
-/** Tech Diffusion                                                                               */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
+/*                                                                                              */
+/* Tech Diffusion                                                                               */
+/************************************************************************************************/
 int CvEraInfo::getTechCostModifier() const
 {
 	return m_iTechCostModifier; 
 }
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 int CvEraInfo::getBuildPercent() const
 {
@@ -18478,15 +18497,15 @@ bool CvEraInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_iConstructPercent, "iConstructPercent");
 	pXML->GetChildXmlValByName(&m_iCreatePercent, "iCreatePercent");
 	pXML->GetChildXmlValByName(&m_iResearchPercent, "iResearchPercent");
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
-/**                                                                                              */
-/** Tech Diffusion                                                                               */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
+/*                                                                                              */
+/* Tech Diffusion                                                                               */
+/************************************************************************************************/
 	pXML->GetChildXmlValByName(&m_iTechCostModifier, "iTechCostModifier");
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	pXML->GetChildXmlValByName(&m_iBuildPercent, "iBuildPercent");
 	pXML->GetChildXmlValByName(&m_iImprovementPercent, "iImprovementPercent");
 	pXML->GetChildXmlValByName(&m_iGreatPeoplePercent, "iGreatPeoplePercent");

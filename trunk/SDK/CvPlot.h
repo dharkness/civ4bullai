@@ -140,32 +140,32 @@ public:
 	bool isAdjacentTeam(TeamTypes eTeam, bool bLandOnly = false) const;															// Exposed to Python
 	bool isWithinCultureRange(PlayerTypes ePlayer) const;																						// Exposed to Python
 	int getNumCultureRangeCities(PlayerTypes ePlayer) const;																				// Exposed to Python
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      11/30/08                                jdog5000      */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      11/30/08                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 	bool isHasPathToEnemyCity( TeamTypes eAttackerTeam, bool bIgnoreBarb = true );
 	bool isHasPathToPlayerCity( TeamTypes eMoveTeam, PlayerTypes eOtherPlayer = NO_PLAYER );
 	int calculatePathDistanceToPlot( TeamTypes eTeam, CvPlot* pTargetPlot );
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 	// Plot danger cache
 	bool isActivePlayerNoDangerCache() const;
 	bool isTeamBorderCache( TeamTypes eTeam ) const;
 	void setIsActivePlayerNoDangerCache( bool bNewValue );
 	void setIsTeamBorderCache( TeamTypes eTeam, bool bNewValue );
 	void invalidateIsTeamBorderCache();
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	PlayerTypes calculateCulturalOwner() const;
 
@@ -238,21 +238,26 @@ public:
 	}
 #endif
 	bool at(int iX, int iY) const;																																		// Exposed to Python
+// BUG - Lat/Long Coordinates - start
+	int calculateMinutes(int iPlotIndex, int iPlotCount, bool bWrap, int iDegreeMin, int iDegreeMax) const;
+	int getLongitudeMinutes() const;																																		// Exposed to Python
+	int getLatitudeMinutes() const;																																		// Exposed to Python
+// BUG - Lat/Long Coordinates - end
 	int getLatitude() const;																																					// Exposed to Python  
 	int getFOWIndex() const;
 
 	CvArea* area() const;																																							// Exposed to Python
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						01/02/09		jdog5000		*/
-/**																				*/
-/**		General AI																*/
+/* 	BETTER_BTS_AI_MOD						01/02/09		jdog5000		*/
+/* 																			*/
+/* 	General AI																*/
 /********************************************************************************/
 /* original BTS code
 	CvArea* waterArea() const;
 */
 	CvArea* waterArea(bool bNoImpassable = false) const;
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						END								*/
+/* 	BETTER_BTS_AI_MOD						END								*/
 /********************************************************************************/	
 
 	CvArea* secondWaterArea() const;
@@ -377,7 +382,15 @@ public:
 	int calculateNatureYield(YieldTypes eIndex, TeamTypes eTeam, bool bIgnoreFeature = false) const;		// Exposed to Python
 	int calculateBestNatureYield(YieldTypes eIndex, TeamTypes eTeam) const;															// Exposed to Python
 	int calculateTotalBestNatureYield(TeamTypes eTeam) const;																						// Exposed to Python
-	int calculateImprovementYieldChange(ImprovementTypes eImprovement, YieldTypes eYield, PlayerTypes ePlayer, bool bOptimal = false) const;	// Exposed to Python
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      10/06/09                                jdog5000      */
+/*                                                                                              */
+/* City AI                                                                                      */
+/************************************************************************************************/
+	int calculateImprovementYieldChange(ImprovementTypes eImprovement, YieldTypes eYield, PlayerTypes ePlayer, bool bOptimal = false, bool bBestRoute = false) const;	// Exposed to Python
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	int calculateYield(YieldTypes eIndex, bool bDisplay = false) const;												// Exposed to Python
 	bool hasYield() const;																																		// Exposed to Python
 	void updateYield();
@@ -397,13 +410,13 @@ public:
 	int countNumAirUnits(TeamTypes eTeam) const;																					// Exposed to Python
 	int airUnitSpaceAvailable(TeamTypes eTeam) const;
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						10/17/08		jdog5000		*/
-/**																				*/
-/**		Air AI																	*/
+/* 	BETTER_BTS_AI_MOD						10/17/08		jdog5000		*/
+/* 																			*/
+/* 	Air AI																	*/
 /********************************************************************************/
 	int countAirInterceptorsActive(TeamTypes eTeam) const;
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						END								*/
+/* 	BETTER_BTS_AI_MOD						END								*/
 /********************************************************************************/
 
 	int getFoundValue(PlayerTypes eIndex);																															// Exposed to Python
@@ -575,17 +588,17 @@ protected:
 	IDInfo m_workingCity;
 	IDInfo m_workingCityOverride;
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 	// Plot danger cache
 	bool m_bIsActivePlayerNoDangerCache;
 	bool* m_abIsTeamBorderCache;
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	short* m_aiYield;
 	int* m_aiCulture;

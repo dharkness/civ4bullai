@@ -4,9 +4,9 @@
 #define AI_DEFINES_H
 
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						6/25/09				jdog5000	*/
-/**																				*/
-/**																				*/
+/* 	BETTER_BTS_AI_MOD						6/25/09				jdog5000	*/
+/* 																			*/
+/* 																			*/
 /********************************************************************************/
 // Could increase this value now that player closness is fixed
 #define DEFAULT_PLAYER_CLOSENESS 6
@@ -58,7 +58,7 @@
 #define AI_VICTORY_DIPLOMACY3			(1 << 19)
 #define AI_VICTORY_DIPLOMACY4			(1 << 20)
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD							END							*/
+/* 	BETTER_BTS_AI_MOD							END							*/
 /********************************************************************************/
 
 #define AI_CITY_ROLE_VALID              (1 <<  1)    //zero is bad

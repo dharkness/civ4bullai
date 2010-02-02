@@ -757,6 +757,12 @@ enum GameOptionTypes				// Exposed to Python
 	GAMEOPTION_NO_EVENTS,
 	GAMEOPTION_NO_ESPIONAGE,
 
+// BUG - Global Warming Mod - start
+#ifdef _MOD_GWARM
+	GAMEOPTION_RISING_SEAS,
+#endif
+// BUG - Global Warming Mod - end
+
 #ifdef _USRDLL
 	NUM_GAMEOPTION_TYPES
 #endif
@@ -2635,6 +2641,9 @@ enum GameMessageTypes				// Exposed to Python
 	GAMEMESSAGE_ADVANCED_START_ACTION,
 	GAMEMESSAGE_FOUND_RELIGION,
 	GAMEMESSAGE_MOD_NET_MESSAGE
+// BUG - Reminder Mod - start
+	, GAMEMESSAGE_ADD_REMINDER
+// BUG - Reminder Mod - end
 };
 
 enum PopupControlLayout		// Exposed to Python

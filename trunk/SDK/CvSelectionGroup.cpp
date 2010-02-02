@@ -83,21 +83,25 @@ void CvSelectionGroup::reset(int iID, PlayerTypes eOwner, bool bConstructorCall)
 	m_eAutomateType = NO_AUTOMATE;
 	m_bIsBusyCache = false;
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/19/09                                jdog5000      */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/19/09                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 	m_bIsStrandedCache = false;
 	m_bIsStrandedCacheValid = false;
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
-
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 // BUG - Safe Move - start
-	m_bLastPathPlotChecked = false;
-	m_bLastPlotVisible = false;
-	m_bLastPlotRevealed = false;
+	if (!GC.getGameINLINE().isNetworkMultiPlayer()) //Fuyu temporal fix for safe move oos issue
+	{
+
+		m_bLastPathPlotChecked = false;
+		m_bLastPlotVisible = false;
+		m_bLastPlotRevealed = false;
+
+	}
 // BUG - Safe Move - end
 
 	if (!bConstructorCall)
@@ -233,15 +237,15 @@ void CvSelectionGroup::doTurn()
 
 	if (getNumUnits() > 0)
 	{
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/19/09                                jdog5000      */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/19/09                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 		invalidateIsStrandedCache();
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 		bool bHurt = false;
 		
@@ -271,53 +275,67 @@ void CvSelectionGroup::doTurn()
 		{
 			setActivityType(ACTIVITY_AWAKE);
 		}
-		/********************************************************************************/
-		/**		BETTER_BTS_AI_MOD							9/21/08		jdog5000		*/
-		/**																				*/
-		/**		Air AI																	*/
-		/********************************************************************************/
+
+// BUG - Sentry Healing and Explorering Units - start
+		if (isHuman())
+		{
+// BUG - Sentry Actions - start
+#ifdef _MOD_SENTRY
+			if (((eActivityType == ACTIVITY_SENTRY_NAVAL_UNITS) && (sentryAlertSameDomainType())) ||
+				((eActivityType == ACTIVITY_SENTRY_LAND_UNITS) && (sentryAlertSameDomainType())) ||
+				((eActivityType == ACTIVITY_SENTRY_WHILE_HEAL) && (sentryAlertSameDomainType() || AI_isControlled() || !bHurt)))
+			{
+				setActivityType(ACTIVITY_AWAKE);
+			}
+#endif
+// BUG - Sentry Actions - end
+
+// BUG - Sentry Exploring Units - start
+			if (isAutomated() && getAutomateType() == AUTOMATE_EXPLORE && getBugOptionBOOL("Actions__SentryHealing", true, "BUG_SENTRY_HEALING") && sentryAlert())
+			{
+				if (!(getBugOptionBOOL("Actions__SentryHealingOnlyNeutral", true, "BUG_SENTRY_HEALING_ONLY_NEUTRAL") && plot()->isOwned()))
+				{
+					setActivityType(ACTIVITY_AWAKE);
+				}
+			}
+// BUG - Sentry Exploring Units - end
+
+// BUG - Sentry Healing Units - start
+			if (eActivityType == ACTIVITY_HEAL && getBugOptionBOOL("Actions__SentryHealing", true, "BUG_SENTRY_HEALING") && sentryAlert())
+			{
+				if (!(getBugOptionBOOL("Actions__SentryHealingOnlyNeutral", true, "BUG_SENTRY_HEALING_ONLY_NEUTRAL") && plot()->isOwned()))
+				{
+					setActivityType(ACTIVITY_AWAKE);
+				}
+			}
+		}
+// BUG - Sentry Healing and Explorering Units - end
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      09/21/08                                jdog5000      */
+/*                                                                                              */
+/* Air AI                                                                                       */
+/************************************************************************************************/
 		// with improvements to launching air patrols, now can wake every turn
 		if ( (eActivityType == ACTIVITY_INTERCEPT) && !isHuman() )
 		{
 			setActivityType(ACTIVITY_AWAKE);
 		}
-		/********************************************************************************/
-		/**		BETTER_BTS_AI_MOD						END								*/
-		/********************************************************************************/
-
-// BUG - Sentry Actions - start
-#ifdef _MOD_SENTRY
-		if (((eActivityType == ACTIVITY_SENTRY_NAVAL_UNITS) && (sentryAlertSameDomainType())) ||
-			((eActivityType == ACTIVITY_SENTRY_LAND_UNITS) && (sentryAlertSameDomainType())) ||
-			((eActivityType == ACTIVITY_SENTRY_WHILE_HEAL) && (sentryAlertSameDomainType() || AI_isControlled() || !bHurt)))
-		{
-			setActivityType(ACTIVITY_AWAKE);
-		}
-#endif
-// BUG - Sentry Actions - end
-
-// BUG - Sentry Healing Units - start
-		if (eActivityType == ACTIVITY_HEAL && getBugOptionBOOL("Actions__SentryHealing", true, "BUG_SENTRY_HEALING") && sentryAlert())
-		{
-			if (!(getBugOptionBOOL("Actions__SentryHealingOnlyNeutral", true, "BUG_SENTRY_HEALING_ONLY_NEUTRAL") && plot()->isOwned()))
-			{
-				setActivityType(ACTIVITY_AWAKE);
-			}
-		}
-// BUG - Sentry Healing Units - end
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/	
 
 		if (AI_isControlled())
 		{
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/20/09                                jdog5000      */
-/**                                                                                              */
-/** Unit AI, Efficiency                                                                          */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/20/09                                jdog5000      */
+/*                                                                                              */
+/* Unit AI, Efficiency                                                                          */
+/************************************************************************************************/
 			//if ((getActivityType() != ACTIVITY_MISSION) || (!canFight() && (GET_PLAYER(getOwnerINLINE()).AI_getPlotDanger(plot(), 2) > 0)))
 			if ((getActivityType() != ACTIVITY_MISSION) || (!canFight() && (GET_PLAYER(getOwnerINLINE()).AI_getAnyPlotDanger(plot(), 2))))
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/	
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/	
 			{
 				setForceUpdate(true);
 			}
@@ -337,16 +355,16 @@ void CvSelectionGroup::doTurn()
 					}
 				}
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/20/09                                jdog5000      */
-/**                                                                                              */
-/** Unit AI, Efficiency                                                                          */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/20/09                                jdog5000      */
+/*                                                                                              */
+/* Unit AI, Efficiency                                                                          */
+/************************************************************************************************/
 				//if (bNonSpy && GET_PLAYER(getOwnerINLINE()).AI_getPlotDanger(plot(), 2) > 0)
 				if (bNonSpy && GET_PLAYER(getOwnerINLINE()).AI_getAnyPlotDanger(plot(), 2))
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 				{
 					clearMissionQueue();
 				}
@@ -639,16 +657,16 @@ void CvSelectionGroup::autoMission()
 					}
 				}
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/20/09                                jdog5000      */
-/**                                                                                              */
-/** Unit AI, Efficiency                                                                          */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/20/09                                jdog5000      */
+/*                                                                                              */
+/* Unit AI, Efficiency                                                                          */
+/************************************************************************************************/
 				//if (bVisibleHuman && GET_PLAYER(getOwnerINLINE()).AI_getPlotDanger(plot(), 1) > 0)
 				if (bVisibleHuman && GET_PLAYER(getOwnerINLINE()).AI_getAnyPlotDanger(plot(), 1))
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/	
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/	
 				{
 					clearMissionQueue();
 				}
@@ -908,7 +926,6 @@ bool CvSelectionGroup::canStartMission(int iMission, int iData1, int iData2, CvP
 // BUG - Sentry Actions - start
 #ifdef _MOD_SENTRY
 		case MISSION_SENTRY_WHILE_HEAL:
-			logMsg("Sentry while heal");
 			if ((pLoopUnit->canSentry(pPlot)) && (pLoopUnit->canHeal(pPlot)))
 			{
 				return true;
@@ -916,7 +933,6 @@ bool CvSelectionGroup::canStartMission(int iMission, int iData1, int iData2, CvP
 			break;
 
 		case MISSION_SENTRY_NAVAL_UNITS:
-			logMsg("Sentry naval");
 			if ((getDomainType() == DOMAIN_SEA) && (pLoopUnit->canSentry(pPlot)))
 			{
 				return true;
@@ -924,7 +940,6 @@ bool CvSelectionGroup::canStartMission(int iMission, int iData1, int iData2, CvP
 			break;
 
 		case MISSION_SENTRY_LAND_UNITS:
-			logMsg("Sentry land");
 			if ((getDomainType() == DOMAIN_LAND) && (pLoopUnit->canSentry(pPlot)))
 			{
 				return true;
@@ -1212,7 +1227,7 @@ void CvSelectionGroup::startMission()
 // BUG - Sentry Actions - end
 // BUG - Safe Move - start
 			// if player is human, save the visibility and reveal state of the last plot of the move path from the initial plot
-			if (isHuman())
+			if (isHuman() && !GC.getGameINLINE().isNetworkMultiPlayer()) //Fuyu oos temp fix
 			{
 				checkLastPathPlot(GC.getMapINLINE().plotINLINE(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2));
 			}
@@ -1682,9 +1697,14 @@ void CvSelectionGroup::continueMission(int iSteps)
 // BUG - Safe Move - start
 					// if player is human, save the visibility and reveal state of the last plot of the move path from the initial plot
 					// if it hasn't been saved already to handle units in motion when loading a game
-					if (isHuman() && !isLastPathPlotChecked())
+					if (isHuman() && !GC.getGameINLINE().isNetworkMultiPlayer())
 					{
-						checkLastPathPlot(GC.getMapINLINE().plotINLINE(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2));
+						if (!isLastPathPlotChecked())
+						{
+
+							checkLastPathPlot(GC.getMapINLINE().plotINLINE(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2));
+
+						}
 					}
 // BUG - Safe Move - end
 
@@ -1742,11 +1762,11 @@ void CvSelectionGroup::continueMission(int iSteps)
 					pTargetUnit = GET_PLAYER((PlayerTypes)headMissionQueueNode()->m_data.iData1).getUnit(headMissionQueueNode()->m_data.iData2);
 					if (pTargetUnit != NULL)
 					{
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      12/07/08                                jdog5000      */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      12/07/08                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 						// Handling for mission to retrieve a unit
 						if( AI_getMissionAIType() == MISSIONAI_PICKUP )
 						{
@@ -1762,18 +1782,18 @@ void CvSelectionGroup::continueMission(int iSteps)
 							int iPathTurns;
 							int iBestPathTurns = MAX_INT;
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/08/09                        Maniac & jdog5000     */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/08/09                        Maniac & jdog5000     */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 /* original bts code
 							if( (pTargetUnit->plot()->isWater() || pTargetUnit->plot()->isFriendlyCity(*getHeadUnit(), true)) && generatePath(plot(), pTargetUnit->plot(), 0, false, &iPathTurns) )
 */
 							if( (canMoveAllTerrain() || pTargetUnit->plot()->isWater() || pTargetUnit->plot()->isFriendlyCity(*getHeadUnit(), true)) && generatePath(plot(), pTargetUnit->plot(), 0, false, &iPathTurns) )
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 							{
 								pPickupPlot = pTargetUnit->plot();
 							}
@@ -1847,9 +1867,9 @@ void CvSelectionGroup::continueMission(int iSteps)
 							}
 							break;
 						}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 						if (AI_getMissionAIType() != MISSIONAI_SHADOW && AI_getMissionAIType() != MISSIONAI_GROUP)
 						{
@@ -1957,9 +1977,12 @@ void CvSelectionGroup::continueMission(int iSteps)
 // BUG - Sentry Actions - end
 				if (at(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
 				{
-// BUG - Safe Moves - start
-					clearLastPathPlot();
-// BUG - Safe Moves - end
+// BUG - Safe Move - start
+					if (!GC.getGameINLINE().isNetworkMultiPlayer()) //Fuyu temporal fix for safe move oos issue
+					{
+						clearLastPathPlot();
+					}
+// BUG - Safe Move - end
 					bDone = true;
 				}
 				break;
@@ -2092,11 +2115,11 @@ void CvSelectionGroup::continueMission(int iSteps)
 					}
 				}
 
-/*************************************************************************************************/
-/** UNOFFICIAL_PATCH                       08/04/09                                jdog5000      */
-/**                                                                                              */
-/** Player interface                                                                             */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       08/04/09                                jdog5000      */
+/*                                                                                              */
+/* Player interface                                                                             */
+/************************************************************************************************/
 /* original bts code
 				deleteMissionQueueNode(headMissionQueueNode());
 */
@@ -2111,9 +2134,9 @@ void CvSelectionGroup::continueMission(int iSteps)
 						deleteMissionQueueNode(headMissionQueueNode());
 					}
 				}
-/*************************************************************************************************/
-/** UNOFFICIAL_PATCH                        END                                                  */
-/*************************************************************************************************/				
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/				
 			}
 		}
 		else
@@ -3031,11 +3054,11 @@ bool CvSelectionGroup::visibilityRange()
 	return iMaxRange;
 }
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      06/02/09                                jdog5000      */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      06/02/09                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 //
 // Approximate how many turns this group would take to reduce pCity's defense modifier to zero
 //
@@ -3261,9 +3284,9 @@ bool CvSelectionGroup::canMoveAllTerrain() const
 
 	return true;
 }
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 void CvSelectionGroup::unloadAll()
 {
@@ -3665,7 +3688,7 @@ bool CvSelectionGroup::groupAttack(int iX, int iY, int iFlags, bool& bFailedAlre
 					}
 
 // BUG - Safe Move - start
-					if (isHuman())
+					if (isHuman() && !GC.getGameINLINE().isNetworkMultiPlayer()) //Fuyu oos temp fix
 					{
 						if (!(isLastPathPlotVisible()) && (getDomainType() != DOMAIN_AIR))
 						{
@@ -3946,10 +3969,13 @@ bool CvSelectionGroup::groupBuild(BuildTypes eBuild)
 // BUG - Pre-Chop - start
 	bool bCheckChop = false;
 
-	if (isHuman() && pPlot->getFeatureType() == GC.getInfoTypeForString("FEATURE_FOREST") && GC.getBuildInfo(eBuild).isFeatureRemove(pPlot->getFeatureType()))
+	FeatureTypes eFeature = pPlot->getFeatureType();
+	CvBuildInfo& kBuildInfo = GC.getBuildInfo(eBuild);
+	if (eFeature != NO_FEATURE && isHuman() && kBuildInfo.isFeatureRemove(eFeature) && kBuildInfo.getFeatureProduction(eFeature) != 0)
 	{
-		if (eBuild == GC.getInfoTypeForString("BUILD_REMOVE_FOREST"))
+		if (kBuildInfo.getImprovement() == NO_IMPROVEMENT)
 		{
+			// clearing a forest or jungle
 			if (getBugOptionBOOL("Actions__PreChopForests", true, "BUG_PRECHOP_FORESTS"))
 			{
 				bCheckChop = true;
@@ -3988,6 +4014,14 @@ bool CvSelectionGroup::groupBuild(BuildTypes eBuild)
 			if (bCheckChop && pPlot->getBuildTurnsLeft(eBuild, getOwnerINLINE()) == 1)
 			{
 				// TODO: stop other worker groups
+				CvCity* pCity;
+				int iProduction = plot()->getFeatureProduction(eBuild, getTeam(), &pCity);
+
+				if (iProduction > 0)
+				{
+					CvWString szBuffer = gDLL->getText("TXT_KEY_BUG_PRECLEARING_FEATURE_BONUS", GC.getFeatureInfo(eFeature).getTextKeyWide(), iProduction, pCity->getNameKey());
+					gDLL->getInterfaceIFace()->addMessage(getOwnerINLINE(), false, GC.getEVENT_MESSAGE_TIME(), szBuffer,  ARTFILEMGR.getInterfaceArtInfo("WORLDBUILDER_CITY_EDIT")->getPath(), MESSAGE_TYPE_INFO, GC.getFeatureInfo(eFeature).getButton(), (ColorTypes)GC.getInfoTypeForString("COLOR_WHITE"), getX(), getY(), true, true);
+				}
 				bContinue = false;
 				break;
 			}
@@ -4076,11 +4110,11 @@ void CvSelectionGroup::setTransportUnit(CvUnit* pTransportUnit)
 	}
 }
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/08/09                                jdog5000      */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/08/09                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 // Function for loading stranded units onto an offshore transport
 void CvSelectionGroup::setRemoteTransportUnit(CvUnit* pTransportUnit)
 {
@@ -4186,9 +4220,9 @@ bool CvSelectionGroup::isAmphibPlot(const CvPlot* pPlot) const
 	}
 	return false;
 }
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 // Returns true if attempted an amphib landing...
 bool CvSelectionGroup::groupAmphibMove(CvPlot* pPlot, int iFlags)
@@ -4208,7 +4242,7 @@ bool CvSelectionGroup::groupAmphibMove(CvPlot* pPlot, int iFlags)
 	{
 // BUG - Safe Move - start
 		// don't perform amphibious landing on plot that was unrevealed when goto order was issued
-		if (isHuman())
+		if (isHuman() && !GC.getGameINLINE().isNetworkMultiPlayer()) //Fuyu temp oos fix
 		{
 			if (!isLastPathPlotRevealed())
 			{
@@ -5381,14 +5415,14 @@ bool CvSelectionGroup::allMatch(UnitTypes eUnit) const
 }
 // BUG - All Units Actions - end
 
-// BUG - Safe Moves - start
+// BUG - Safe Move - start
 void CvSelectionGroup::checkLastPathPlot(CvPlot* pPlot)
 {
 	m_bLastPathPlotChecked = true;
 	if (pPlot != NULL)
 	{
 		m_bLastPlotVisible = pPlot->isActiveVisible(false);
-		m_bLastPlotRevealed = pPlot->isRevealed(GC.getGameINLINE().getActiveTeam(), false);
+		m_bLastPlotRevealed = pPlot->isRevealed(getTeam(), false);
 	}
 	else
 	{
@@ -5416,4 +5450,4 @@ bool CvSelectionGroup::isLastPathPlotRevealed() const
 {
 	return m_bLastPathPlotChecked ? m_bLastPlotRevealed : false;
 }
-// BUG - Safe Moves - end
+// BUG - Safe Move - end

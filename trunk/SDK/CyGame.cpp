@@ -1109,9 +1109,9 @@ void CyGame::addPlayer(int eNewPlayer, int eLeader, int eCiv)
 }
 
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						8/1/08				jdog5000	*/
-/**																				*/
-/**		Debug																	*/
+/* 	BETTER_BTS_AI_MOD						8/1/08				jdog5000	*/
+/* 																			*/
+/* 	Debug																	*/
 /********************************************************************************/
 void CyGame::changeHumanPlayer( int /*PlayerTypes*/ eNewHuman )
 {
@@ -1121,7 +1121,7 @@ void CyGame::changeHumanPlayer( int /*PlayerTypes*/ eNewHuman )
 	}
 }
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						END								*/
+/* 	BETTER_BTS_AI_MOD						END								*/
 /********************************************************************************/
 
 int CyGame::getCultureThreshold(int eLevel)
@@ -1220,3 +1220,17 @@ std::string CyGame::getExePath() const
 	return GC.getInitCore().getExePath();
 }
 // BUG - EXE/DLL Paths - end
+
+// BUFFY - Security Checks - start
+#ifdef _BUFFY
+int CyGame::checkCRCs(std::string fileName_, std::string expectedModCRC_, std::string expectedDLLCRC_, std::string expectedShaderCRC_, std::string expectedPythonCRC_, std::string expectedXMLCRC_) const
+{
+	return NULL != m_pGame ? m_pGame->checkCRCs(fileName_, expectedModCRC_, expectedDLLCRC_, expectedShaderCRC_, expectedPythonCRC_, expectedXMLCRC_) : -1;
+}
+
+int CyGame::getWarningStatus() const
+{
+	return NULL != m_pGame ? m_pGame->getWarningStatus() : -1;
+}
+#endif
+// BUFFY - Security Checks - end

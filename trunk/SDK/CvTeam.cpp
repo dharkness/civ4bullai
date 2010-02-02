@@ -21,6 +21,15 @@
 #include "CvDLLPythonIFaceBase.h"
 #include "CyArgsList.h"
 #include "FProfiler.h"
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      10/02/09                                jdog5000      */
+/*                                                                                              */
+/* AI logging                                                                                   */
+/************************************************************************************************/
+#include "BetterBTSAI.h"
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 // Public Functions...
 
@@ -103,11 +112,11 @@ void CvTeam::init(TeamTypes eID)
 	// Init other game data
 	AI_init();
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                         12/30/08                             jdog5000      */
-/**                                                                                              */
-/**                                                                                              */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                         12/30/08                             jdog5000      */
+/*                                                                                              */
+/*                                                                                              */
+/************************************************************************************************/
 	if( GC.getGame().isFinalInitialized() )
 	{
 		for (int iI = 0; iI < MAX_TEAMS; iI++)
@@ -125,9 +134,9 @@ void CvTeam::init(TeamTypes eID)
 			}
 		}
 	}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 }
 
 
@@ -361,9 +370,9 @@ void CvTeam::reset(TeamTypes eID, bool bConstructorCall)
 }
 
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						12/30/08		jdog5000		*/
-/**																				*/
-/**		     																	*/
+/* 	BETTER_BTS_AI_MOD						12/30/08		jdog5000		*/
+/* 																			*/
+/* 	     																	*/
 /********************************************************************************/
 //
 // for clearing data stored in plots and cities for this team
@@ -391,7 +400,7 @@ void CvTeam::resetPlotAndCityData( )
 	}
 }
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						END								*/
+/* 	BETTER_BTS_AI_MOD						END								*/
 /********************************************************************************/
 
 void CvTeam::addTeam(TeamTypes eTeam)
@@ -668,15 +677,15 @@ void CvTeam::addTeam(TeamTypes eTeam)
 			GET_TEAM((TeamTypes)iI).AI_setEnemyPeacetimeTradeValue(getID(), ((GET_TEAM((TeamTypes)iI).AI_getEnemyPeacetimeTradeValue(getID()) + GET_TEAM((TeamTypes)iI).AI_getEnemyPeacetimeTradeValue(eTeam)) / 2));
 			GET_TEAM((TeamTypes)iI).AI_setEnemyPeacetimeGrantValue(getID(), ((GET_TEAM((TeamTypes)iI).AI_getEnemyPeacetimeGrantValue(getID()) + GET_TEAM((TeamTypes)iI).AI_getEnemyPeacetimeGrantValue(eTeam)) / 2));
 
-/*************************************************************************************************/
-/** UNOFFICIAL_PATCH                       09/17/09                                jdog5000      */
-/**                                                                                              */
-/** Bugfix				                                                                         */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       09/17/09                                jdog5000      */
+/*                                                                                              */
+/* Bugfix				                                                                         */
+/************************************************************************************************/
 			GET_TEAM((TeamTypes)iI).setEspionagePointsAgainstTeam( getID(), std::max(GET_TEAM((TeamTypes)iI).getEspionagePointsAgainstTeam(getID()), GET_TEAM((TeamTypes)iI).getEspionagePointsAgainstTeam(eTeam)));
-/*************************************************************************************************/
-/** UNOFFICIAL_PATCH                        END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 
 			if (GET_TEAM((TeamTypes)iI).isAlive())
 			{
@@ -867,11 +876,11 @@ void CvTeam::shareCounters(TeamTypes eTeam)
 			setResearchProgress(((TechTypes)iI), GET_TEAM(eTeam).getResearchProgress((TechTypes)iI), getLeaderID());
 		}
 
-/*************************************************************************************************/
-/** UNOFFICIAL_PATCH                       07/06/09                                jdog5000      */
-/**                                                                                              */
-/** Bugfix                                                                                       */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       07/06/09                                jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
 /* original bts code
 		if (GET_TEAM(eTeam).isNoTradeTech((TechTypes)iI))
 		{
@@ -886,9 +895,9 @@ void CvTeam::shareCounters(TeamTypes eTeam)
 		{
 			setNoTradeTech(((TechTypes)iI), false);
 		}
-/*************************************************************************************************/
-/** UNOFFICIAL_PATCH                        END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 	}
 }
 
@@ -1171,16 +1180,82 @@ bool CvTeam::canDeclareWar(TeamTypes eTeam) const
 	return true;
 }
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      01/16/10                                jdog5000      */
+/*                                                                                              */
+/* War Strategy AI                                                                              */
+/************************************************************************************************/
+/// \brief Version of canDeclareWar which ignores temporary peace treaties.
+///
+/// This function is for AIs considering who to start war preparations against, so they're future
+/// plans aren't unnecessarily affected by current conditions.
+///
+/// Could not change definition of canDeclareWar, some sporadic crash-inducing compatibility issue
+/// with the DLL it seems.  Lost a lot of time tracking down the source of the crash, it really is 
+/// just from adding bool bWhatever = false to canDeclareWar in CvTeam.h.  So, that's why there's 
+/// this overlapping second function.
+bool CvTeam::canEventuallyDeclareWar(TeamTypes eTeam) const
+{
+	if (eTeam == getID())
+	{
+		return false;
+	}
+
+	if (!(isAlive()) || !(GET_TEAM(eTeam).isAlive()))
+	{
+		return false;
+	}
+
+	if (isAtWar(eTeam))
+	{
+		return false;
+	}
+
+	if (!isHasMet(eTeam))
+	{
+		return false;
+	}
+
+	if (!canChangeWarPeace(eTeam, true))
+	{
+		return false;
+	}
+
+	if (GC.getGameINLINE().isOption(GAMEOPTION_ALWAYS_PEACE))
+	{
+		return false;
+	}
+
+	if(GC.getUSE_CAN_DECLARE_WAR_CALLBACK())
+	{
+		CyArgsList argsList;
+		argsList.add(getID());	// Team ID
+		argsList.add(eTeam);	// pass in city class
+		long lResult=0;
+		gDLL->getPythonIFace()->callFunction(PYGameModule, "canDeclareWar", argsList.makeFunctionArgs(), &lResult);
+
+		if (lResult == 0)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+
 
 void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 {
 	PROFILE_FUNC();
 
-	CLLNode<TradeData>* pNode;
+	//CLLNode<TradeData>* pNode;
 	CvDiploParameters* pDiplo;
 	CvDeal* pLoopDeal;
 	CvWString szBuffer;
-	bool bCancelDeal;
+	//bool bCancelDeal;
 	int iLoop;
 	int iI, iJ;
 
@@ -1190,6 +1265,19 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 	if (!isAtWar(eTeam))
 	{
 		//FAssertMsg((isHuman() || isMinorCiv() || GET_TEAM(eTeam).isMinorCiv() || isBarbarian() || GET_TEAM(eTeam).isBarbarian() || AI_isSneakAttackReady(eTeam) || (GET_TEAM(eTeam).getAtWarCount(true) > 0) || !(GC.getGameINLINE().isFinalInitialized()) || gDLL->GetWorldBuilderMode() || getVassalCount() > 0  || isAVassal() || GET_TEAM(eTeam).getVassalCount() > 0  || GET_TEAM(eTeam).isAVassal() || getDefensivePactCount() > 0), "Possibly accidental AI war!!!");
+
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      10/02/09                                jdog5000      */
+/*                                                                                              */
+/* AI logging                                                                                   */
+/************************************************************************************************/
+		if( gTeamLogLevel >= 1 )
+		{
+			logBBAI("  Team %d (%S) declares war on team %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eTeam);
+		}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 		for (pLoopDeal = GC.getGameINLINE().firstDeal(&iLoop); pLoopDeal != NULL; pLoopDeal = GC.getGameINLINE().nextDeal(&iLoop))
 		{
@@ -1212,17 +1300,17 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 		setAtWar(eTeam, true);
 		GET_TEAM(eTeam).setAtWar(getID(), true);
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 		// Plot danger cache
 		GC.getMapINLINE().invalidateIsTeamBorderCache(eTeam);
 		GC.getMapINLINE().invalidateIsTeamBorderCache(getID());
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 		for (iI = 0; iI < MAX_PLAYERS; iI++)
 		{
@@ -1374,11 +1462,11 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 			}
 		}
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      09/03/09                       poyuzhe & jdog5000     */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      09/03/09                       poyuzhe & jdog5000     */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 		// From Sanguo Mod Performance, ie the CAR Mod
 		// Attitude cache
 		if (GC.getGameINLINE().isFinalInitialized())
@@ -1405,9 +1493,9 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 				}
 			}
 		}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 		if (GC.getGameINLINE().isFinalInitialized() && !(gDLL->GetWorldBuilderMode()))
 		{
@@ -1468,6 +1556,13 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 			}
 		}
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      12/06/09                                jdog5000      */
+/*                                                                                              */
+/* Diplomacy, Customization                                                                     */
+/************************************************************************************************/
+		// This block is entirely redundant with the cancelDefensivePacts function, better implemented there
+/*
 		if (!(GET_TEAM(eTeam).isMinorCiv()))
 		{
 			for (iI = 0; iI < MAX_PLAYERS; iI++)
@@ -1508,23 +1603,38 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 				}
 			}
 		}
+*/
 
 		CvEventReporter::getInstance().changeWar(true, getID(), eTeam);
 
-		cancelDefensivePacts();
+		//REVDCM TODO: what's appropriate for canceling pacts?
+		if( GC.getDefineINT("BBAI_ALLIANCE_OPTION") != 1 )
+		{
+			cancelDefensivePacts();
+		}
 
 		for (iI = 0; iI < MAX_TEAMS; iI++)
 		{
-			if (GET_TEAM((TeamTypes)iI).isAlive())
+			if (iI != getID() && iI != eTeam && GET_TEAM((TeamTypes)iI).isAlive())
 			{
 				if (GET_TEAM((TeamTypes)iI).isDefensivePact(eTeam))
 				{
 					GET_TEAM((TeamTypes)iI).declareWar(getID(), bNewDiplo, WARPLAN_DOGPILE);
 				}
+				else if( GET_TEAM((TeamTypes)iI).isDefensivePact(getID()))
+				{
+					GET_TEAM((TeamTypes)iI).declareWar(eTeam, bNewDiplo, WARPLAN_DOGPILE);
+				}
 			}
 		}
 
-		GET_TEAM(eTeam).cancelDefensivePacts();
+		if( GC.getDefineINT("BBAI_ALLIANCE_OPTION") != 1 )
+		{
+			GET_TEAM(eTeam).cancelDefensivePacts();
+		}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 		for (iI = 0; iI < MAX_TEAMS; iI++)
 		{
@@ -1568,17 +1678,17 @@ void CvTeam::makePeace(TeamTypes eTeam, bool bBumpUnits)
 		setAtWar(eTeam, false);
 		GET_TEAM(eTeam).setAtWar(getID(), false);
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      08/21/09                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 		// Plot danger cache
 		GC.getMapINLINE().invalidateIsTeamBorderCache(eTeam);
 		GC.getMapINLINE().invalidateIsTeamBorderCache(getID());
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 		for (iI = 0; iI < MAX_PLAYERS; iI++)
 		{
@@ -1643,11 +1753,11 @@ void CvTeam::makePeace(TeamTypes eTeam, bool bBumpUnits)
 			}
 		}
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      09/03/09                       poyuzhe & jdog5000     */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      09/03/09                       poyuzhe & jdog5000     */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 		// From Sanguo Mod Performance, ie the CAR Mod
 		// Attitude cache
 		if (GC.getGameINLINE().isFinalInitialized())
@@ -1674,9 +1784,9 @@ void CvTeam::makePeace(TeamTypes eTeam, bool bBumpUnits)
 				}
 			}
 		}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 		for (iI = 0; iI < MAX_PLAYERS; iI++)
 		{
@@ -1764,6 +1874,25 @@ void CvTeam::meet(TeamTypes eTeam, bool bNewDiplo)
 	{
 		makeHasMet(eTeam, bNewDiplo);
 		GET_TEAM(eTeam).makeHasMet(getID(), bNewDiplo);
+
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      11/08/09                                jdog5000      */
+/*                                                                                              */
+/* AI logging                                                                                   */
+/************************************************************************************************/
+		if( gTeamLogLevel >= 2 )
+		{
+			if( GC.getGameINLINE().isFinalInitialized() )
+			{
+				if( eTeam != getID() )
+				{
+					logBBAI("    Team %d (%S) meets team %d (%S)", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eTeam, GET_PLAYER(GET_TEAM(eTeam).getLeaderID()).getCivilizationDescription(0) );
+				}
+			}
+		}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	}
 }
 
@@ -1997,11 +2126,11 @@ bool CvTeam::isFullMember(VoteSourceTypes eVoteSource) const
 	return true;
 }
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      07/20/09                                jdog5000      */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      07/20/09                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 int CvTeam::getAtWarCount(bool bIgnoreMinors, bool bIgnoreVassals) const
 {
 	int iCount;
@@ -2030,9 +2159,9 @@ int CvTeam::getAtWarCount(bool bIgnoreMinors, bool bIgnoreVassals) const
 
 	return iCount;
 }
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 int CvTeam::getWarPlanCount(WarPlanTypes eWarPlan, bool bIgnoreMinors) const
 {
@@ -2277,11 +2406,11 @@ bool CvTeam::canVassalRevolt(TeamTypes eMaster) const
 	return true;
 }
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      07/20/09                                jdog5000      */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      07/20/09                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 int CvTeam::getCurrentMasterPower(bool bIncludeVassals) const
 {
 	if( isAVassal() )
@@ -2395,9 +2524,9 @@ bool CvTeam::isMasterPlanningSeaWar(CvArea* pArea)
 
 	return false;
 }
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 int CvTeam::getUnitClassMaking(UnitClassTypes eUnitClass) const
 {
@@ -2623,19 +2752,19 @@ int CvTeam::countEnemyPowerByArea(CvArea* pArea) const
 		{
 			if (GET_PLAYER((PlayerTypes)iI).getTeam() != getID())
 			{
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      01/11/09                                jdog5000      */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      01/11/09                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 /* original BTS code
 				if (isAtWar(GET_PLAYER((PlayerTypes)iI).getTeam()))
 */
 				// Count planned wars as well
 				if (AI_getWarPlan(GET_PLAYER((PlayerTypes)iI).getTeam()) != NO_WARPLAN)
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 				{
 					iCount += pArea->getPower((PlayerTypes)iI);
 				}
@@ -3866,11 +3995,11 @@ void CvTeam::setDefensivePact(TeamTypes eIndex, bool bNewValue)
 			}
 		}
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      09/03/09                       poyuzhe & jdog5000     */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      09/03/09                       poyuzhe & jdog5000     */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 		// From Sanguo Mod Performance, ie the CAR Mod
 		// Attitude cache
 		for (int iI = 0; iI < MAX_PLAYERS; iI++)
@@ -3890,9 +4019,9 @@ void CvTeam::setDefensivePact(TeamTypes eIndex, bool bNewValue)
 				}
 			}
 		}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	}
 }
@@ -4217,20 +4346,20 @@ void CvTeam::setVassal(TeamTypes eIndex, bool bNewValue, bool bCapitulated)
 			CvEventReporter::getInstance().vassalState(eIndex, getID(), bNewValue);
 		}
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      09/03/09                       poyuzhe & jdog5000     */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      09/03/09                       poyuzhe & jdog5000     */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 		// From Sanguo Mod Performance, ie the CAR Mod
 		// Attitude cache
-		for (int iI = 0; iI < MAX_PLAYERS; iI++)
+		for (int iI = 0; iI < MAX_CIV_PLAYERS; iI++)
 		{
 			if( GET_PLAYER((PlayerTypes)iI).isAlive() )
 			{
 				if( GET_PLAYER((PlayerTypes)iI).getTeam() == getID() || GET_PLAYER((PlayerTypes)iI).getTeam() == eIndex )
 				{
-					for (int iJ = 0; iJ < MAX_PLAYERS; iJ++)
+					for (int iJ = 0; iJ < MAX_CIV_PLAYERS; iJ++)
 					{
 						if( GET_PLAYER((PlayerTypes)iJ).isAlive() && GET_PLAYER((PlayerTypes)iJ).getTeam() != GET_PLAYER((PlayerTypes)iI).getTeam() )
 						{
@@ -4244,9 +4373,9 @@ void CvTeam::setVassal(TeamTypes eIndex, bool bNewValue, bool bCapitulated)
 				}
 			}
 		}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	}
 }
 
@@ -4786,11 +4915,11 @@ int CvTeam::getTechCount(TechTypes eIndex)		 const
 	return m_paiTechCount[eIndex];
 }
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      07/27/09                                jdog5000      */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      07/27/09                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 int CvTeam::getBestKnownTechScorePercent() const
 {
 	int iOurTechScore = 0;
@@ -4815,9 +4944,9 @@ int CvTeam::getBestKnownTechScorePercent() const
 
 	return ((100*iOurTechScore)/std::max(iBestKnownTechScore, 1));
 }
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 int CvTeam::getTerrainTradeCount(TerrainTypes eIndex) const
 {
@@ -5173,6 +5302,19 @@ void CvTeam::setHasTech(TechTypes eIndex, bool bNewValue, PlayerTypes ePlayer, b
 
 		if (isHasTech(eIndex))
 		{
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      10/02/09                                jdog5000      */
+/*                                                                                              */
+/* AI logging                                                                                   */
+/************************************************************************************************/
+			if( gTeamLogLevel >= 2 )
+			{
+				logBBAI("    Team %d (%S) acquires tech %S", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), GC.getTechInfo(eIndex).getDescription() );
+			}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+
 			for (iI = 0; iI < MAX_PLAYERS; iI++)
 			{
 				if (GET_PLAYER((PlayerTypes)iI).getTeam() == getID())

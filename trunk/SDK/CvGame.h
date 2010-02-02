@@ -34,11 +34,19 @@ protected:
 public:
 
 	DllExport void setInitialItems();
+
 // BUG - MapFinder - start
 	DllExport bool canRegenerateMap() const;								// Exposed to Python
 	DllExport void regenerateMap();											// Exposed to Python
 	DllExport bool takeJPEGScreenShot(std::string fileName) const;			// Exposed to Python
 // BUG - MapFinder - end
+
+// BUFFY - Security Checks - start
+#ifdef _BUFFY
+	int checkCRCs(std::string fileName_, std::string expectedModCRC_, std::string expectedDLLCRC_, std::string expectedShaderCRC_, std::string expectedPythonCRC_, std::string expectedXMLCRC_) const;		// Exposed to Python
+	int getWarningStatus() const;											// Exposed to Python
+#endif
+// BUFFY - Security Checks - end
 
 	DllExport void initDiplomacy();
 	DllExport void initFreeState();
@@ -468,13 +476,13 @@ public:
 
 	void addPlayer(PlayerTypes eNewPlayer, LeaderHeadTypes eLeader, CivilizationTypes eCiv);   // Exposed to Python
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						8/1/08				jdog5000	*/
-/**																				*/
-/**		Debug																	*/
+/* 	BETTER_BTS_AI_MOD						8/1/08				jdog5000	*/
+/* 																			*/
+/* 	Debug																	*/
 /********************************************************************************/
 	void changeHumanPlayer( PlayerTypes eNewHuman );
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						END								*/
+/* 	BETTER_BTS_AI_MOD						END								*/
 /********************************************************************************/
 
 	bool testVictory(VictoryTypes eVictory, TeamTypes eTeam, bool* pbEndScore = NULL) const;
