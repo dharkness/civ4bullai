@@ -24,6 +24,12 @@
 #include "BugMod.h"
 // BUG - DLL Info - end
 
+// BUFFY - DLL Info - start
+#ifdef _BUFFY
+#include "Buffy.h"
+#endif
+// BUFFY - DLL Info - end
+
 #define COPY(dst, src, typeName) \
 	{ \
 		int iNum = sizeof(src)/sizeof(typeName); \
@@ -3507,7 +3513,9 @@ void CvGlobals::setInfoTypeFromString(const char* szType, int idx)
 #ifdef _DEBUG
 	InfosMap::const_iterator it = m_infosMap.find(szType);
 	int iExisting = (it!=m_infosMap.end()) ? it->second : -1;
-	FAssertMsg(iExisting==-1 || iExisting==idx || strcmp(szType, "ERROR")==0, CvString::format("xml info type entry %s already exists", szType).c_str());
+	CvString szError;
+	szError.Format("info type %s already exists, Current XML file is: %s", szType, GC.getCurrentXMLFile().GetCString());
+	FAssertMsg(iExisting==-1 || iExisting==idx || strcmp(szType, "ERROR")==0, szError.c_str());
 #endif
 	m_infosMap[szType] = idx;
 }
@@ -3590,3 +3598,12 @@ int CvGlobals::getBullApiVersion() const { return BUG_DLL_API_VERSION; }
 const wchar* CvGlobals::getBullName() const { return BUG_DLL_NAME; }
 const wchar* CvGlobals::getBullVersion() const { return BUG_DLL_VERSION; }
 // BUG - DLL Info - end
+
+// BUFFY - DLL Info - start
+#ifdef _BUFFY
+bool CvGlobals::isBuffy() const { return true; }
+int CvGlobals::getBuffyApiVersion() const { return BUFFY_DLL_API_VERSION; }
+const wchar* CvGlobals::getBuffyName() const { return BUFFY_DLL_NAME; }
+const wchar* CvGlobals::getBuffyVersion() const { return BUFFY_DLL_VERSION; }
+#endif
+// BUFFY - DLL Info - end

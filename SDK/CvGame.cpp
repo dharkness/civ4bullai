@@ -30,9 +30,19 @@
 #include "CvDLLEngineIFaceBase.h"
 #include "CvDLLPythonIFaceBase.h"
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      10/02/09                                jdog5000      */
+/*                                                                                              */
+/* AI logging                                                                                   */
+/************************************************************************************************/
+#include "BetterBTSAI.h"
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 // BUG - start
 #include "BugMod.h"
 // BUG - end
+
 
 // Public Functions...
 
@@ -389,6 +399,7 @@ void CvGame::regenerateMap()
 		}
 	}
 }
+
 
 void CvGame::uninit()
 {
@@ -1432,6 +1443,7 @@ void CvGame::normalizeRemoveBadTerrain()
 		}
 	}
 }
+
 
 void CvGame::normalizeAddFoodBonuses()
 {
@@ -3909,14 +3921,19 @@ void CvGame::setAIAutoPlay(int iNewValue)
 	{
 		m_iAIAutoPlay = std::max(0, iNewValue);
 
-/*************************************************************************************************/
-/** AI_AUTO_PLAY_MOD                           07/09/08                            jdog5000      */
-/**                                                                                              */
-/**                                                                                              */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* AI_AUTO_PLAY_MOD                           07/09/08                            jdog5000      */
+/*                                                                                              */
+/*                                                                                              */
+/************************************************************************************************/
 // Multiplayer compatibility idea from Jeckel
-#ifdef _MOD_AIAUTOPLAY
-		// Multiplayer compatibility idea from Jeckel
+/* original code
+		if ((iOldValue == 0) && (getAIAutoPlay() > 0))
+		{
+			GET_PLAYER(getActivePlayer()).killUnits();
+			GET_PLAYER(getActivePlayer()).killCities();
+		}
+*/
 		for( int iI = 0; iI < MAX_CIV_PLAYERS; iI++ )
 		{
 			if( GET_PLAYER((PlayerTypes)iI).isHuman() || GET_PLAYER((PlayerTypes)iI).isHumanDisabled() )
@@ -3924,16 +3941,9 @@ void CvGame::setAIAutoPlay(int iNewValue)
 				GET_PLAYER(getActivePlayer()).setHumanDisabled((getAIAutoPlay() != 0));
 			}
 		}
-#else
-		if ((iOldValue == 0) && (getAIAutoPlay() > 0))
-		{
-			GET_PLAYER(getActivePlayer()).killUnits();
-			GET_PLAYER(getActivePlayer()).killCities();
-		}
-#endif
-/*************************************************************************************************/
-/** AI_AUTO_PLAY_MOD                            END                                              */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* AI_AUTO_PLAY_MOD                            END                                              */
+/************************************************************************************************/
 	}
 }
 
@@ -4688,17 +4698,15 @@ void CvGame::setWinner(TeamTypes eNewWinner, VictoryTypes eNewVictory)
 		m_eWinner = eNewWinner;
 		m_eVictory = eNewVictory;
 
-/*************************************************************************************************/
-/** AI_AUTO_PLAY_MOD                        07/09/08                                jdog5000      */
-/**                                                                                              */
-/**                                                                                              */
-/*************************************************************************************************/
-#ifdef _MOD_AIAUTOPLAY
+/************************************************************************************************/
+/* AI_AUTO_PLAY_MOD                        07/09/08                                jdog5000      */
+/*                                                                                              */
+/*                                                                                              */
+/************************************************************************************************/
 		CvEventReporter::getInstance().victory(eNewWinner, eNewVictory);
-#endif
-/*************************************************************************************************/
-/** AI_AUTO_PLAY_MOD                        END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* AI_AUTO_PLAY_MOD                        END                                                  */
+/************************************************************************************************/
 
 		if (getVictory() != NO_VICTORY)
 		{
@@ -4720,17 +4728,17 @@ void CvGame::setWinner(TeamTypes eNewWinner, VictoryTypes eNewVictory)
 
 		gDLL->getInterfaceIFace()->setDirty(Center_DIRTY_BIT, true);
 
-/*************************************************************************************************/
-/** AI_AUTO_PLAY_MOD                        07/09/08                                jdog5000      */
-/**                                                                                              */
-/**                                                                                              */
-/*************************************************************************************************/
-#ifndef _MOD_AIAUTOPLAY
+/************************************************************************************************/
+/* AI_AUTO_PLAY_MOD                        07/09/08                                jdog5000      */
+/*                                                                                              */
+/*                                                                                              */
+/************************************************************************************************/
+/* original code
 		CvEventReporter::getInstance().victory(eNewWinner, eNewVictory);
-#endif
-/*************************************************************************************************/
-/** AI_AUTO_PLAY_MOD                        END                                                  */
-/*************************************************************************************************/
+*/
+/************************************************************************************************/
+/* AI_AUTO_PLAY_MOD                        END                                                  */
+/************************************************************************************************/
 
 		gDLL->getInterfaceIFace()->setDirty(Soundtrack_DIRTY_BIT, true);
 	}
@@ -4833,11 +4841,11 @@ void CvGame::setPlayerRank(PlayerTypes ePlayer, int iRank)
 {
 	FAssertMsg(ePlayer >= 0, "eIndex is expected to be non-negative (invalid Index)");
 	FAssertMsg(ePlayer < MAX_PLAYERS, "ePlayer is expected to be within maximum bounds (invalid Index)");
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      09/03/09                       poyuzhe & jdog5000     */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      09/03/09                       poyuzhe & jdog5000     */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 	// From Sanguo Mod Performance, ie the CAR Mod
 	// Attitude cache
 	if (iRank != m_aiPlayerRank[ePlayer])
@@ -4851,9 +4859,9 @@ void CvGame::setPlayerRank(PlayerTypes ePlayer, int iRank)
 			}
 		}
 	}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	m_aiPlayerRank[ePlayer] = iRank;
 	FAssert(getPlayerRank(ePlayer) >= 0);
 }
@@ -5453,33 +5461,36 @@ void CvGame::setHolyCity(ReligionTypes eIndex, CvCity* pNewValue, bool bAnnounce
 
 		AI_makeAssignWorkDirty();
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      09/20/09                       poyuzhe & jdog5000     */
-/**                                                                                              */
-/** Efficiency                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      09/26/09                       poyuzhe & jdog5000     */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
 		// From Sanguo Mod Performance, ie the CAR Mod
 		// Attitude cache
-		for (int iJ = 0; iJ < MAX_CIV_PLAYERS; iJ++)
+		if (GC.getGameINLINE().isFinalInitialized())
 		{
-			if (GET_PLAYER((PlayerTypes)iJ).isAlive() && GET_PLAYER((PlayerTypes)iJ).getStateReligion() == eIndex)
+			for (int iJ = 0; iJ < MAX_CIV_PLAYERS; iJ++)
 			{
-				if( pNewValue != NULL )
+				if (GET_PLAYER((PlayerTypes)iJ).isAlive() && GET_PLAYER((PlayerTypes)iJ).getStateReligion() == eIndex)
 				{
-					GET_PLAYER(pNewValue->getOwnerINLINE()).AI_invalidateAttitudeCache((PlayerTypes)iJ);
-					GET_PLAYER((PlayerTypes)iJ).AI_invalidateAttitudeCache(pNewValue->getOwnerINLINE());
-				}
-				
-				if( pOldValue != NULL )
-				{
-					GET_PLAYER(pOldValue->getOwnerINLINE()).AI_invalidateAttitudeCache((PlayerTypes)iJ);
-					GET_PLAYER((PlayerTypes)iJ).AI_invalidateAttitudeCache(pOldValue->getOwnerINLINE());
+					if( pNewValue != NULL )
+					{
+						GET_PLAYER(pNewValue->getOwnerINLINE()).AI_invalidateAttitudeCache((PlayerTypes)iJ);
+						GET_PLAYER((PlayerTypes)iJ).AI_invalidateAttitudeCache(pNewValue->getOwnerINLINE());
+					}
+					
+					if( pOldValue != NULL )
+					{
+						GET_PLAYER(pOldValue->getOwnerINLINE()).AI_invalidateAttitudeCache((PlayerTypes)iJ);
+						GET_PLAYER((PlayerTypes)iJ).AI_invalidateAttitudeCache(pOldValue->getOwnerINLINE());
+					}
 				}
 			}
 		}
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	}
 }
 
@@ -5836,10 +5847,59 @@ void CvGame::doDeals()
 void CvGame::doGlobalWarming()
 {
 	int iGlobalWarmingDefense = 0;
+
+// BUG - Global Warming Mod - start
+#ifdef _MOD_GWARM
+	int iTreeHuggerDefenseBonus = GC.getDefineINT("TREEHUGGER_DEFENSE_BONUS");
+	bool abTreeHugger[MAX_PLAYERS];
+
+	for (int iI = 0; iI < MAX_PLAYERS; iI++)//GWMod Loop to look for environmentalism witten by EmperorFool
+	{
+		abTreeHugger[iI] = false;
+		if (GET_PLAYER((PlayerTypes)iI).isAlive())
+		{
+			for (int iJ = 0; iJ < GC.getNumCivicOptionInfos(); iJ++)
+			{
+				CivicTypes eCivic = GET_PLAYER((PlayerTypes)iI).getCivics((CivicOptionTypes)iJ);
+				if (GC.getCivicInfo(eCivic).getExtraHealth() != 0)
+				{
+					abTreeHugger[iI] = true;
+					break;
+				}
+			}
+		}
+	}
+#endif
+
 	for (int i = 0; i < GC.getMapINLINE().numPlotsINLINE(); ++i)
 	{
 		CvPlot* pPlot = GC.getMapINLINE().plotByIndexINLINE(i);
 
+#ifdef _MOD_GWARM
+		if (pPlot->getFeatureType() != NO_FEATURE)
+		{
+			int iFeatureWarmingDefense = GC.getFeatureInfo(pPlot->getFeatureType()).getWarmingDefense();
+			if (iFeatureWarmingDefense > 0)
+			{
+				PlayerTypes eCulturalOwner = pPlot->getOwner();
+				if (eCulturalOwner != NO_PLAYER)
+				{
+					if (abTreeHugger[eCulturalOwner])
+					{
+						iGlobalWarmingDefense += (iFeatureWarmingDefense) * (iTreeHuggerDefenseBonus);
+					}
+					else
+					{
+						iGlobalWarmingDefense += iFeatureWarmingDefense;
+					}
+				}
+				else
+				{
+					iGlobalWarmingDefense += iFeatureWarmingDefense;
+				}
+			}
+		}
+#else
 		if (!pPlot->isWater())
 		{
 			if (pPlot->getFeatureType() != NO_FEATURE)
@@ -5850,10 +5910,15 @@ void CvGame::doGlobalWarming()
 				}
 			}
 		}
+#endif
 	}
 	iGlobalWarmingDefense = iGlobalWarmingDefense * GC.getDefineINT("GLOBAL_WARMING_FOREST") / std::max(1, GC.getMapINLINE().getLandPlots());
 
 	int iUnhealthWeight = GC.getDefineINT("GLOBAL_WARMING_UNHEALTH_WEIGHT");
+#ifdef _MOD_GWARM
+	int iBonusWeight = GC.getDefineINT("GLOBAL_WARMING_BONUS_WEIGHT");
+	int iPowerWeight = GC.getDefineINT("GLOBAL_WARMING_POWER_WEIGHT");
+#endif
 	int iGlobalWarmingValue = 0;
 	for (int iPlayer = 0; iPlayer < MAX_PLAYERS; ++iPlayer)
 	{
@@ -5863,26 +5928,125 @@ void CvGame::doGlobalWarming()
 			int iLoop;
 			for (CvCity* pCity = kPlayer.firstCity(&iLoop); pCity != NULL; pCity = kPlayer.nextCity(&iLoop))
 			{
+#ifdef _MOD_GWARM
+				iGlobalWarmingValue -= (pCity->totalBadBuildingHealth() * iUnhealthWeight) + (pCity->getBonusBadHealth() * iBonusWeight) + (pCity->getPowerBadHealth() * iPowerWeight); //GWMod Changed to be total building bad health and to include power and bonuses M.A.
+#else
 				iGlobalWarmingValue -= pCity->getBuildingBadHealth() * iUnhealthWeight;
+#endif
 			}
 		}
 	}
 	iGlobalWarmingValue /= GC.getMapINLINE().numPlotsINLINE();
 
+#ifdef _MOD_GWARM
+#else
 	iGlobalWarmingValue += getNukesExploded() * GC.getDefineINT("GLOBAL_WARMING_NUKE_WEIGHT") / 100;
+#endif
 
 	TerrainTypes eWarmingTerrain = ((TerrainTypes)(GC.getDefineINT("GLOBAL_WARMING_TERRAIN")));
+#ifdef _MOD_GWARM
+	TerrainTypes eFrozenTerrain = ((TerrainTypes)(GC.getDefineINT("FROZEN_TERRAIN")));
+	TerrainTypes eColdTerrain = ((TerrainTypes)(GC.getDefineINT("COLD_TERRAIN")));
+	TerrainTypes eTemperateTerrain = ((TerrainTypes)(GC.getDefineINT("TEMPERATE_TERRAIN")));
+	TerrainTypes eDryTerrain = ((TerrainTypes)(GC.getDefineINT("DRY_TERRAIN")));
+	TerrainTypes eBarrenTerrain = ((TerrainTypes)(GC.getDefineINT("BARREN_TERRAIN")));
+	TerrainTypes eShallowsTerrain = ((TerrainTypes)(GC.getDefineINT("SHALLOW_WATER_TERRAIN")));
+
+	FeatureTypes eColdFeature = ((FeatureTypes)(GC.getDefineINT("COLD_FEATURE")));
+	FeatureTypes eTemperateFeature = ((FeatureTypes)(GC.getDefineINT("TEMPERATE_FEATURE")));
+	FeatureTypes eWarmFeature = ((FeatureTypes)(GC.getDefineINT("WARM_FEATURE")));
+	FeatureTypes eFalloutFeature = ((FeatureTypes)(GC.getDefineINT("NUKE_FEATURE")));
+#endif
 
 	for (int iI = 0; iI < iGlobalWarmingValue; iI++)
 	{
 		if (getSorenRandNum(100, "Global Warming") + iGlobalWarmingDefense < GC.getDefineINT("GLOBAL_WARMING_PROB"))
 		{
+#ifdef _MOD_GWARM
+			CvPlot* pPlot = GC.getMapINLINE().syncRandPlot(RANDPLOT_NOT_CITY); // GWMod removed check for water tile M.A.
+#else
 			CvPlot* pPlot = GC.getMapINLINE().syncRandPlot(RANDPLOT_LAND | RANDPLOT_NOT_CITY);
+#endif
 
 			if (pPlot != NULL)
 			{
 				bool bChanged = false;
 
+#ifdef _MOD_GWARM
+				if (pPlot->getFeatureType() != NO_FEATURE)
+				{
+					if (pPlot->getFeatureType() != GC.getDefineINT("NUKE_FEATURE"))
+					{
+						// GWMod won't remove features if underlaying terrain can melt
+						if (pPlot->getFeatureType() != eColdFeature)
+						{
+							if ((pPlot->calculateBestNatureYield(YIELD_FOOD, NO_TEAM) > 1) && (pPlot->getFeatureType() == eTemperateFeature))
+							{
+								pPlot->setFeatureType(eWarmFeature);
+								bChanged = true;
+							}
+							else if (pPlot->getTerrainType() == eColdTerrain)
+							{
+								pPlot->setTerrainType(eTemperateTerrain);
+								bChanged = true;
+							}
+							else if (pPlot->getTerrainType() == eFrozenTerrain)
+							{
+								pPlot->setTerrainType(eColdTerrain);
+								bChanged = true;
+							}
+							else
+							{
+								pPlot->setFeatureType(NO_FEATURE);
+								bChanged = true;
+							}
+						}
+						else
+						{
+							pPlot->setFeatureType(NO_FEATURE);
+							bChanged = true;
+						}
+					}
+				}
+				else if (!pPlot->isWater())  // GWMod added check for water tile M.A.
+				{
+					// GWMod stepped terrain changes M.A.
+					if (pPlot->getTerrainType() == eBarrenTerrain)
+					{
+						if (isOption(GAMEOPTION_RISING_SEAS))
+						{
+							if (pPlot->isCoastalLand())
+							{
+								if (!pPlot->isHills() && !pPlot->isPeak())
+								{
+									pPlot->setTerrainType(eShallowsTerrain);
+									bChanged = true;
+								}
+							}
+						}
+					}
+					else if (pPlot->getTerrainType() == eDryTerrain)
+					{
+						pPlot->setTerrainType(eBarrenTerrain);
+						bChanged = true;
+					}
+					else if (pPlot->getTerrainType() == eTemperateTerrain)
+					{
+						pPlot->setTerrainType(eDryTerrain);
+						bChanged = true;
+					}
+					else if (pPlot->getTerrainType() == eColdTerrain)
+					{
+						pPlot->setTerrainType(eTemperateTerrain);
+						bChanged = true;
+					}
+					else if (pPlot->getTerrainType() == eFrozenTerrain)
+					{
+						pPlot->setTerrainType(eColdTerrain);
+						bChanged = true;
+					}
+				}
+#else
 				if (pPlot->getFeatureType() != NO_FEATURE)
 				{
 					if (pPlot->getFeatureType() != GC.getDefineINT("NUKE_FEATURE"))
@@ -5899,6 +6063,7 @@ void CvGame::doGlobalWarming()
 						bChanged = true;
 					}
 				}
+#endif
 
 				if (bChanged)
 				{
@@ -5917,6 +6082,70 @@ void CvGame::doGlobalWarming()
 			}
 		}
 	}
+	
+#ifdef _MOD_GWARM
+	//Nuclear Winter
+	int iNuclearWinterValue = 0;
+	iNuclearWinterValue += getNukesExploded() * GC.getDefineINT("GLOBAL_WARMING_NUKE_WEIGHT") / 100;
+
+	for (int iI = 0; iI < iNuclearWinterValue; iI++)
+	{
+		if (getSorenRandNum(100, "Nuclear Fallout") + iGlobalWarmingDefense < GC.getDefineINT("NUCLEAR_WINTER_PROB"))
+		{
+			CvPlot* pPlot = GC.getMapINLINE().syncRandPlot(RANDPLOT_LAND | RANDPLOT_NOT_CITY);
+			FeatureTypes eFeature = pPlot->getFeatureType();
+
+			if (pPlot != NULL)
+			{
+				bool bChanged = false;
+				if (pPlot->getFeatureType() != NO_FEATURE)
+				{
+					if (pPlot->getFeatureType() != GC.getDefineINT("NUKE_FEATURE"))
+					{
+						if (pPlot->getFeatureType() != eColdFeature)
+						{
+							pPlot->setFeatureType(NO_FEATURE);
+							bChanged = true;
+						}
+					}
+				}
+				else
+				{
+					pPlot->setFeatureType(eFalloutFeature);
+					bChanged = true;
+				}
+				if (getSorenRandNum(100, "Nuclear Winter") + iGlobalWarmingDefense < GC.getDefineINT("NUCLEAR_WINTER_PROB"))
+				{
+					if (pPlot->getTerrainType() == eColdTerrain)
+					{
+						pPlot->setTerrainType(eFrozenTerrain);
+						bChanged = true;
+					}
+					if (pPlot->calculateTotalBestNatureYield(NO_TEAM) > 1)
+					{
+						pPlot->setTerrainType(eColdTerrain);
+						bChanged = true;
+					}
+				}
+				if (bChanged)
+				{
+					pPlot->setImprovementType(NO_IMPROVEMENT);
+
+					CvCity* pCity = GC.getMapINLINE().findCity(pPlot->getX_INLINE(), pPlot->getY_INLINE());
+					if (pCity != NULL)
+					{
+						if (pPlot->isVisible(pCity->getTeam(), false))
+						{
+							CvWString szBuffer = gDLL->getText("TXT_KEY_MISC_NUCLEAR_WINTER_NEAR_CITY", pCity->getNameKey());
+							gDLL->getInterfaceIFace()->addMessage(pCity->getOwnerINLINE(), false, GC.getEVENT_MESSAGE_TIME(), szBuffer, "AS2D_GLOBALWARMING", MESSAGE_TYPE_INFO, NULL, (ColorTypes)GC.getInfoTypeForString("COLOR_RED"), pPlot->getX_INLINE(), pPlot->getY_INLINE(), true, true);
+						}
+					}
+				}
+			}
+		}
+	}
+#endif
+// BUG - Global Warming Mod - end
 }
 
 
@@ -6384,9 +6613,9 @@ void CvGame::createBarbarianUnits()
 					iNeededBarbs = ((iNeededBarbs / 4) + 1);
 
 					/********************************************************************************/
-					/**		BETTER_BTS_AI_MOD						9/25/08				jdog5000	*/
-					/**																				*/
-					/**		Barbarian AI															*/
+					/* 	BETTER_BTS_AI_MOD						9/25/08				jdog5000	*/
+					/* 																			*/
+					/* 	Barbarian AI															*/
 					/********************************************************************************/
 					// Limit construction of barb ships based on player navies
 					// Keeps barb ship count in check in early game since generation is greatly increased for BTS 3.17
@@ -6410,7 +6639,7 @@ void CvGame::createBarbarianUnits()
 						}
 					}
 					/********************************************************************************/
-					/**		BETTER_BTS_AI_MOD						END								*/
+					/* 	BETTER_BTS_AI_MOD						END								*/
 					/********************************************************************************/
 
 					for (iI = 0; iI < iNeededBarbs; iI++)
@@ -7247,6 +7476,19 @@ void CvGame::processVote(const VoteTriggeredData& kData, int iChange)
 			FAssert(NO_PLAYER != kData.kVoteOption.ePlayer);
 			CvPlayer& kPlayer = GET_PLAYER(kData.kVoteOption.ePlayer);
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      10/02/09                                jdog5000      */
+/*                                                                                              */
+/* AI logging                                                                                   */
+/************************************************************************************************/
+			if( gTeamLogLevel >= 1 )
+			{
+				logBBAI("  Vote for forcing peace against team %d (%S) passes", kPlayer.getTeam(), kPlayer.getCivilizationDescription(0) );
+			}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+
 			for (int iPlayer = 0; iPlayer < MAX_CIV_PLAYERS; ++iPlayer)
 			{
 				CvPlayer& kLoopPlayer = GET_PLAYER((PlayerTypes)iPlayer);
@@ -7285,6 +7527,19 @@ void CvGame::processVote(const VoteTriggeredData& kData, int iChange)
 			FAssert(NO_PLAYER != kData.kVoteOption.ePlayer);
 			CvPlayer& kPlayer = GET_PLAYER(kData.kVoteOption.ePlayer);
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      10/02/09                                jdog5000      */
+/*                                                                                              */
+/* AI logging                                                                                   */
+/************************************************************************************************/
+			if( gTeamLogLevel >= 1 )
+			{
+				logBBAI("  Vote for war against team %d (%S) passes", kPlayer.getTeam(), kPlayer.getCivilizationDescription(0) );
+			}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+
 			for (int iPlayer = 0; iPlayer < MAX_CIV_PLAYERS; ++iPlayer)
 			{
 				CvPlayer& kLoopPlayer = GET_PLAYER((PlayerTypes)iPlayer);
@@ -7310,6 +7565,18 @@ void CvGame::processVote(const VoteTriggeredData& kData, int iChange)
 			{
 				if (NO_PLAYER != kData.kVoteOption.eOtherPlayer && kData.kVoteOption.eOtherPlayer != pCity->getOwnerINLINE())
 				{
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      10/02/09                                jdog5000      */
+/*                                                                                              */
+/* AI logging                                                                                   */
+/************************************************************************************************/
+					if( gTeamLogLevel >= 1 )
+					{
+						logBBAI("  Vote for assigning %S to %d (%S) passes", pCity->getName(), GET_PLAYER(kData.kVoteOption.eOtherPlayer).getTeam(), GET_PLAYER(kData.kVoteOption.eOtherPlayer).getCivilizationDescription(0) );
+					}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 					GET_PLAYER(kData.kVoteOption.eOtherPlayer).acquireCity(pCity, false, true, true);
 				}
 			}
@@ -8184,19 +8451,19 @@ void CvGame::addPlayer(PlayerTypes eNewPlayer, LeaderHeadTypes eLeader, Civiliza
 	for (int iI = 0; iI < MAX_CIV_PLAYERS; iI++)
 	{
 
-/*************************************************************************************************/
-/** UNOFFICIAL_PATCH                       12/30/08                                jdog5000      */
-/**                                                                                              */
-/** Bugfix                                                                                       */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       12/30/08                                jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
 /* original bts code
 		if (eColor == NO_PLAYERCOLOR || GET_PLAYER((PlayerTypes)iI).getPlayerColor() == eColor)
 */
 		// Don't invalidate color choice if it's taken by this player
 		if (eColor == NO_PLAYERCOLOR || (GET_PLAYER((PlayerTypes)iI).getPlayerColor() == eColor && (PlayerTypes)iI != eNewPlayer) )
-/*************************************************************************************************/
-/** UNOFFICIAL_PATCH                        END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 		{
 			for (int iK = 0; iK < GC.getNumPlayerColorInfos(); iK++)
 			{
@@ -8230,9 +8497,9 @@ void CvGame::addPlayer(PlayerTypes eNewPlayer, LeaderHeadTypes eLeader, Civiliza
 	GC.getInitCore().setSlotStatus(eNewPlayer, SS_COMPUTER);
 	GC.getInitCore().setColor(eNewPlayer, eColor);
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						12/30/08            jdog5000    */
-/**																				*/
-/**		Bugfix																	*/
+/* 	BETTER_BTS_AI_MOD						12/30/08            jdog5000    */
+/* 																			*/
+/* 	Bugfix																	*/
 /********************************************************************************/
 /* original BTS code
 	GET_TEAM(eTeam).init(eTeam);
@@ -8242,14 +8509,14 @@ void CvGame::addPlayer(PlayerTypes eNewPlayer, LeaderHeadTypes eLeader, Civiliza
 	// Standard player init is written for beginning of game, it resets global random events for this player only among other flaws
 	GET_PLAYER(eNewPlayer).initInGame(eNewPlayer);
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						END								*/
+/* 	BETTER_BTS_AI_MOD						END								*/
 /********************************************************************************/
 }
 
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						8/1/08				jdog5000	*/
-/**																				*/
-/**		Debug																	*/
+/* 	BETTER_BTS_AI_MOD						8/1/08				jdog5000	*/
+/* 																			*/
+/* 	Debug																	*/
 /********************************************************************************/
 void CvGame::changeHumanPlayer( PlayerTypes eNewHuman )
 {
@@ -8271,7 +8538,7 @@ void CvGame::changeHumanPlayer( PlayerTypes eNewHuman )
 	GET_PLAYER(eCurHuman).setIsHuman(false);
 }
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						END								*/
+/* 	BETTER_BTS_AI_MOD						END								*/
 /********************************************************************************/
 
 bool CvGame::isCompetingCorporation(CorporationTypes eCorporation1, CorporationTypes eCorporation2) const
@@ -9324,3 +9591,19 @@ bool CvGame::takeJPEGScreenShot(std::string fileName) const
 	return result;
 }
 // BUG - MapFinder - end
+
+// BUFFY - Security Checks - start
+#ifdef _BUFFY
+// from HOF Mod - Dianthus
+int CvGame::checkCRCs(std::string fileName_, std::string expectedModCRC_, std::string expectedDLLCRC_, std::string expectedShaderCRC_, std::string expectedPythonCRC_, std::string expectedXMLCRC_) const
+{
+	return 0;
+}
+
+// from HOF Mod - Denniz 3.17
+int CvGame::getWarningStatus() const
+{
+	return 0;
+}
+#endif
+// BUFFY - Security Checks - end

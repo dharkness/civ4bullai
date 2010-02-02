@@ -250,13 +250,13 @@ void CyGamePythonInterface()
 		.def("saveReplay", &CyGame::saveReplay)
 		.def("addPlayer", &CyGame::addPlayer, "void (int eNewPlayer, int eLeader, int eCiv)")
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						8/1/08				jdog5000	*/
-/**																				*/
-/**		Debug																	*/
+/* 	BETTER_BTS_AI_MOD						8/1/08				jdog5000	*/
+/* 																			*/
+/* 	Debug																	*/
 /********************************************************************************/
 		.def("changeHumanPlayer", &CyGame::changeHumanPlayer, "void ( int /*PlayerTypes*/ eNewHuman )")
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						END								*/
+/* 	BETTER_BTS_AI_MOD						END								*/
 /********************************************************************************/
 		.def("getCultureThreshold", &CyGame::getCultureThreshold, "int getCultureThreshold(CultureLevelTypes eLevel)")
 
@@ -283,6 +283,13 @@ void CyGamePythonInterface()
 		.def("getDLLPath", &CyGame::getDLLPath, "string getDLLPath()")
 		.def("getExePath", &CyGame::getExePath, "string getExePath()")
 // BUG - EXE/DLL Paths - end
+
+// BUFFY - Security Checks - start
+#ifdef _BUFFY
+		.def("checkCRCs", &CyGame::checkCRCs, "checkCRCs (string, string, string, string, string, string)")
+		.def("getWarningStatus", &CyGame::getWarningStatus, "int getWarningStatus()")
+#endif
+// BUFFY - Security Checks - end
 		;
 
 	python::class_<CyDeal>("CyDeal")

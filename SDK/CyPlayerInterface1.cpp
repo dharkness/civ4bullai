@@ -22,15 +22,15 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 	x
 		.def("isNone", &CyPlayer::isNone, "checks for a null player")
 /********************************************************************************/
-/**		CHANGE_PLAYER							08/27/08			jdog5000	*/
-/**																				*/
-/**		 																		*/
+/* 	CHANGE_PLAYER							08/27/08			jdog5000	*/
+/* 																			*/
+/* 	 																		*/
 /********************************************************************************/
 		.def( "changeLeader", &CyPlayer::changeLeader, "void ( int /*LeaderHeadTypes*/ eNewLeader ) - change leader of player")
 		.def( "changeCiv", &CyPlayer::changeCiv, "void ( int /*CivilizationTypes*/ eNewCiv ) - change civilization of player" )
 		.def( "setIsHuman", &CyPlayer::setIsHuman, "void ( bool bNewValue ) - set whether player is human" )
 /********************************************************************************/
-/**		CHANGE_PLAYER							END								*/
+/* 	CHANGE_PLAYER							END								*/
 /********************************************************************************/
 		.def("startingPlotRange", &CyPlayer::startingPlotRange, "int ()")
 		.def("startingPlotWithinRange", &CyPlayer::startingPlotWithinRange, "bool (CyPlot *pPlot, int /*PlayerTypes*/ ePlayer, int iRange, int iPass)")
@@ -280,6 +280,9 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 		.def("getLevelExperienceModifier", &CyPlayer::getLevelExperienceModifier, "int ()")
 
 		.def("getExtraHealth", &CyPlayer::getExtraHealth, "int ()")
+// BUG - start
+		.def("changeExtraHealth", &CyPlayer::changeExtraHealth, "void (int iChange)")
+// BUG - end
 		.def("getBuildingGoodHealth", &CyPlayer::getBuildingGoodHealth, "int ()")
 		.def("getBuildingBadHealth", &CyPlayer::getBuildingBadHealth, "int ()")
 

@@ -8,9 +8,6 @@
 #include "CyCity.h"
 
 void CyCityPythonInterface1(python::class_<CyCity>& x);
-// BUG jdog5000 - start
-void CyCityPythonInterface2(python::class_<CyCity>& x);
-// BUG jdog5000 - end
 void CyPlotPythonInterface1(python::class_<CyPlot>& x);
 void CyPlayerPythonInterface1(python::class_<CyPlayer>& x);
 void CyPlayerPythonInterface2(python::class_<CyPlayer>& x);
@@ -65,9 +62,6 @@ DllExport void DLLPublishToPython()
 	//
 	python::class_<CyCity> city ("CyCity");		// define city class
 	CyCityPythonInterface1(city);				// publish it's methods
-// BUG jdog5000 - start
-	CyCityPythonInterface2(city);
-// BUG jdog5000 - end
 
 	python::class_<CyPlayer> player ("CyPlayer");	// define player class
 	CyPlayerPythonInterface1(player);				// publish it's methods

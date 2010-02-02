@@ -26,13 +26,13 @@ protected:
 public:
 
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						12/30/08		jdog5000		*/
-/**																				*/
-/**		     																	*/
+/*		BETTER_BTS_AI_MOD						12/30/08		jdog5000		*/
+/*																				*/
+/*		     																	*/
 /********************************************************************************/
 	void resetPlotAndCityData( );
 /********************************************************************************/
-/**		BETTER_BTS_AI_MOD						END								*/
+/*		BETTER_BTS_AI_MOD						END								*/
 /********************************************************************************/
 
 
@@ -49,6 +49,15 @@ public:
 
 	bool canChangeWarPeace(TeamTypes eTeam, bool bAllowVassal = false) const;																			// Exposed to Python
 	DllExport bool canDeclareWar(TeamTypes eTeam) const;																// Exposed to Python
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      01/16/10                                jdog5000      */
+/*                                                                                              */
+/* War Strategy AI                                                                              */
+/************************************************************************************************/
+	bool canEventuallyDeclareWar(TeamTypes eTeam) const;
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	DllExport void declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan);										// Exposed to Python
 	DllExport void makePeace(TeamTypes eTeam, bool bBumpUnits = true);																		// Exposed to Python
 	bool canContact(TeamTypes eTeam) const;																							// Exposed to Python
@@ -66,18 +75,18 @@ public:
 	bool isVotingMember(VoteSourceTypes eVoteSource) const;
 	bool isFullMember(VoteSourceTypes eVoteSource) const;
 
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      01/10/09                                jdog5000      */
-/**                                                                                              */
-/**                                                                                              */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      01/10/09                                jdog5000      */
+/*                                                                                              */
+/*                                                                                              */
+/************************************************************************************************/
 	int getCurrentMasterPower( bool bIncludeVassals ) const;
 	bool isMasterPlanningLandWar(CvArea* pArea);
 	bool isMasterPlanningSeaWar(CvArea* pArea);
 	int getAtWarCount(bool bIgnoreMinors, bool bIgnoreVassals = false) const;																				// Exposed to Python
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	int getWarPlanCount(WarPlanTypes eWarPlan, bool bIgnoreMinors) const;								// Exposed to Python
 	int getAnyWarPlanCount(bool bIgnoreMinors) const;																		// Exposed to Python
 	int getChosenWarCount(bool bIgnoreMinors) const;																		// Exposed to Python
@@ -291,15 +300,15 @@ public:
 	int changeResearchProgressPercent(TechTypes eIndex, int iPercent, PlayerTypes ePlayer);
 
 	int getTechCount(TechTypes eIndex) const;																										// Exposed to Python
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                      07/27/09                                jdog5000      */
-/**                                                                                              */
-/** General AI                                                                                   */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      07/27/09                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
 	int getBestKnownTechScorePercent() const;
-/*************************************************************************************************/
-/** BETTER_BTS_AI_MOD                       END                                                  */
-/*************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	int getTerrainTradeCount(TerrainTypes eIndex) const;
 	bool isTerrainTrade(TerrainTypes eIndex) const;																												// Exposed to Python
