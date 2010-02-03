@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="boost_python-vc71-mt-gd-1_32.lib winmm.lib"
-				OutputFile="Beyond the Sword/Assets/CvGameCoreDLL_DEBUG.dll"
+				OutputFile="Assets/CvGameCoreDLL_DEBUG.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="Python24\libs;&quot;boost-1.32.0\libs\&quot;"
 				GenerateDebugInformation="TRUE"
@@ -86,12 +86,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				GlobalOptimizations="TRUE"
-				EnableIntrinsicFunctions="TRUE"
-				OmitFramePointers="TRUE"
+				GlobalOptimizations="FALSE"
+				EnableIntrinsicFunctions="FALSE"
+				OmitFramePointers="FALSE"
 				OptimizeForProcessor="3"
-				AdditionalIncludeDirectories="&quot;Boost-1.32.0\include&quot;;Python24\include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CVGAMECOREDLL_EXPORTS"
+				AdditionalIncludeDirectories="&quot;Boost-1.32.0\include&quot;;Python24\include;CxImage\general;CxImage\jpeg"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CVGAMECOREDLL_EXPORTS;LOG_AI;_MOD_FRACTRADE;_MOD_SENTRY;_MOD_GOVWORKERS;_MOD_GWARM"
 				MinimalRebuild="FALSE"
 				ExceptionHandling="TRUE"
 				RuntimeLibrary="2"
@@ -110,7 +110,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="boost_python-vc71-mt-1_32.lib  winmm.lib"
-				OutputFile="../Beyond the Sword/Assets/CvGameCoreDLL_RELEASE.dll"
+				OutputFile="Assets/CvGameCoreDLL_RELEASE.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="Python24\libs;&quot;boost-1.32.0\libs\&quot;"
 				GenerateDebugInformation="TRUE"
@@ -151,11 +151,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				GlobalOptimizations="TRUE"
+				GlobalOptimizations="FALSE"
 				InlineFunctionExpansion="0"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				EnableIntrinsicFunctions="FALSE"
+				FavorSizeOrSpeed="0"
+				OmitFramePointers="FALSE"
 				OptimizeForProcessor="3"
 				AdditionalIncludeDirectories="&quot;Boost-1.32.0\include&quot;;Python24\include;CxImage\general;CxImage\jpeg"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CVGAMECOREDLL_EXPORTS;FINAL_RELEASE;LOG_AI;_MOD_FRACTRADE;_MOD_SENTRY;_MOD_GOVWORKERS;_MOD_GWARM"
@@ -177,7 +177,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="boost_python-vc71-mt-1_32.lib  winmm.lib"
-				OutputFile="Beyond the Sword/Assets/CvGameCoreDLL.dll"
+				OutputFile="Assets/CvGameCoreDLL.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="Python24\libs;&quot;boost-1.32.0\libs\&quot;"
 				GenerateDebugInformation="TRUE"
@@ -219,8 +219,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				OptimizeForProcessor="3"
-				AdditionalIncludeDirectories="&quot;Boost-1.32.0\include&quot;;Python24\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CVGAMECOREDLL_EXPORTS"
+				AdditionalIncludeDirectories="&quot;Boost-1.32.0\include&quot;;Python24\include;CxImage\general;CxImage\jpeg"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CVGAMECOREDLL_EXPORTS;LOG_AI;_MOD_FRACTRADE;_MOD_SENTRY;_MOD_GOVWORKERS;_MOD_GWARM"
 				MinimalRebuild="FALSE"
 				ExceptionHandling="TRUE"
 				BasicRuntimeChecks="0"
@@ -241,7 +241,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="boost_python-vc71-mt-1_32.lib winmm.lib msvcprt.lib"
-				OutputFile="../Beyond the Sword/Assets/CvGameCoreDLL.dll"
+				OutputFile="Assets/CvGameCoreDLL.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="Python24\libs;&quot;boost-1.32.0\libs\&quot;"
 				IgnoreDefaultLibraryNames="msvcprtd.lib"
@@ -249,6 +249,73 @@
 				ProgramDatabaseFile="$(OutDir)/CvGameCoreDLL_DEBUG.pdb"
 				SubSystem="2"
 				LargeAddressAware="2"
+				ImportLibrary="$(OutDir)/CvGameCoreDLL.lib"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="BUFFY Final Release|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				GlobalOptimizations="FALSE"
+				InlineFunctionExpansion="0"
+				EnableIntrinsicFunctions="FALSE"
+				FavorSizeOrSpeed="0"
+				OmitFramePointers="FALSE"
+				OptimizeForProcessor="3"
+				AdditionalIncludeDirectories="&quot;Boost-1.32.0\include&quot;;Python24\include;CxImage\general;CxImage\jpeg"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CVGAMECOREDLL_EXPORTS;FINAL_RELEASE;LOG_AI;_BUFFY;_MOD_FRACTRADE;_MOD_SENTRY;_MOD_GOVWORKERS;_MOD_GWARM"
+				MinimalRebuild="FALSE"
+				ExceptionHandling="TRUE"
+				RuntimeLibrary="2"
+				BufferSecurityCheck="FALSE"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderThrough="CvGameCoreDLL.h"
+				ProgramDataBaseFileName="$(IntDir)/vc70.pdb"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="FALSE"
+				DebugInformationFormat="2"
+				CallingConvention="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="boost_python-vc71-mt-1_32.lib  winmm.lib"
+				OutputFile="Assets/CvGameCoreDLL.dll"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="Python24\libs;&quot;boost-1.32.0\libs\&quot;"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)/CvGameCoreDLL.pdb"
+				SubSystem="2"
+				LargeAddressAware="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
 				ImportLibrary="$(OutDir)/CvGameCoreDLL.lib"
 				TargetMachine="1"/>
 			<Tool
@@ -306,6 +373,12 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\BetterBTSAI.cpp">
@@ -332,6 +405,12 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Final Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
@@ -369,6 +448,12 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CvCityAI.cpp">
@@ -396,6 +481,12 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CvDeal.cpp">
@@ -419,6 +510,12 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Final Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
@@ -452,6 +549,12 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Final Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
@@ -498,6 +601,12 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CvGame.cpp">
@@ -521,6 +630,12 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Final Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
@@ -552,6 +667,12 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CvGameCoreDLL.cpp">
@@ -575,6 +696,12 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Final Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
@@ -615,6 +742,12 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CvHallOfFameInfo.cpp">
@@ -641,6 +774,12 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Final Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
@@ -678,6 +817,12 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CvMapGenerator.cpp">
@@ -701,6 +846,12 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Final Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
@@ -738,6 +889,12 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CvPlayerAI.cpp">
@@ -761,6 +918,12 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Final Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
@@ -792,6 +955,12 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CvPlotGroup.cpp">
@@ -815,6 +984,12 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Final Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
@@ -852,6 +1027,12 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CvReplayInfo.cpp">
@@ -881,6 +1062,12 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Final Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
@@ -924,6 +1111,12 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CvTeamAI.cpp">
@@ -947,6 +1140,12 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Final Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
@@ -978,6 +1177,12 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CvUnitAI.cpp">
@@ -1001,6 +1206,12 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Final Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="3"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="BUFFY Final Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="3"/>
