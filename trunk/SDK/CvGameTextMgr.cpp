@@ -15274,22 +15274,27 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, PlayerTyp
 	CvPlayer& kOtherPlayer = GET_PLAYER(eOtherPlayer);
 
 // BUG - Leaderhead Worst Enemy - start
-//-Fuyu thinks BBAI code already takes care of that-
-/* 
+//Fuyu: I think BBAI code already takes care of that but leaving it in this time to test what it actually does.
+
 	if (getBugOptionBOOL("MiscHover__LeaderheadWorstEnemy", true, "BUG_LEADERHEAD_HOVER_WORST_ENEMY"))
 	{
 		CvTeamAI& kThisTeam = GET_TEAM(kThisPlayer.getTeam());
 		if (!kThisTeam.isHuman())
 		{
 			TeamTypes eWorstEnemy = kThisTeam.AI_getWorstEnemy();
-			if (eWorstEnemy != NO_TEAM)
+			if (eWorstEnemy == GC.getGame().getActiveTeam())
+			{
+				szString.append(NEWLINE);
+				szString.append(gDLL->getText(L"TXT_KEY_WORST_ENEMY_IS_YOU"));
+			}
+			else if (eWorstEnemy != NO_TEAM)
 			{
 				szString.append(NEWLINE);
 				szString.append(gDLL->getText(L"TXT_KEY_WORST_ENEMY_IS", GET_TEAM(eWorstEnemy).getName().GetCString()));
 			}
 		}
 	}
-*/
+
 // BUG - Leaderhead Worst Enemy - end
 
 

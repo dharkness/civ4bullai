@@ -35,7 +35,7 @@ LINK = "$(TOOLKIT)/bin/link.exe"
 #   _MOD_GOVWORKERS		Governours can build Workers Mod
 #   _MOD_GWARM			Global Warming Mod
 
-MODFLAGS = /DLOG_AI /D_MOD_FRACTRADE /D_MOD_SENTRY /D_MOD_GOVWORKERS /D_MOD_GWARM
+MODFLAGS = /DLOG_AI /D_MOD_FRACTRADE /D_MOD_SENTRY /D_MOD_GOVWORKERS
 
 # /EHsc		catch C++ exceptions only; assume that extern C functions never throw a C++ exception
 # /Gd		Use the __cdecl calling convention (x86 only). 
