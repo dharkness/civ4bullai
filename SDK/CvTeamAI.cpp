@@ -1857,18 +1857,10 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eTeam, int iPowerMultiplier) c
 		}
 	}
 
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      12/07/09                                jdog5000      */
-/*                                                                                              */
-/* Diplomacy                                                                                    */
-/************************************************************************************************/
-	if (isHuman() && kMasterTeam.isHuman())
+	if (isHuman())
 	{
 		return NO_DENIAL;
 	}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 
 	int iAttitudeModifier = 0;
 
@@ -2135,26 +2127,15 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eTeam, int iPowerMultiplier) c
 /************************************************************************************************/
 /* original BTS code
 		if (AI_getWarSuccess(eTeam) + 4 * GC.getDefineINT("WAR_SUCCESS_CITY_CAPTURING") > GET_TEAM(eTeam).AI_getWarSuccess(getID()))
-		{
-			return DENIAL_JOKING;
-		}
 */
 		// Scale better for small empires, particularly necessary if WAR_SUCCESS_CITY_CAPTURING > 10
 		if (AI_getWarSuccess(eTeam) + std::min(getNumCities(), 4) * GC.getDefineINT("WAR_SUCCESS_CITY_CAPTURING") > GET_TEAM(eTeam).AI_getWarSuccess(getID()))
-		{
-			return DENIAL_JOKING;
-		}
-
-		if( !kMasterTeam.isHuman() )
-		{
-			if( !(GET_TEAM(kMasterTeam.getID()).AI_acceptSurrender(getID())) )
-			{
-				return DENIAL_JOKING;
-			}
-		}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
+		{
+			return DENIAL_JOKING;
+		}
 	}
 	
 	return NO_DENIAL;
@@ -2230,16 +2211,6 @@ int CvTeamAI::AI_getEnemyPowerPercent( bool bConsiderOthers ) const
 bool CvTeamAI::AI_acceptSurrender( TeamTypes eSurrenderTeam )
 {
 	PROFILE_FUNC();
-
-	if( isHuman() )
-	{
-		return true;
-	}
-
-	if( !isAtWar(eSurrenderTeam) )
-	{
-		return true;
-	}
 
 	// BBAI TODO:  Need better impending space victory detector ... I think this only catches launched spaceships
 	// Is surrender team going to win by spaceship?
