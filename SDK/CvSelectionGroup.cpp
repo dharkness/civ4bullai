@@ -5421,7 +5421,7 @@ void CvSelectionGroup::checkLastPathPlot(CvPlot* pPlot)
 	m_bLastPathPlotChecked = true;
 	if (pPlot != NULL)
 	{
-		m_bLastPlotVisible = pPlot->isActiveVisible(false);
+		m_bLastPlotVisible = pPlot->isVisible(getTeam(), false);
 		m_bLastPlotRevealed = pPlot->isRevealed(getTeam(), false);
 	}
 	else
