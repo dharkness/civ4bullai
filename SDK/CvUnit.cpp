@@ -2432,7 +2432,7 @@ bool CvUnit::canMoveInto(const CvPlot* pPlot, bool bAttack, bool bDeclareWar, bo
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                       09/17/09                         TC01 & jdog5000      */
 /*                                                                                              */
-/* Bugfix				                                                                         */
+/* Bugfix				                                                                        */
 /************************************************************************************************/
 /* original bts code
 		else

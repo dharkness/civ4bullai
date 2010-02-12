@@ -1857,10 +1857,18 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eTeam, int iPowerMultiplier) c
 		}
 	}
 
-	if (isHuman())
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      12/07/09                                jdog5000      */
+/*                                                                                              */
+/* Diplomacy                                                                                    */
+/************************************************************************************************/
+	if (isHuman() && kMasterTeam.isHuman())
 	{
 		return NO_DENIAL;
 	}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	int iAttitudeModifier = 0;
 
@@ -2127,22 +2135,33 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eTeam, int iPowerMultiplier) c
 /************************************************************************************************/
 /* original BTS code
 		if (AI_getWarSuccess(eTeam) + 4 * GC.getDefineINT("WAR_SUCCESS_CITY_CAPTURING") > GET_TEAM(eTeam).AI_getWarSuccess(getID()))
-*/
-		// Scale better for small empires, particularly necessary if WAR_SUCCESS_CITY_CAPTURING > 10
-		if (AI_getWarSuccess(eTeam) + std::min(getNumCities(), 4) * GC.getDefineINT("WAR_SUCCESS_CITY_CAPTURING") > GET_TEAM(eTeam).AI_getWarSuccess(getID()))
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 		{
 			return DENIAL_JOKING;
 		}
+*/
+		// Scale better for small empires, particularly necessary if WAR_SUCCESS_CITY_CAPTURING > 10
+		if (AI_getWarSuccess(eTeam) + std::min(getNumCities(), 4) * GC.getDefineINT("WAR_SUCCESS_CITY_CAPTURING") > GET_TEAM(eTeam).AI_getWarSuccess(getID()))
+		{
+			return DENIAL_JOKING;
+		}
+
+		if( !kMasterTeam.isHuman() )
+		{
+			if( !(GET_TEAM(kMasterTeam.getID()).AI_acceptSurrender(getID())) )
+			{
+				return DENIAL_JOKING;
+			}
+		}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	}
 	
 	return NO_DENIAL;
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      10/26/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      02/10/10                                jdog5000      */
 /*                                                                                              */
 /* War Strategy AI                                                                              */
 /************************************************************************************************/
@@ -2212,6 +2231,16 @@ bool CvTeamAI::AI_acceptSurrender( TeamTypes eSurrenderTeam )
 {
 	PROFILE_FUNC();
 
+	if( isHuman() )
+	{
+		return true;
+	}
+
+	if( !isAtWar(eSurrenderTeam) )
+	{
+		return true;
+	}
+
 	// BBAI TODO:  Need better impending space victory detector ... I think this only catches launched spaceships
 	// Is surrender team going to win by spaceship?
 	int iTheirVictoryCounter = GET_TEAM(eSurrenderTeam).AI_getLowestVictoryCountdown();
@@ -2236,21 +2265,18 @@ bool CvTeamAI::AI_acceptSurrender( TeamTypes eSurrenderTeam )
 		}
 	}
 
-	// Check for whether team can surrender to anyone else
-	for (int iI = 0; iI < MAX_CIV_PLAYERS; iI++)
+	// Check for whether another team has won enough to cause capitulation
+	for( int iI = 0; iI < MAX_CIV_TEAMS; iI++ )
 	{
-		if (GET_PLAYER((PlayerTypes)iI).isAlive())
+		if (GET_TEAM((TeamTypes)iI).isAlive())
 		{
-			if (GET_PLAYER((PlayerTypes)iI).getTeam() != getID() && !(GET_TEAM(GET_PLAYER((PlayerTypes)iI).getTeam()).isVassal(getID())) )
+			if (iI != getID() && !(GET_TEAM((TeamTypes)iI).isVassal(getID())) )
 			{
-				if (GET_TEAM(eSurrenderTeam).isAtWar(GET_PLAYER((PlayerTypes)iI).getTeam()))
+				if (GET_TEAM(eSurrenderTeam).isAtWar((TeamTypes)iI))
 				{
-					if (GET_TEAM(eSurrenderTeam).AI_getAtWarCounter(GET_PLAYER((PlayerTypes)iI).getTeam()) >= 10)
+					if (GET_TEAM(eSurrenderTeam).AI_getAtWarCounter((TeamTypes)iI) >= 10)
 					{
-						TradeData item;
-						setTradeItem(&item, TRADE_SURRENDER);
-
-						if( GET_PLAYER(GET_TEAM(eSurrenderTeam).getLeaderID()).canTradeItem((PlayerTypes)iI, item, true) )
+						if (GET_TEAM(eSurrenderTeam).AI_getWarSuccess((TeamTypes)iI) + std::min(GET_TEAM(eSurrenderTeam).getNumCities(), 4) * GC.getDefineINT("WAR_SUCCESS_CITY_CAPTURING") < GET_TEAM((TeamTypes)iI).AI_getWarSuccess(eSurrenderTeam))
 						{
 							return true;
 						}
@@ -3960,7 +3986,7 @@ void CvTeamAI::AI_doWar()
 				}
 				else if (AI_getWarPlan((TeamTypes)iI) == WARPLAN_PREPARING_LIMITED)
 				{
-					FAssert(canDeclareWar((TeamTypes)iI));
+					FAssert(canEventuallyDeclareWar((TeamTypes)iI));
 
 					if (AI_getWarPlanStateCounter((TeamTypes)iI) > ((5 * iTimeModifier) / 100))
 					{

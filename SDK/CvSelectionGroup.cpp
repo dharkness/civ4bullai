@@ -1343,260 +1343,316 @@ void CvSelectionGroup::startMission()
 			NotifyEntity( headMissionQueueNode()->m_data.eMissionType );
 		}
 
-		pUnitNode = headUnitNode();
-
-		// BBAI TODO: create new loop for pillaging, so fast units pillage once first
-
-		while (pUnitNode != NULL)
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/10/10                                jdog5000      */
+/*                                                                                              */
+/* War tactics AI                                                                               */
+/************************************************************************************************/
+		if( headMissionQueueNode()->m_data.eMissionType == MISSION_PILLAGE )
 		{
-			pLoopUnit = ::getUnit(pUnitNode->m_data);
-			pUnitNode = nextUnitNode(pUnitNode);
+			// Fast units pillage first
+			pUnitNode = headUnitNode();
+			int iMaxMovesLeft = 0;
 
-			if (pLoopUnit->canMove())
+			while (pUnitNode != NULL)
 			{
-				switch (headMissionQueueNode()->m_data.eMissionType)
+				pLoopUnit = ::getUnit(pUnitNode->m_data);
+				pUnitNode = nextUnitNode(pUnitNode);
+
+				if( pLoopUnit->canPillage(plot()) )
 				{
-				case MISSION_MOVE_TO:
-				case MISSION_ROUTE_TO:
-				case MISSION_MOVE_TO_UNIT:
-				case MISSION_SKIP:
-				case MISSION_SLEEP:
-				case MISSION_FORTIFY:
-				case MISSION_AIRPATROL:
-				case MISSION_SEAPATROL:
-				case MISSION_HEAL:
-				case MISSION_SENTRY:
+					iMaxMovesLeft = std::max( iMaxMovesLeft, pLoopUnit->movesLeft() );
+				}
+			}
+
+			bool bDidPillage = true;
+			while( iMaxMovesLeft > 0 && bDidPillage )
+			{
+				bDidPillage = false;
+				pUnitNode = headUnitNode();
+				int iNextMaxMovesLeft = 0;
+
+				while (pUnitNode != NULL)
+				{
+					pLoopUnit = ::getUnit(pUnitNode->m_data);
+					pUnitNode = nextUnitNode(pUnitNode);
+
+					if( pLoopUnit->canPillage(plot()) )
+					{
+						if( pLoopUnit->movesLeft() >= iMaxMovesLeft )
+						{
+							if (pLoopUnit->pillage())
+							{
+								bAction = true;
+								bDidPillage = true;
+							}
+						}
+
+						iNextMaxMovesLeft = std::max( iNextMaxMovesLeft, pLoopUnit->movesLeft() );
+					}
+				}
+
+				iMaxMovesLeft = iNextMaxMovesLeft;
+			}
+		}
+		else
+		{
+			pUnitNode = headUnitNode();
+
+			while (pUnitNode != NULL)
+			{
+				pLoopUnit = ::getUnit(pUnitNode->m_data);
+				pUnitNode = nextUnitNode(pUnitNode);
+
+				if (pLoopUnit->canMove())
+				{
+					switch (headMissionQueueNode()->m_data.eMissionType)
+					{
+					case MISSION_MOVE_TO:
+					case MISSION_ROUTE_TO:
+					case MISSION_MOVE_TO_UNIT:
+					case MISSION_SKIP:
+					case MISSION_SLEEP:
+					case MISSION_FORTIFY:
+					case MISSION_AIRPATROL:
+					case MISSION_SEAPATROL:
+					case MISSION_HEAL:
+					case MISSION_SENTRY:
 // BUG - Sentry Actions - start
 #ifdef _MOD_SENTRY
-				case MISSION_MOVE_TO_SENTRY:
-				case MISSION_SENTRY_WHILE_HEAL:
-				case MISSION_SENTRY_NAVAL_UNITS:
-				case MISSION_SENTRY_LAND_UNITS:
+					case MISSION_MOVE_TO_SENTRY:
+					case MISSION_SENTRY_WHILE_HEAL:
+					case MISSION_SENTRY_NAVAL_UNITS:
+					case MISSION_SENTRY_LAND_UNITS:
 #endif
 // BUG - Sentry Actions - end
-					break;
+						break;
 
-				case MISSION_AIRLIFT:
-					if (pLoopUnit->airlift(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_NUKE:
-					if (pLoopUnit->nuke(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
-					{
-						bAction = true;
-
-						if (GC.getMapINLINE().plotINLINE(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2)->isVisibleToWatchingHuman())
-						{
-							bNuke = true;
-						}
-					}
-					break;
-
-				case MISSION_RECON:
-					if (pLoopUnit->recon(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_PARADROP:
-					if (pLoopUnit->paradrop(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_AIRBOMB:
-					if (pLoopUnit->airBomb(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_BOMBARD:
-					if (pLoopUnit->bombard())
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_RANGE_ATTACK:
-					if (pLoopUnit->rangeStrike(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_PILLAGE:
-					if (pLoopUnit->pillage())
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_PLUNDER:
-					if (pLoopUnit->plunder())
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_SABOTAGE:
-					if (pLoopUnit->sabotage())
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_DESTROY:
-					if (pLoopUnit->destroy())
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_STEAL_PLANS:
-					if (pLoopUnit->stealPlans())
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_FOUND:
-					if (pLoopUnit->found())
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_SPREAD:
-					if (pLoopUnit->spread((ReligionTypes)(headMissionQueueNode()->m_data.iData1)))
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_SPREAD_CORPORATION:
-					if (pLoopUnit->spreadCorporation((CorporationTypes)(headMissionQueueNode()->m_data.iData1)))
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_JOIN:
-					if (pLoopUnit->join((SpecialistTypes)(headMissionQueueNode()->m_data.iData1)))
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_CONSTRUCT:
-					if (pLoopUnit->construct((BuildingTypes)(headMissionQueueNode()->m_data.iData1)))
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_DISCOVER:
-					if (pLoopUnit->discover())
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_HURRY:
-					if (pLoopUnit->hurry())
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_TRADE:
-					if (pLoopUnit->trade())
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_GREAT_WORK:
-					if (pLoopUnit->greatWork())
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_INFILTRATE:
-					if (pLoopUnit->infiltrate())
-					{
-						bAction = true;
-					}
-					break;
-
-				case MISSION_GOLDEN_AGE:
-					//just play animation, not golden age - JW
-					if (headMissionQueueNode()->m_data.iData1 != -1)
-					{
-						CvMissionDefinition kMission;
-						kMission.setMissionTime(GC.getMissionInfo(MISSION_GOLDEN_AGE).getTime() * gDLL->getSecsPerTurn());
-						kMission.setUnit(BATTLE_UNIT_ATTACKER, pLoopUnit);
-						kMission.setUnit(BATTLE_UNIT_DEFENDER, NULL);
-						kMission.setPlot(pLoopUnit->plot());
-						kMission.setMissionType(MISSION_GOLDEN_AGE);
-						gDLL->getEntityIFace()->AddMission(&kMission);
-						pLoopUnit->NotifyEntity(MISSION_GOLDEN_AGE);
-						bAction = true;
-					}
-					else
-					{
-						if (pLoopUnit->goldenAge())
+					case MISSION_AIRLIFT:
+						if (pLoopUnit->airlift(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
 						{
 							bAction = true;
 						}
-					}
-					break;
+						break;
 
-				case MISSION_BUILD:
-					break;
+					case MISSION_NUKE:
+						if (pLoopUnit->nuke(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
+						{
+							bAction = true;
 
-				case MISSION_LEAD:
-					if (pLoopUnit->lead(headMissionQueueNode()->m_data.iData1))
-					{
+							if (GC.getMapINLINE().plotINLINE(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2)->isVisibleToWatchingHuman())
+							{
+								bNuke = true;
+							}
+						}
+						break;
+
+					case MISSION_RECON:
+						if (pLoopUnit->recon(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_PARADROP:
+						if (pLoopUnit->paradrop(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_AIRBOMB:
+						if (pLoopUnit->airBomb(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_BOMBARD:
+						if (pLoopUnit->bombard())
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_RANGE_ATTACK:
+						if (pLoopUnit->rangeStrike(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_PILLAGE:
+						if (pLoopUnit->pillage())
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_PLUNDER:
+						if (pLoopUnit->plunder())
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_SABOTAGE:
+						if (pLoopUnit->sabotage())
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_DESTROY:
+						if (pLoopUnit->destroy())
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_STEAL_PLANS:
+						if (pLoopUnit->stealPlans())
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_FOUND:
+						if (pLoopUnit->found())
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_SPREAD:
+						if (pLoopUnit->spread((ReligionTypes)(headMissionQueueNode()->m_data.iData1)))
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_SPREAD_CORPORATION:
+						if (pLoopUnit->spreadCorporation((CorporationTypes)(headMissionQueueNode()->m_data.iData1)))
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_JOIN:
+						if (pLoopUnit->join((SpecialistTypes)(headMissionQueueNode()->m_data.iData1)))
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_CONSTRUCT:
+						if (pLoopUnit->construct((BuildingTypes)(headMissionQueueNode()->m_data.iData1)))
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_DISCOVER:
+						if (pLoopUnit->discover())
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_HURRY:
+						if (pLoopUnit->hurry())
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_TRADE:
+						if (pLoopUnit->trade())
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_GREAT_WORK:
+						if (pLoopUnit->greatWork())
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_INFILTRATE:
+						if (pLoopUnit->infiltrate())
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_GOLDEN_AGE:
+						//just play animation, not golden age - JW
+						if (headMissionQueueNode()->m_data.iData1 != -1)
+						{
+							CvMissionDefinition kMission;
+							kMission.setMissionTime(GC.getMissionInfo(MISSION_GOLDEN_AGE).getTime() * gDLL->getSecsPerTurn());
+							kMission.setUnit(BATTLE_UNIT_ATTACKER, pLoopUnit);
+							kMission.setUnit(BATTLE_UNIT_DEFENDER, NULL);
+							kMission.setPlot(pLoopUnit->plot());
+							kMission.setMissionType(MISSION_GOLDEN_AGE);
+							gDLL->getEntityIFace()->AddMission(&kMission);
+							pLoopUnit->NotifyEntity(MISSION_GOLDEN_AGE);
+							bAction = true;
+						}
+						else
+						{
+							if (pLoopUnit->goldenAge())
+							{
+								bAction = true;
+							}
+						}
+						break;
+
+					case MISSION_BUILD:
+						break;
+
+					case MISSION_LEAD:
+						if (pLoopUnit->lead(headMissionQueueNode()->m_data.iData1))
+						{
+							bAction = true;
+						}
+						break;
+
+					case MISSION_ESPIONAGE:
+						if (pLoopUnit->espionage((EspionageMissionTypes)headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
+						{
+							bAction = true;
+						}
+						pUnitNode = NULL; // allow one unit at a time to do espionage
+						break;
+
+					case MISSION_DIE_ANIMATION:
 						bAction = true;
-					}
-					break;
+						break;
 
-				case MISSION_ESPIONAGE:
-					if (pLoopUnit->espionage((EspionageMissionTypes)headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
+					default:
+						FAssert(false);
+						break;
+					}
+
+					if (getNumUnits() == 0)
 					{
-						bAction = true;
+						break;
 					}
-					pUnitNode = NULL; // allow one unit at a time to do espionage
-					break;
 
-				case MISSION_DIE_ANIMATION:
-					bAction = true;
-					break;
-
-				default:
-					FAssert(false);
-					break;
-				}
-
-				if (getNumUnits() == 0)
-				{
-					break;
-				}
-
-				if (headMissionQueueNode() == NULL)
-				{
-					break;
+					if (headMissionQueueNode() == NULL)
+					{
+						break;
+					}
 				}
 			}
 		}
 	}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	if ((getNumUnits() > 0) && (headMissionQueueNode() != NULL))
 	{
