@@ -1607,7 +1607,7 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 
 		CvEventReporter::getInstance().changeWar(true, getID(), eTeam);
 
-		//REVDCM TODO: what's appropriate for canceling pacts?
+
 		if( GC.getDefineINT("BBAI_ALLIANCE_OPTION") != 1 )
 		{
 			cancelDefensivePacts();
@@ -1623,6 +1623,7 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 				}
 				else if( GET_TEAM((TeamTypes)iI).isDefensivePact(getID()))
 				{
+					// For alliance option.  This teams pacts are canceled above if not using alliance option.
 					GET_TEAM((TeamTypes)iI).declareWar(eTeam, bNewDiplo, WARPLAN_DOGPILE);
 				}
 			}
