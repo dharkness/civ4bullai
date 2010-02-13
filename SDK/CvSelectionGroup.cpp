@@ -94,14 +94,9 @@ void CvSelectionGroup::reset(int iID, PlayerTypes eOwner, bool bConstructorCall)
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
 // BUG - Safe Move - start
-	if (!GC.getGameINLINE().isNetworkMultiPlayer()) //Fuyu temporal fix for safe move oos issue
-	{
-
-		m_bLastPathPlotChecked = false;
-		m_bLastPlotVisible = false;
-		m_bLastPlotRevealed = false;
-
-	}
+	m_bLastPathPlotChecked = false;
+	m_bLastPlotVisible = false;
+	m_bLastPlotRevealed = false;
 // BUG - Safe Move - end
 
 	if (!bConstructorCall)
@@ -1227,7 +1222,7 @@ void CvSelectionGroup::startMission()
 // BUG - Sentry Actions - end
 // BUG - Safe Move - start
 			// if player is human, save the visibility and reveal state of the last plot of the move path from the initial plot
-			if (isHuman() && !GC.getGameINLINE().isNetworkMultiPlayer()) //Fuyu oos temp fix
+			if (isHuman())
 			{
 				checkLastPathPlot(GC.getMapINLINE().plotINLINE(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2));
 			}
@@ -1753,14 +1748,9 @@ void CvSelectionGroup::continueMission(int iSteps)
 // BUG - Safe Move - start
 					// if player is human, save the visibility and reveal state of the last plot of the move path from the initial plot
 					// if it hasn't been saved already to handle units in motion when loading a game
-					if (isHuman() && !GC.getGameINLINE().isNetworkMultiPlayer())
+					if (isHuman() && !isLastPathPlotChecked())
 					{
-						if (!isLastPathPlotChecked())
-						{
-
-							checkLastPathPlot(GC.getMapINLINE().plotINLINE(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2));
-
-						}
+						checkLastPathPlot(GC.getMapINLINE().plotINLINE(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2));
 					}
 // BUG - Safe Move - end
 
@@ -2034,10 +2024,7 @@ void CvSelectionGroup::continueMission(int iSteps)
 				if (at(headMissionQueueNode()->m_data.iData1, headMissionQueueNode()->m_data.iData2))
 				{
 // BUG - Safe Move - start
-					if (!GC.getGameINLINE().isNetworkMultiPlayer()) //Fuyu temporal fix for safe move oos issue
-					{
-						clearLastPathPlot();
-					}
+					clearLastPathPlot();
 // BUG - Safe Move - end
 					bDone = true;
 				}
@@ -3744,7 +3731,7 @@ bool CvSelectionGroup::groupAttack(int iX, int iY, int iFlags, bool& bFailedAlre
 					}
 
 // BUG - Safe Move - start
-					if (isHuman() && !GC.getGameINLINE().isNetworkMultiPlayer()) //Fuyu oos temp fix
+					if (isHuman())
 					{
 						if (!(isLastPathPlotVisible()) && (getDomainType() != DOMAIN_AIR))
 						{
@@ -4298,7 +4285,7 @@ bool CvSelectionGroup::groupAmphibMove(CvPlot* pPlot, int iFlags)
 	{
 // BUG - Safe Move - start
 		// don't perform amphibious landing on plot that was unrevealed when goto order was issued
-		if (isHuman() && !GC.getGameINLINE().isNetworkMultiPlayer()) //Fuyu temp oos fix
+		if (isHuman())
 		{
 			if (!isLastPathPlotRevealed())
 			{
