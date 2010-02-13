@@ -15273,28 +15273,6 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, PlayerTyp
 	CvPlayer& kThisPlayer = GET_PLAYER(eThisPlayer);
 	CvPlayer& kOtherPlayer = GET_PLAYER(eOtherPlayer);
 
-// BUG - Leaderhead Worst Enemy - start
-	if (getBugOptionBOOL("MiscHover__LeaderheadWorstEnemy", true, "BUG_LEADERHEAD_HOVER_WORST_ENEMY"))
-	{
-		CvTeamAI& kThisTeam = GET_TEAM(kThisPlayer.getTeam());
-		if (!kThisTeam.isHuman())
-		{
-			TeamTypes eWorstEnemy = kThisTeam.AI_getWorstEnemy();
-			if (eWorstEnemy == kOtherPlayer.getTeam() && eWorstEnemy == GC.getGame().getActiveTeam()) //Fuyu trying something
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText(L"TXT_KEY_WORST_ENEMY_IS_YOU"));
-			}
-			else if (eWorstEnemy != NO_TEAM)
-			{
-				szString.append(NEWLINE);
-				szString.append(gDLL->getText(L"TXT_KEY_WORST_ENEMY_IS", GET_TEAM(eWorstEnemy).getName().GetCString()));
-			}
-		}
-	}
-// BUG - Leaderhead Worst Enemy - end
-
-
 /************************************************************************************************/
 /* BETTER_BTS_AI                         11/08/08                                jdog5000       */
 /*                                                                                              */
@@ -15361,7 +15339,6 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, PlayerTyp
 						bFirst = false;
 					}
 				}
-
 				if ( !kTeam.isHuman() && kTeam.AI_getWorstEnemy() == kThisPlayer.getTeam() )
 				{
 					setListHelp(szWorstEnemyString, L"", kTeam.getName().GetCString(), L", ", bFirst2);
@@ -15378,15 +15355,28 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, PlayerTyp
 		}
 	}
 
-	if( !szWorstEnemyString.isEmpty() )
+// BUG - Leaderhead Worst Enemy - start
+	CvWStringBuffer szWorstEnemyIsString;
+	if (getBugOptionBOOL("MiscHover__LeaderheadWorstEnemy", true, "BUG_LEADERHEAD_HOVER_WORST_ENEMY"))
 	{
-		CvWString szTempBuffer;
-
-		szTempBuffer.assign(gDLL->getText(L"TXT_KEY_WORST_ENEMY_OF", szWorstEnemyString));
-
-		szString.append(NEWLINE);
-		szString.append(szTempBuffer);
+		CvTeamAI& kThisTeam = GET_TEAM(kThisPlayer.getTeam());
+		if (!kThisTeam.isHuman())
+		{
+			TeamTypes eWorstEnemy = kThisTeam.AI_getWorstEnemy();
+			CvTeamAI& kWorstEnemy = GET_TEAM((TeamTypes) eWorstEnemy);
+			if (eWorstEnemy == kOtherPlayer.getTeam() && eWorstEnemy == GC.getGameINLINE().getActiveTeam()) //Fuyu trying something
+			{
+				szString.append(NEWLINE);
+				szString.append(gDLL->getText(L"TXT_KEY_WORST_ENEMY_IS_YOU"));
+			}
+			else if (eWorstEnemy != NO_TEAM && kWorstEnemy.isHasMet(kOtherPlayer.getTeam()) && kWorstEnemy.isHasMet(GC.getGameINLINE().getActiveTeam())) //Fuyu: having met is requirement, as always
+			{
+				setListHelp(szWorstEnemyIsString, L"", GET_TEAM(eWorstEnemy).getName().GetCString(), L", ", true); //Fuyu there can only be one
+			}
+		}
 	}
+// BUG - Leaderhead Worst Enemy - end
+
 	if( !szWarWithString.isEmpty() )
 	{
 		CvWString szTempBuffer;
@@ -15396,7 +15386,24 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, PlayerTyp
 		szString.append(NEWLINE);
 		szString.append(szTempBuffer);
 	}
+	if( !szWorstEnemyIsString.isEmpty() )
+	{
+		CvWString szTempBuffer;
 
+		szTempBuffer.assign(gDLL->getText(L"TXT_KEY_WORST_ENEMY_IS", szWorstEnemyIsString));
+
+		szString.append(NEWLINE);
+		szString.append(szTempBuffer);
+	}
+	if( !szWorstEnemyString.isEmpty() )
+	{
+		CvWString szTempBuffer;
+
+		szTempBuffer.assign(gDLL->getText(L"TXT_KEY_WORST_ENEMY_OF", szWorstEnemyString));
+
+		szString.append(NEWLINE);
+		szString.append(szTempBuffer);
+	}
 	if( !szDefensivePactString.isEmpty() )
 	{
 		CvWString szTempBuffer;
@@ -15406,7 +15413,6 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, PlayerTyp
 		szString.append(NEWLINE);
 		szString.append(szTempBuffer);
 	}
-
 /************************************************************************************************/
 /* BETTER_BTS_AI                          END                                                   */
 /************************************************************************************************/
