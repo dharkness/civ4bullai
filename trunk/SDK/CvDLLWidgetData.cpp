@@ -4255,14 +4255,7 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 				szBuffer.append(NEWLINE);
 				GAMETEXT.getEspionageString(szBuffer, ((PlayerTypes)widgetDataStruct.m_iData1), eActivePlayer);
-//Fuyu: removing this again
-/*
-// BUG - Other Relations in Scoreboard - start
 
-				GAMETEXT.getOtherRelationsString(szBuffer, ((PlayerTypes)widgetDataStruct.m_iData1), GC.getGameINLINE().getActivePlayer());
-
-// BUG - Other Relations in Scoreboard - end
-*/
 // BUG - Deals in Scoreboard - start
 				if (gDLL->ctrlKey())
 				{
@@ -4282,6 +4275,8 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 		if (eTeam != eActiveTeam )
 		{
+//Fuyu removing BBAI stuff that is handled by BULL now
+/*
 			// Show which civs this player is at war with
 			CvWStringBuffer szWarWithString;
 			CvWStringBuffer szWorstEnemyString;
@@ -4327,6 +4322,15 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 				szBuffer.append(NEWLINE);
 				szBuffer.append(szTempBuffer);
 			}
+*/
+
+//Fuyu: moving this here and commenting out the BBAI stuff, maybe now it works as it should.
+
+// BUG - Other Relations in Scoreboard - start
+
+				GAMETEXT.getOtherRelationsString(szBuffer, ((PlayerTypes)widgetDataStruct.m_iData1), GC.getGameINLINE().getActivePlayer());
+
+// BUG - Other Relations in Scoreboard - end
 
 			if( !(kActiveTeam.isAtWar(eTeam)))
 			{

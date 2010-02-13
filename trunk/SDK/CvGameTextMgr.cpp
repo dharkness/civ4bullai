@@ -15274,15 +15274,13 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, PlayerTyp
 	CvPlayer& kOtherPlayer = GET_PLAYER(eOtherPlayer);
 
 // BUG - Leaderhead Worst Enemy - start
-//Fuyu: I think BBAI code already takes care of that but leaving it in this time to test what it actually does.
-
 	if (getBugOptionBOOL("MiscHover__LeaderheadWorstEnemy", true, "BUG_LEADERHEAD_HOVER_WORST_ENEMY"))
 	{
 		CvTeamAI& kThisTeam = GET_TEAM(kThisPlayer.getTeam());
 		if (!kThisTeam.isHuman())
 		{
 			TeamTypes eWorstEnemy = kThisTeam.AI_getWorstEnemy();
-			if (eWorstEnemy == GC.getGame().getActiveTeam())
+			if (eWorstEnemy == kOtherPlayer.getTeam() && eWorstEnemy == GC.getGame().getActiveTeam()) //Fuyu trying something
 			{
 				szString.append(NEWLINE);
 				szString.append(gDLL->getText(L"TXT_KEY_WORST_ENEMY_IS_YOU"));
@@ -15294,7 +15292,6 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, PlayerTyp
 			}
 		}
 	}
-
 // BUG - Leaderhead Worst Enemy - end
 
 
@@ -15329,12 +15326,14 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, PlayerTyp
 	// Put all war, worst enemy strings on one line
 	CvWStringBuffer szWarWithString;
 	CvWStringBuffer szWorstEnemyString;
+	CvWStringBuffer szDefensivePactString;
 	bool bFirst = true;
 	bool bFirst2 = true;
+	bool bFirst3 = true;
 	for (int iTeam = 0; iTeam < MAX_CIV_TEAMS; ++iTeam)
 	{
 		CvTeamAI& kTeam = GET_TEAM((TeamTypes) iTeam);
-		if (kTeam.isAlive() && !kTeam.isMinorCiv() && iTeam != kThisPlayer.getTeam() && iTeam != kOtherPlayer.getTeam())
+		if (kTeam.isAlive() && !kTeam.isMinorCiv() && iTeam != kThisPlayer.getTeam()) //Fuyu trying something: removed " && iTeam != kOtherPlayer.getTeam()"
 		{
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                       09/28/09                 Emperor Fool & jdog5000      */
@@ -15351,8 +15350,16 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, PlayerTyp
 			{
 				if (::atWar((TeamTypes) iTeam, kThisPlayer.getTeam()))
 				{
-					setListHelp(szWarWithString, L"", kTeam.getName().GetCString(), L", ", bFirst);
-					bFirst = false;
+					if (iTeam == kOtherPlayer.getTeam() && iTeam == GC.getGameINLINE().getActiveTeam())
+					{
+						szString.append(NEWLINE);
+						szString.append(gDLL->getText(L"TXT_KEY_AT_WAR_WITH_YOU"));
+					}
+					else
+					{
+						setListHelp(szWarWithString, L"", kTeam.getName().GetCString(), L", ", bFirst);
+						bFirst = false;
+					}
 				}
 
 				if ( !kTeam.isHuman() && kTeam.AI_getWorstEnemy() == kThisPlayer.getTeam() )
@@ -15363,8 +15370,8 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, PlayerTyp
 // BUG - Leaderhead Defensive Pacts - start
 				if (kTeam.isDefensivePact(kThisPlayer.getTeam()) && getBugOptionBOOL("MiscHover__LeaderheadDefensivePacts", true, "BUG_LEADERHEAD_HOVER_DEFENSIVE_PACTS"))
 				{
-					szString.append(NEWLINE);
-					szString.append(gDLL->getText(L"TXT_KEY_DEFENSIVE_PACT_WITH", kTeam.getName().GetCString()));
+					setListHelp(szDefensivePactString, L"", kTeam.getName().GetCString(), L", ", bFirst3);
+					bFirst3 = false;
 				}
 // BUG - Leaderhead Defensive Pacts - start
 			}
@@ -15385,6 +15392,16 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, PlayerTyp
 		CvWString szTempBuffer;
 
 		szTempBuffer.assign(gDLL->getText(L"TXT_KEY_AT_WAR_WITH", szWarWithString));
+
+		szString.append(NEWLINE);
+		szString.append(szTempBuffer);
+	}
+
+	if( !szDefensivePactString.isEmpty() )
+	{
+		CvWString szTempBuffer;
+
+		szTempBuffer.assign(gDLL->getText(L"TXT_KEY_DEFENSIVE_PACT_WITH", szDefensivePactString));
 
 		szString.append(NEWLINE);
 		szString.append(szTempBuffer);
