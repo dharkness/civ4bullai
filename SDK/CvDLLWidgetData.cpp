@@ -4252,31 +4252,45 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 			{
 				szBuffer.append(NEWLINE);
 				GAMETEXT.getAttitudeString(szBuffer, ePlayer, eActivePlayer);
-
-				szBuffer.append(NEWLINE);
-				GAMETEXT.getEspionageString(szBuffer, ((PlayerTypes)widgetDataStruct.m_iData1), eActivePlayer);
+			}
+// BUG - start
+		// Espionage and CTRL instructions moved below
+// BUG - end
+		}
+		if ( !((gDLL->altKey() || gDLL->ctrlKey()) && gDLL->getChtLvl() > 0) )
+		{
+			if (eTeam != eActiveTeam )
+			{
+// BUG - All Relations in Scoreboard - start
+				GAMETEXT.getAllRelationsString(szBuffer, eTeam);
+// BUG - All Relations in Scoreboard - end
 
 // BUG - Deals in Scoreboard - start
-				if (gDLL->ctrlKey())
-				{
-					GAMETEXT.getActiveDealsString(szBuffer, ((PlayerTypes)widgetDataStruct.m_iData1), GC.getGameINLINE().getActivePlayer());
-				}
+			}
+			if (gDLL->ctrlKey() && ePlayer != eActivePlayer)
+			{
+				GAMETEXT.getActiveDealsString(szBuffer, ePlayer, eActivePlayer);
+			}
 // BUG - Deals in Scoreboard - end
 
+// BUG - start
+		// moved from above to organize the hover text
+			szBuffer.append(NEWLINE);
+			GAMETEXT.getEspionageString(szBuffer, ePlayer, eActivePlayer);
+
+			if (!(kPlayer.isHuman()))
+			{
 				szBuffer.append(NEWLINE);
 				szBuffer.append(gDLL->getText("TXT_KEY_MISC_CTRL_TRADE"));
 			}
-		}
-		else
-		{
-			szBuffer.append(NEWLINE);
-			GAMETEXT.getEspionageString(szBuffer, ((PlayerTypes)widgetDataStruct.m_iData1), eActivePlayer);
+// BUG - end
 		}
 
 		if (eTeam != eActiveTeam )
 		{
 //Fuyu removing BBAI stuff that is handled by BULL now
 /*
+
 			// Show which civs this player is at war with
 			CvWStringBuffer szWarWithString;
 			CvWStringBuffer szWorstEnemyString;
@@ -4324,13 +4338,6 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 			}
 */
 
-//Fuyu: moving this here and commenting out the BBAI stuff, maybe now it works as it should.
-
-// BUG - Other Relations in Scoreboard - start
-
-				GAMETEXT.getOtherRelationsString(szBuffer, ((PlayerTypes)widgetDataStruct.m_iData1), GC.getGameINLINE().getActivePlayer());
-
-// BUG - Other Relations in Scoreboard - end
 
 			if( !(kActiveTeam.isAtWar(eTeam)))
 			{
