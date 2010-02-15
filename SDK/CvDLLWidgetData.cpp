@@ -4252,10 +4252,13 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 			{
 				szBuffer.append(NEWLINE);
 				GAMETEXT.getAttitudeString(szBuffer, ePlayer, eActivePlayer);
-			}
 // BUG - start
-		// Espionage and CTRL instructions moved below
+		// CTRL instructions moved below
+		//Fuyu moved espionage back up
+				szBuffer.append(NEWLINE);
+				GAMETEXT.getEspionageString(szBuffer, ePlayer, eActivePlayer);
 // BUG - end
+			}
 		}
 		if ( !((gDLL->altKey() || gDLL->ctrlKey()) && gDLL->getChtLvl() > 0) )
 		{
@@ -4275,8 +4278,6 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 // BUG - start
 		// moved from above to organize the hover text
-			szBuffer.append(NEWLINE);
-			GAMETEXT.getEspionageString(szBuffer, ePlayer, eActivePlayer);
 
 			if (!(kPlayer.isHuman()))
 			{
