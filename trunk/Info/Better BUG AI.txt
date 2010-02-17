@@ -1,0 +1,26 @@
+Better BUG AI (2010-02-17)
+--------------------------
+based on:
+* Better BTS AI 0.84b (r522)
+* BULL 1.1 (r145)
+* BUG 4.3 (r2145)
+
+The source files for the DLL of this release are available at sourceforge project bullai, revision 21.
+http link: http://bullai.svn.sourceforge.net/viewvc/bullai/trunk/SDK/
+SVN link: https://bullai.svn.sourceforge.net/svnroot/bullai/trunk/SDK/
+
+------------------
+My own changes:
+
+* added my own code that should hinder the AI from considering unhealthy buildings that would make the
+ city shrink, also factors in future unheathiness from power when evaluating buildings that would
+ recieve a bonus from power
+
+* changed CIV4UnitInfos.xml: SAM Infantry is available as an upgrade to the Grenadier (previously
+ Infantry) - to avoid massive upgrading of riflemen to SAM when the AI hits Rocketery before
+ Assembly line. Also changed iPower for Catapult(5->6), Cannon(12->14), Artillery(18->19),
+ MobileArtillery(26->28) to make the AI value them more - If you don't want any of that, just use the
+ standard file.
+
+* Global Warming: Nuke Weight is set to 0 in GlobalDefines, so no GW from nukes, which should mean
+ no GW happening at all for 99% of games.
