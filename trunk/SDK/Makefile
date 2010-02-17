@@ -34,6 +34,7 @@ LINK = "$(TOOLKIT)/bin/link.exe"
 #   _MOD_SENTRY			New Sentry Actions Mod
 #   _MOD_GOVWORKERS		Governours can build Workers Mod
 #   _MOD_GWARM			Global Warming Mod
+#   _MOD_SHAM_SPOILER	enables AG modifiers in mod
 
 MODFLAGS = /DLOG_AI /D_MOD_FRACTRADE /D_MOD_SENTRY /D_MOD_GOVWORKERS
 

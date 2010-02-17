@@ -628,6 +628,12 @@ void CvDLLWidgetData::parseHelp(CvWStringBuffer &szBuffer, CvWidgetDataStruct &w
 		parseLeaderheadHelp(widgetDataStruct, szBuffer);
 		break;
 
+// BUG - Leaderhead Relations - start
+	case WIDGET_LEADERHEAD_RELATIONS:
+		parseLeaderheadRelationsHelp(widgetDataStruct, szBuffer);
+		break;
+// BUG - Leaderhead Relations - end
+
 	case WIDGET_LEADER_LINE:
 		parseLeaderLineHelp(widgetDataStruct, szBuffer);
 		break;
@@ -1046,6 +1052,12 @@ bool CvDLLWidgetData::executeAltAction( CvWidgetDataStruct &widgetDataStruct )
 	case WIDGET_LEADERHEAD:
 		doContactCiv(widgetDataStruct);
 		break;
+
+// BUG - Leaderhead Relations - start
+	case WIDGET_LEADERHEAD_RELATIONS:
+		doContactCiv(widgetDataStruct);
+		break;
+// BUG - Leaderhead Relations - end
 
 	default:
 		bHandled = false;
@@ -4230,7 +4242,7 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 	szBuffer.append(gDLL->getText("TXT_KEY_MISC_CONTACT_LEADER", kPlayer.getNameKey(), kPlayer.getCivilizationShortDescription()));
 	szBuffer.append(NEWLINE);
-	GAMETEXT.parsePlayerTraits(szBuffer, (PlayerTypes)widgetDataStruct.m_iData1);
+	GAMETEXT.parsePlayerTraits(szBuffer, ePlayer);
 
 	if (!(kActiveTeam.isHasMet(eTeam)))
 	{
@@ -4250,96 +4262,63 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 			if ( !((gDLL->altKey() || gDLL->ctrlKey()) && gDLL->getChtLvl() > 0) )
 			{
-				szBuffer.append(NEWLINE);
-				GAMETEXT.getAttitudeString(szBuffer, ePlayer, eActivePlayer);
 // BUG - start
-		// CTRL instructions moved below
-		//Fuyu moved espionage back up
+			// moved up here to match other leaderhead hovers
 				szBuffer.append(NEWLINE);
 				GAMETEXT.getEspionageString(szBuffer, ePlayer, eActivePlayer);
+
+				//szBuffer.append(NEWLINE);
+				GAMETEXT.getAttitudeString(szBuffer, ePlayer, eActivePlayer);
+
+			// espionage moved above
+			// CTRL instructions moved below
 // BUG - end
 			}
 		}
+// BUG - Espionage for Humans - start
+		else
+		{
+			szBuffer.append(NEWLINE);
+			GAMETEXT.getEspionageString(szBuffer, ePlayer, eActivePlayer);
+		}
+// BUG - Espionage for Humans - end
+
 		if ( !((gDLL->altKey() || gDLL->ctrlKey()) && gDLL->getChtLvl() > 0) )
 		{
-			if (eTeam != eActiveTeam )
-			{
-// BUG - All Relations in Scoreboard - start
-				GAMETEXT.getAllRelationsString(szBuffer, eTeam);
-// BUG - All Relations in Scoreboard - end
 
 // BUG - Deals in Scoreboard - start
-			}
 			if (gDLL->ctrlKey() && ePlayer != eActivePlayer)
 			{
 				GAMETEXT.getActiveDealsString(szBuffer, ePlayer, eActivePlayer);
 			}
 // BUG - Deals in Scoreboard - end
 
+			if (eTeam != eActiveTeam )
+			{
+// BUG - Relations in Scoreboard - start
+				GAMETEXT.getAllRelationsString(szBuffer, eTeam);
+// BUG - Relations in Scoreboard - end
+			}
+
+
 // BUG - start
 		// moved from above to organize the hover text
 
+//Fuyu: you can trade with humans too, right?
+/*
 			if (!(kPlayer.isHuman()))
 			{
+*/
 				szBuffer.append(NEWLINE);
 				szBuffer.append(gDLL->getText("TXT_KEY_MISC_CTRL_TRADE"));
+/*
 			}
+*/
 // BUG - end
 		}
 
 		if (eTeam != eActiveTeam )
 		{
-//Fuyu removing BBAI stuff that is handled by BULL now
-/*
-
-			// Show which civs this player is at war with
-			CvWStringBuffer szWarWithString;
-			CvWStringBuffer szWorstEnemyString;
-			bool bFirst = true;
-			bool bFirst2 = true;
-			for (int iTeam = 0; iTeam < MAX_CIV_TEAMS; ++iTeam)
-			{
-				CvTeamAI& kTeam = GET_TEAM((TeamTypes) iTeam);
-				if (kTeam.isAlive() && !kTeam.isMinorCiv() && iTeam != eActiveTeam && iTeam != GET_PLAYER((PlayerTypes)widgetDataStruct.m_iData1).getTeam())
-				{
-					if (kActiveTeam.isHasMet(kTeam.getID()))
-					{
-						if (::atWar((TeamTypes) iTeam, GET_PLAYER((PlayerTypes)widgetDataStruct.m_iData1).getTeam()))
-						{
-							setListHelp(szWarWithString, L"", kTeam.getName().GetCString(), L", ", bFirst);
-							bFirst = false;
-						}
-
-						if (kTeam.AI_getWorstEnemy() == GET_PLAYER((PlayerTypes)widgetDataStruct.m_iData1).getTeam())
-						{
-							setListHelp(szWorstEnemyString, L"", kTeam.getName().GetCString(), L", ", bFirst2);
-							bFirst2 = false;
-						}
-					}
-				}
-			}
-
-			if( !szWorstEnemyString.isEmpty() )
-			{
-				CvWString szTempBuffer;
-
-				szTempBuffer.assign(gDLL->getText(L"TXT_KEY_WORST_ENEMY_OF", szWorstEnemyString));
-
-				szBuffer.append(NEWLINE);
-				szBuffer.append(szTempBuffer);
-			}
-			if( !szWarWithString.isEmpty() )
-			{
-				CvWString szTempBuffer;
-
-				szTempBuffer.assign(gDLL->getText(L"TXT_KEY_AT_WAR_WITH", szWarWithString));
-
-				szBuffer.append(NEWLINE);
-				szBuffer.append(szTempBuffer);
-			}
-*/
-
-
 			if( !(kActiveTeam.isAtWar(eTeam)))
 			{
 				if (kActiveTeam.canDeclareWar(eTeam))
@@ -4775,6 +4754,10 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 #ifdef _MOD_GWARM
 	szBuffer.append(szTempBuffer);
 	szBuffer.append(gDLL->getText("TXT_KEY_MOD_GWARM"));
+#endif
+#ifdef _MOD_SHAM_SPOILER
+	szBuffer.append(szTempBuffer);
+	szBuffer.append(gDLL->getText("TXT_KEY_MOD_SHAM_SPOILER"));
 #endif
 	// separator line
 	szBuffer.append(NEWLINE L"==============================" NEWLINE);
@@ -5852,6 +5835,13 @@ void CvDLLWidgetData::parseLeaderLineHelp(CvWidgetDataStruct &widgetDataStruct, 
 {
 	GAMETEXT.parseLeaderLineHelp(szBuffer, (PlayerTypes)widgetDataStruct.m_iData1, (PlayerTypes)widgetDataStruct.m_iData2);
 }
+
+// BUG - Leaderhead Relations - start
+void CvDLLWidgetData::parseLeaderheadRelationsHelp(CvWidgetDataStruct &widgetDataStruct, CvWStringBuffer &szBuffer)
+{
+	GAMETEXT.parseLeaderHeadRelationsHelp(szBuffer, (PlayerTypes)widgetDataStruct.m_iData1, (PlayerTypes)widgetDataStruct.m_iData2);
+}
+// BUG - Leaderhead Relations - end
 
 void CvDLLWidgetData::parseCommerceModHelp(CvWidgetDataStruct &widgetDataStruct, CvWStringBuffer &szBuffer)
 {

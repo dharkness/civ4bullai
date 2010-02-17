@@ -7893,7 +7893,7 @@ bool CvPlayer::canDoCivics(CivicTypes eCivic) const
 	// Circumvents second crash bug in simultaneous turns MP games
 	if( eCivic == NO_CIVIC )
 	{
-		return 1;
+		return true;
 	}
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */
