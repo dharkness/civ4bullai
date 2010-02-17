@@ -1,0 +1,156 @@
+-----------------------------------------------------------
+
+For BBAI 0.83
+x Human as vassal option
+x Alliances option
+x Pop rush defense
+
+For BBAI 0.85
+
+- Check war strategy changes
+- Nuke AI: don't always launch first, don't be predictable
+- Breakout power calculations into units, production
+- Turtle strategy: don't send offensive forays if war prospects are bleak
+- Missionary AI
+- DPII diplomacy changes
+- Trade tech more when behind
+- Early worker build logic
+- Early settler logic
+
+-----------------------------------------------------------
+
+Potential future targeted changes to explore:
+
+Air AI
+- Bombers hit random nearby enemy cities if no air defenses and nothing else to do?
+
+Espionage AI
+x Spies trigger revolt when troops have city surrounded
+- Why do spies recalculate move every turn?
+
+Victory Strategy
+- Add XML fields to leaderhead
+- Effect civic choices
+- Effect wonder construction
+- Effect tech values
+- Effect unit construction
+- Effect on war declarations (both increase and decrease)
+- Effect great people
+- Spies go after competitors in final stages
+- Up conquest value based on army expenses
+
+City AI:
+- Better logic (centralized) for determining when to relocate capital
+x Gold (or pop) rush defense when threatened and unprepared
+x Rush defenses just after being declared on if behind in power
+x Strike: no units
+x Check worker production in small cities
+x Cities which are not on water areas need to build settlers to enable fast colonization!  Maybe use count of settler sea units to prompt non-coastal settler production?
+x At early pop 3 -> 4, Granary build is often abandoned in favor of Barracks
+- Cities build culture to grab bonuses
+- Probabilities in build priorities cause wasted hammers, especially when pop changes frequently
+
+Worker AI:
+- Build railroads on mines etc with high priority to speed industrial revolution
+- Chop to support early wonders or rushes
+
+War strategy AI:
+- Target cities to stop potential victory - capital for space, high culture cities for cultural.  Use war declaration code as a guide for how to determine if other player is close
+- Consider closeness to cultural victory, other conditions
+x Cancel war plans if they've been silent too long, no units moving to attack (invasion plans before astronomy issue)
+
+Unit AI:
+x Attack stacks should stage in coastal cities if in assault areas
+- If sending an attack load with no attack city units, change at least one unit ai
+- Don't send attack city stack with just seige ...
+- When pillaging, have fast units pillage once each and then slow units/second pillage so that group can still move
+- Stranded move to city with good closeness
+- Generals spawned in enemy territory (mods) -> lead
+- Issues with enemy units having many first strikes -> invincible to many units.  Need some sense of expected damage dealt when weighting attackers or at least some adjustment for high first strike count.
+- Tactical nukes (UNITAI_ICBM) retreat when in threatened city?
+- Adjust anyAttack odds threshold up if more enemy units than friendly units?
+- How to get AI medic units in attack stacks, keep them alive on attacks/defense
+
+Nuke AI:
+- Add leader head personality variable to control how "nuke happy" an AI is
+
+Naval AI:
+- Block transports from grouping with transports running MISSIONAI_ASSAULT
+- When transport heads out on assault mission, clear missions for all those coming to join with it
+- Escorts for picking up stranded
+- AttackSea have pretty low attack odds threshold ... how to coordinate buildup of naval strength to take out strong enemy units?
+- Keep transport groups out of recently captured cities
+- Escorts start with transports better, by having transports start mission ai but not leave until they have escorts under many circumstances
+- Pickup stranded not block if others are going if path length is short
+
+Great people AI
+- If losing war or on defensive, up value of Golden Age (so can switch to drafting civics easily)
+
+Missionary AI
+x When to build missionaries
+- Where to send them
+- Fix disconnect in shipping missionaries to small islands
+- When to build monasteries, esp non-state
+
+Civics AI
+- If in tough war, up value of civics which allow whipping, or buying?
+- If preparing for war against a tough opponent, up value of above as well
+
+Barbarian AI:
+- Attack unit production overdone now, early game?
+- Terra maps have good balance?
+
+Diplomacy:
+- How do losing/weak civs ask for help in war?  Try to vassal themselves to anyone
+- when will vassals choose to break free?
+- Pick state religion logic
+- Less willing to make peace when about to capture city, more willing when have threatened cities
+- Go after civs who previously took your prized cities?
+- Teams behind in tech more willing to make trades with others also behind?
+- Teams behind in tech more frequently check for tech trades
+- Scale some interactions with game speed?
+x WHEOOHRN hiding
+
+Logging system:
+- Log unit disband, upgrade expenses, attack stack movement, goodies
+- Log player strategies
+- Log religion founding
+
+Expose AI variables:
+- ?
+
+-----------------------------------------------------------
+
+Bigger picture avenues to pursue:
+
+Are there any remaining bottlenecks for invasions/reinforcements?
+- Travel in large flotillas
+- Stragglers turn back
+- Don't depart until sufficient escorts in place
+
+Have AI load troops when walking would take much longer than sailing, like in mediterreanen (see thread)
+
+Area city graphs, or some way to pick ports for naval invasion.
+
+Check decisions about making amphibious assaults versus landing next to city.  Also, separate off attack ships and have them bombard before invasion?
+
+Active defense, both shifting defenders around plus forming a stack to attack invaders.  See Version 0.50 thread.
+
+AI should give up on cities it has no chance of keeping, avoid "meat grinder" exploit http://forums.civfanatics.com/showpost.php?p=8521601&postcount=357
+
+Turtle strategy if losing badly, keep attack units from heading out much.
+
+Guard city logic causes cycles due to inconsistent counting of units.
+
+How to get early rushes ready?  Early rush defense too.
+
+What effect do AI weights on combat types/unit ais have?
+
+New type of warplan:  opportunity.  AI who wants to do Total War but is too weak to declare but still has a fighting chance if enemy is distracted, prepares and then enters a waiting for opportunity state.  Multiple waiters can join together if joint power high enough, otherwise individuals wait and declare when enemy is tied up and there's an opportunity.  Waiting eventually clears if AI decides to go after a different target.
+
+Rework power calculations so that:
+1)  Land, sea, and air are separate
+2)  Better economic/production power understanding (can enemy out produce us?)
+3)  Better tech power understanding (do we need to catch up in military tech?)
+
+Compare tech rates with Aggressive AI and not

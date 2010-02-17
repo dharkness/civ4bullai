@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<!-- edited with XMLSPY v2004 rel. 2 U (http://www.xmlspy.com) by Bart Muzzin (Firaxis Games) -->
+<!-- Sid Meier's Civilization 4 -->
+<!-- Copyright Firaxis Games 2005 -->
+<!-- -->
+<!-- Global Defines -->
+<Civ4Defines xmlns="x-schema:CIV4GlobalDefinesSchema.xml">
+	<!-- No Global Warming from Nukes, to be removed when GWmod is working -->
+	<Define>
+		<DefineName>GLOBAL_WARMING_NUKE_WEIGHT</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+
+	<!-- BBAI options to control new features -->
+	<Define>
+		<!-- Better BTS AI: Use new air combat mechanics -->
+		<DefineName>BBAI_AIR_COMBAT</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Better BTS AI: Vassals of human player build some extra military units (recommended for multiplayer only) -->
+		<DefineName>BBAI_HUMAN_VASSAL_WAR_BUILD</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Better BTS AI: Turns defensive pacts into something more like an alliance, the pact does not break on war declaration.  (Def: 0) -->
+		<DefineName>BBAI_ALLIANCE_OPTION</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Better BTS AI: Allows human player to offer themselves as vassal to an AI.  The AI has been taught to value this appropriately.  (Def: 0) -->
+		<DefineName>BBAI_HUMAN_AS_VASSAL_OPTION</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+	
+	
+	<!-- BBAI AI variables to allow easy AI tweaking -->
+	<Define>
+		<!-- War success value of capturing a city.  BBAI default: 25, BTS 10 -->
+		<DefineName>WAR_SUCCESS_CITY_CAPTURING</DefineName>
+		<iDefineIntVal>25</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Minimum stack strength ratio at which AI will attack enemy city it is next to, higher means less suicide.  BTS default: 110 -->
+		<DefineName>BBAI_ATTACK_CITY_STACK_RATIO</DefineName>
+		<iDefineIntVal>150</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Minimum attack odds of best attacker for AI to skip bombarding a city and just attack.  BBAI default: 12 -->
+		<DefineName>BBAI_SKIP_BOMBARD_BEST_ATTACK_ODDS</DefineName>
+		<iDefineIntVal>12</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Base ratio of stack strengths for AI considering skipping bombard and just attacking enemy city.
+		This ratio is reduced by the AI's best attacker odds and how long it will take to bombard the city.
+		Lower means AI will more readily skip bombarding.  BBAI default: 300 -->
+		<DefineName>BBAI_SKIP_BOMBARD_BASE_STACK_RATIO</DefineName>
+		<iDefineIntVal>300</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Minimum stack strength ratio for AI to skip bombarding city and just attack, higher is more conservative.  BBAI default: 140 -->
+		<DefineName>BBAI_SKIP_BOMBARD_MIN_STACK_RATIO</DefineName>
+		<iDefineIntVal>200</iDefineIntVal>
+	</Define>
+	
+	
+	<!-- Tech Diffusion: Plain BTS includes an adjustment to research rate based on how many civs you have met which already know a tech.
+	Tech Diffusion modifies this to take into account relationships, so tech diffuses fastest through open borders. 
+	In addition, it enables a kind of tech welfare to keep the civs who are far behind technologically relevant. -->
+	<Define>
+		<DefineName>TECH_DIFFUSION_ENABLE</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Tech Diffusion: Power of research rate increase based on number of teams you know who already know the tech you're researching. -->
+		<DefineName>TECH_DIFFUSION_KNOWN_TEAM_MODIFIER</DefineName>
+		<iDefineIntVal>30</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Tech Diffusion: Threshold percentage of top known tech score at which extra tech welfare help begins. -->
+		<DefineName>TECH_DIFFUSION_WELFARE_THRESHOLD</DefineName>
+		<iDefineIntVal>88</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Tech Diffusion: Power of tech welfare assitance.  BBAI default: 30, for plain BTS: 0 -->
+		<DefineName>TECH_DIFFUSION_WELFARE_MODIFIER</DefineName>
+		<iDefineIntVal>30</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Research rate boost for knowing first OR tech prereq.  In vanilla BTS this is effectively 20, reducing the cost of most techs on the tech tree.  BBAI default: 20, for plain BTS: 20 -->
+		<DefineName>TECH_COST_FIRST_KNOWN_PREREQ_MODIFIER</DefineName>
+		<iDefineIntVal>20</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Research rate boost for knowing additional OR tech prereqs.  In vanilla BTS this is 20.  Default: 20 -->
+		<DefineName>TECH_COST_KNOWN_PREREQ_MODIFIER</DefineName>
+		<iDefineIntVal>20</iDefineIntVal>
+	</Define>
+	<!-- BBAI has also introduced a tech cost modifier by era, which can be found in CIV4EraInfos.xml -->
+	<Define>
+		<!-- This variable allows the throttling of research rates, effectively changing the cost of all techs: so 5 makes techs effectively cost 5% more, -5 makes costs 5% lower. -->
+		<DefineName>TECH_COST_MODIFIER</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+	
+	<!-- Governor Builds Workers -->
+	<Define>
+		<DefineName>USE_MODDERS_PLAYEROPTION_1</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+	<Define>
+		<DefineName>USE_MODDERS_PLAYEROPTION_2</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+</Civ4Defines>
