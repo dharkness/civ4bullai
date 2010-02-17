@@ -224,6 +224,10 @@ bool isBeforeUnitCycle(const CvUnit* pFirstUnit, const CvUnit* pSecondUnit)
 	return (pFirstUnit->getID() < pSecondUnit->getID());
 }
 
+/*************************************************************************************************/
+/** ADVANCED COMBAT ODDS                      11/7/09                           PieceOfMind      */
+/** BEGIN                                                                       v?.?             */
+/*************************************************************************************************/
 bool isPromotionValid(PromotionTypes ePromotion, UnitTypes eUnit, bool bLeader)
 {
 	CvUnitInfo& kUnit = GC.getUnitInfo(eUnit);
@@ -332,6 +336,10 @@ bool isPromotionValid(PromotionTypes ePromotion, UnitTypes eUnit, bool bLeader)
 
 	return true;
 }
+/*************************************************************************************************/
+/** ADVANCED COMBAT ODDS                      11/7/09                           PieceOfMind      */
+/** END                                                                                          */
+/*************************************************************************************************/
 
 int getPopulationAsset(int iPopulation)
 {
@@ -829,8 +837,10 @@ int getCombatOdds(CvUnit* pAttacker, CvUnit* pDefender)
 	return iOdds;
 }
 
-// BUG - Advanced Combat Odds - start
-// by PieceOfMind
+/*************************************************************************************************/
+/** ADVANCED COMBAT ODDS                      11/7/09                           PieceOfMind      */
+/** BEGIN                                                                       v1.1             */
+/*************************************************************************************************/
 
 //Calculates the probability of a particular combat outcome
 //Returns a float value (between 0 and 1)
@@ -1049,8 +1059,13 @@ float getCombatOddsSpecific(CvUnit* pAttacker, CvUnit* pDefender, int n_A, int n
 
     answer = answer / ((float)(AttFSC+DefFSC+1)); // dividing by (t+w+1) as is necessary
     return answer;
-}
-// BUG - Advanced Combat Odds - end
+}// getCombatOddsSpecific
+
+// I had to add this function to the header file CvGameCoreUtils.h
+/*************************************************************************************************/
+/** ADVANCED COMBAT ODDS                      11/7/09                           PieceOfMind      */
+/** END                                                                                          */
+/*************************************************************************************************/
 
 int getEspionageModifier(TeamTypes eOurTeam, TeamTypes eTargetTeam)
 {

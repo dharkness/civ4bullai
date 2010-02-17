@@ -1145,6 +1145,7 @@ protected:
 	bool m_bInfoDirty;
 	bool m_bLayoutDirty;
 	bool m_bPlundered;
+
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                       12/07/09                         denev & jdog5000     */
 /*                                                                                              */
