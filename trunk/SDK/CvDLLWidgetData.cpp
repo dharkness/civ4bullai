@@ -4303,17 +4303,8 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 // BUG - start
 		// moved from above to organize the hover text
-
-//Fuyu: you can trade with humans too, right?
-/*
-			if (!(kPlayer.isHuman()))
-			{
-*/
 				szBuffer.append(NEWLINE);
 				szBuffer.append(gDLL->getText("TXT_KEY_MISC_CTRL_TRADE"));
-/*
-			}
-*/
 // BUG - end
 		}
 

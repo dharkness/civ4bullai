@@ -1,5 +1,5 @@
 ##############################################################################
-## File: PerfectWorld.py version 2.05f
+## File: PerfectWorld.py version 2.06f
 ## Author: Rich Marinaccio
 ## Copyright 2007 Rich Marinaccio
 ##
@@ -46,6 +46,8 @@
 ##
 ##############################################################################
 ## Version History
+## 2.06 - Fixed a few bugs from my minimum hill/maximum bad feature function.
+##
 ## 2.05 - Made maps of standard size and below a bit smaller. Changed the way I
 ## remove jungle to prevent excessive health problems. Tiles in FC on different
 ## continents have zero value. Tiles on different continents will not be boosted
@@ -4471,10 +4473,11 @@ class StartingPlotFinder :
             for i in range(gc.getNUM_CITY_PLOTS()):
                 food,value = self.getCityPotentialValue(x,y)
                 
+                currentYield = yields[n]
                 #switch to food if food is needed
                 usablePlots = food/gc.getFOOD_CONSUMPTION_PER_POPULATION()
                 if usablePlots <= gc.getNUM_CITY_PLOTS()/2:
-                    yields[n] = YieldTypes.YIELD_FOOD
+                    currentYield = YieldTypes.YIELD_FOOD
                     
                 if debugOut: print "value now at %(v)d" % {"v":value}
                 if bonusCount >= bonuses:
@@ -4502,7 +4505,7 @@ class StartingPlotFinder :
                         continue
                     if bonusInfo.getBonusClassType() == gc.getInfoTypeForString("BONUSCLASS_WONDER") and mc.noBonusWonderClass:
                         continue
-                    if bonusInfo.getYieldChange(yields[n]) < 1:
+                    if bonusInfo.getYieldChange(currentYield) < 1:
                         continue
                     if bonusInfo.getTechCityTrade() == TechTypes.NO_TECH or \
                     gc.getTechInfo(bonusInfo.getTechCityTrade()).getEra() <= game.getStartEra():
@@ -4570,22 +4573,7 @@ class StartingPlotFinder :
                     if plot.getArea() == gameMap.plot(x,y).getArea():
                         hillsFound += 1
                     peaksFound -= 1
-                    
-        #ensure maximum number of bad features
-        if badFeaturesFound > mc.MaxBadFeaturesInFC:
-            for plot in plotList:
-                print "badFeaturesFound=%d" % badFeaturesFound
-                featureInfo = gc.getFeatureInfo(plot.getFeatureType())
-                if badFeaturesFound == mc.MaxBadFeaturesInFC:
-                    break
-                if featureInfo != None:
-                    totalYield = 0
-                    for yi in range(YieldTypes.NUM_YIELD_TYPES):
-                        totalYield += featureInfo.getYieldChange(YieldTypes(yi))
-                    if totalYield <= 0:#bad feature
-                        badFeaturesFound -= 1
-                        plot.setFeatureType(FeatureTypes.NO_FEATURE,-1)
-        
+
         #Ensure minimum number of hills
         hillsNeeded = mc.MinHillsInFC - hillsFound
         print "hills found = %d, hills needed = %d" % (hillsFound,hillsNeeded)
@@ -4594,12 +4582,11 @@ class StartingPlotFinder :
                 if hillsNeeded <= 0:
                     break
                 featureInfo = gc.getFeatureInfo(plot.getFeatureType())
-                requiresFlatlands = False
-                if featureInfo != None:
-                    requiresFlatlands = featureInfo.isRequiresFlatlands()
+                requiresFlatlands = (featureInfo != None and featureInfo.isRequiresFlatlands())
+                bonusInfo = gc.getBonusInfo(plot.getBonusType(TeamTypes.NO_TEAM))
                 if plot.getPlotType() != PlotTypes.PLOT_HILLS and \
                 plot.getArea() == gameMap.plot(x,y).getArea() and \
-                plot.getBonusType(TeamTypes.NO_TEAM) == BonusTypes.NO_BONUS and \
+                bonusInfo == None and \
                 not requiresFlatlands:
                     plot.setPlotType(PlotTypes.PLOT_HILLS,True,True)
                     hillsNeeded -= 1
@@ -4609,13 +4596,54 @@ class StartingPlotFinder :
                 for plot in plotList:
                     if plot.getPlotType() != PlotTypes.PLOT_HILLS and \
                     plot.getArea() == gameMap.plot(x,y).getArea() and \
-                    plot.getBonusType(TeamTypes.NO_TEAM) == BonusTypes.NO_BONUS:
-                        plot.setFeatureType(FeatureTypes.NO_FEATURE,-1)
+                    (bonusInfo == None or not bonusInfo.isRequiresFlatlands()):
                         plot.setPlotType(PlotTypes.PLOT_HILLS,True,True)
                         hillsNeeded -= 1
-                        print "adding hill, removing feature"
+                        if requiresFlatlands:
+                            plot.setFeatureType(FeatureTypes.NO_FEATURE,-1)
+                            print "adding hill, removing feature"
+                        else:
+                            print "adding hill to bonus tile"
             if hillsNeeded > 0:
                 print "failed to add minimum hills!!!!!!!!!!"
+                    
+        #ensure maximum number of bad features
+        badFeaturesToRemove = badFeaturesFound - mc.MaxBadFeaturesInFC
+        print "badFeaturesFound = %d, badFeaturesToRemove = %d" % (badFeaturesFound,badFeaturesToRemove)
+        if badFeaturesToRemove > 0:
+            #remove half from flatlands, the rest from hills
+            badFeaturesToRemoveFromFlatlands = badFeaturesToRemove/2 + badFeaturesToRemove%2
+            badFeaturesToRemove -= badFeaturesToRemoveFromFlatlands
+            for plot in plotList:
+                if badFeaturesToRemoveFromFlatlands <= 0 and badFeaturesToRemove <= 0:
+                    break
+                featureInfo = gc.getFeatureInfo(plot.getFeatureType())
+                if featureInfo != None:
+                    totalYield = 0
+                    for yi in range(YieldTypes.NUM_YIELD_TYPES):
+                        totalYield += featureInfo.getYieldChange(YieldTypes(yi))
+                    if totalYield <= 0:#bad feature
+                        if plot.getPlotType() == PlotTypes.PLOT_LAND and badFeaturesToRemoveFromFlatlands > 0:
+                            print "removing bad feature from flatlands"
+                            badFeaturesToRemoveFromFlatlands -= 1
+                        if plot.getPlotType() == PlotTypes.PLOT_HILLS and badFeaturesToRemove > 0:
+                            print "removing bad feature from hills"
+                            badFeaturesToRemove -= 1
+                        plot.setFeatureType(FeatureTypes.NO_FEATURE,-1)
+            #if there are not enough hills or flatlands, there will be leftovers
+            badFeaturesToRemove += badFeaturesToRemoveFromFlatlands
+            for plot in plotList:
+                if badFeaturesToRemove <= 0:
+                    break
+                featureInfo = gc.getFeatureInfo(plot.getFeatureType())
+                if featureInfo != None:
+                    totalYield = 0
+                    for yi in range(YieldTypes.NUM_YIELD_TYPES):
+                        totalYield += featureInfo.getYieldChange(YieldTypes(yi))
+                    if totalYield <= 0:#bad feature
+                        print "removing bad feature"
+                        badFeaturesToRemove -= 1
+                        plot.setFeatureType(FeatureTypes.NO_FEATURE,-1)
 
     def addHandicapBonus(self):
         gc = CyGlobalContext()
