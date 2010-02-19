@@ -4440,7 +4440,7 @@ class StartingPlotFinder :
     def boostCityPlotValue(self,x,y,bonuses,isCoastalCity):
         mapGen = CyMapGenerator()
         food,value = self.getCityPotentialValue(x,y)
-        debugOut = False
+        debugOut = True
         if debugOut: print "Value before boost = %(v)d" % {"v":value}
         gc = CyGlobalContext()
         gameMap = CyMap()
@@ -4469,14 +4469,19 @@ class StartingPlotFinder :
         yields.append(YieldTypes.YIELD_FOOD)
         yields.append(YieldTypes.YIELD_PRODUCTION)
 
+        plotList = []
+        for i in range(gc.getNUM_CITY_PLOTS()):
+            plotList.append(plot = plotCity(x,y,i))
+        plotList = ShuffleList(plotList)
+
         for n in range(len(yields)):
-            for i in range(gc.getNUM_CITY_PLOTS()):
+            for plot in plotList:
                 food,value = self.getCityPotentialValue(x,y)
                 
                 currentYield = yields[n]
                 #switch to food if food is needed
                 usablePlots = food/gc.getFOOD_CONSUMPTION_PER_POPULATION()
-                if usablePlots <= gc.getNUM_CITY_PLOTS()/2:
+                if usablePlots <= gc.getNUM_CITY_PLOTS()/2 + 1:
                     currentYield = YieldTypes.YIELD_FOOD
                     
                 if debugOut: print "value now at %(v)d" % {"v":value}
@@ -4484,7 +4489,6 @@ class StartingPlotFinder :
                     if debugOut: print "Placed all bonuses."
                     if debugOut: print "****************************************************"
                     return
-                plot = plotCity(x,y,i)
                 if plot.getX() == x and plot.getY() == y:
                     continue
                 if plot.isWater() and not isCoastalCity:
