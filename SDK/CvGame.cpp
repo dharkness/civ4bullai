@@ -5969,11 +5969,11 @@ void CvGame::doGlobalWarming()
 		if (getSorenRandNum(100, "Global Warming") + iGlobalWarmingDefense < GC.getDefineINT("GLOBAL_WARMING_PROB"))
 		{
 */
-		int iOdds = GC.getDefineINT("GLOBAL_WARMING_PROB");
+		int iOdds = GC.getDefineINT("GLOBAL_WARMING_PROB") - iGlobalWarmingDefense;
 		iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent();
 		iOdds /= 100;
 
-		if (getSorenRandNum(100, "Global Warming") + iGlobalWarmingDefense < iOdds)
+		if (getSorenRandNum(100, "Global Warming") < iOdds)
 		{
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */
@@ -6115,11 +6115,11 @@ void CvGame::doGlobalWarming()
 		if (getSorenRandNum(100, "Nuclear Fallout") + iGlobalWarmingDefense < GC.getDefineINT("NUCLEAR_WINTER_PROB"))
 		{
 */
-		int iOdds = GC.getDefineINT("NUCLEAR_WINTER_PROB");
+		int iOdds = GC.getDefineINT("NUCLEAR_WINTER_PROB") - iGlobalWarmingDefense;
 		iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent();
 		iOdds /= 100;
 
-		if (getSorenRandNum(100, "Nuclear Fallout") + iGlobalWarmingDefense < iOdds)
+		if (getSorenRandNum(100, "Nuclear Fallout") < iOdds)
 		{
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */
