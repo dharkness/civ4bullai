@@ -5987,10 +5987,12 @@ bool CvPlayer::canFound(int iX, int iY, bool bTestVisible) const
 /* Bugfix                                                                                       */
 /************************************************************************************************/
 	// EF: canFoundCitiesOnWater callback handling was incorrect and ignored isWater() if it returned true
-	if (!bValid && pPlot->isWater())
+	if (pPlot->isWater())
 	{
 		if(GC.getUSE_CAN_FOUND_CITIES_ON_WATER_CALLBACK())
 		{
+			bValid = false;
+
 			CyArgsList argsList2;
 			argsList2.add(iX);
 			argsList2.add(iY);
@@ -6874,7 +6876,7 @@ void CvPlayer::removeBuildingClass(BuildingClassTypes eBuildingClass)
 		{
 			if (pLoopCity->getNumRealBuilding(eBuilding) > 0)
 			{
-				pLoopCity->setNumRealBuilding(eBuilding, 0);
+				pLoopCity->setNumRealBuilding(eBuilding, pLoopCity->getNumRealBuilding(eBuilding) - 1); //Fuyu: Unofficial Patch code by EmperorFool
 				break;
 			}
 		}
