@@ -1,11 +1,13 @@
-Better BUG AI (2010-02-17)
+Better BUG AI (2010-02-19)
 --------------------------
+http://forums.civfanatics.com/showthread.php?t=354019
+
 based on:
 * Better BTS AI 0.84b (r522)
-* BULL 1.1 (r145)
-* BUG 4.3 (r2145)
+* BULL 1.1 (r150)
+* BUG 4.3 (r2156)
 
-The source files for the DLL of this release are available at sourceforge project bullai, revision 21.
+The source files for the DLL of this release are available at sourceforge project bullai, revision 28.
 http link: http://bullai.svn.sourceforge.net/viewvc/bullai/trunk/SDK/
 SVN link: https://bullai.svn.sourceforge.net/svnroot/bullai/trunk/SDK/
 

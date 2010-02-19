@@ -71,6 +71,22 @@
 ##     or class constructor at a later time with the arguments provided when
 ##     the Function was created.
 ##
+## Exporting Functions to Other Modules
+##
+##   export(function, toModule, asName)
+##     Makes <function> available in <toModule> as <asName>.
+##
+##   exportFunction(module, name, toModule, asName)
+##     Makes <module>.<name> available in <toModule> as <asName>.
+##
+##   extend(function, toModule, asName)
+##     Exports a lambda function to <toModule> as <asName> that calls <function>,
+##     passing the original function from <toModule> and the received arguments.
+##
+##   extendFunction(module, name, toModule, asName)
+##     Exports a lambda function to <toModule> as <asName> that calls <module>.<name>,
+##     passing the original function from <toModule> and the received arguments.
+##
 ## Python
 ##
 ##   fixSets(namespace):
@@ -628,6 +644,83 @@ def getFunction(module, functionOrClass, bind=False, *args, **kwargs):
 def callFunction(module, functionOrClass, *args, **kwargs):
 	func = lookupFunction(module, functionOrClass)
 	return func(*args, **kwargs)
+
+
+## Exporting Functions to Other Modules
+##
+## Copying function definitions from one module to another, mostly to EntryPoint modules,
+## so they can be called from within that module without needing to import the source module.
+
+def export(function, toModule, asName=None, log=True):
+	"""
+	Makes <function> available in the toModule named <toModule> as <asName>.
+	"""
+	mod = lookupModule(toModule, False)
+	if asName is None:
+		asName = function.__name__
+	if log:
+		if asName != function.__name__:
+			debug("BugUtil - exporting %s.%s as %s.%s", function.__module__, function.__name__, toModule, asName)
+		else:
+			debug("BugUtil - exporting %s.%s to %s", function.__module__, asName, toModule)
+	setattr(mod, asName, function)
+
+def exportFunction(module, name, toModule, asName=None, log=True):
+	if asName is None:
+		asName = name
+	export(lookupFunction(module, name, False), toModule, asName, log)
+
+EXTEND_BEFORE = "before"
+EXTEND_AFTER = "after"
+EXTEND_INSTEAD = "instead"
+
+def extend(function, toModule, asName=None, how=EXTEND_INSTEAD, log=True):
+	"""
+	Exports a lambda function to <toModule> as <asName> that calls <function>,
+	passing the original function from <toModule> and the received arguments.
+	"""
+	if asName is None:
+		asName = function.__name__
+	originalFunc = lookupFunction(toModule, asName, False)
+	if how == EXTEND_INSTEAD:
+		newFunc = lambda *args: function(originalFunc, *args)
+	elif how == EXTEND_BEFORE:
+		newFunc = lambda *args: (function(*args), originalFunc(*args))[1]
+	elif how == EXTEND_AFTER:
+		newFunc = lambda *args: (originalFunc(*args), function(*args))[1]
+	else:
+		raise ConfigError("Invalid how '%s' in extend()" % how)
+	newFunc.__module__ = function.__module__
+	newFunc.__name__ = function.__name__
+	if log:
+		if asName != function.__name__:
+			debug("BugUtil - extending %s.%s %s %s.%s", function.__module__, function.__name__, how, toModule, asName)
+		else:
+			debug("BugUtil - extending %s.%s %s %s", function.__module__, asName, how, toModule)
+	export(newFunc, toModule, asName, False)
+
+def extendBefore(function, toModule, asName=None, log=True):
+	extend(function, toModule, asName, EXTEND_BEFORE, log)
+
+def extendAfter(function, toModule, asName=None, log=True):
+	extend(function, toModule, asName, EXTEND_AFTER, log)
+
+def extendInstead(function, toModule, asName=None, log=True):
+	extend(function, toModule, asName, EXTEND_INSTEAD, log)
+
+def extendFunction(module, name, toModule, asName=None, how=EXTEND_INSTEAD, log=True):
+	if asName is None:
+		asName = name
+	extend(lookupFunction(module, name, False), toModule, asName, how, log)
+
+def extendBeforeFunction(module, name, toModule, asName=None, log=True):
+	extendFunction(module, name, toModule, asName, EXTEND_BEFORE, log)
+
+def extendAfterFunction(module, name, toModule, asName=None, log=True):
+	extendFunction(module, name, toModule, asName, EXTEND_AFTER, log)
+
+def extendInsteadFunction(module, name, toModule, asName=None, log=True):
+	extendFunction(module, name, toModule, asName, EXTEND_INSTEAD, log)
 
 
 ## Python

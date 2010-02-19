@@ -44,11 +44,26 @@ Improvements:
 
 Bug Fixes:
 
+- Random Events
+	Fixed culture-level checking in Partisans random event; event is now possible on 3.19 and above
+
+
 MODDING
+
+	*** Important: See "Removed EntryPoints Modules" below *** 
 
 New Features:
 
+- BugUtil
+	Added export(), exportFunction(), extend(), and extendFunction() for injecting functions into EntryPoints modules
+- Configuration
+	Added <export> and <extend> XML elements that call exportFunction() and extendFunction() respectively
+
 Improvements:
+
+- Removed EntryPoints Modules
+	CvAppInterface, CvDiplomacyInterface, CvOptionsScreenCallbackInterface, and CvRandomEventInterface
+	If your mod needs to add code to any of these modules, use <export> and <extend> or use the original BTS modules as a base
 
 Bug Fixes:
 
