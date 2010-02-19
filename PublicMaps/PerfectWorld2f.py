@@ -4648,7 +4648,7 @@ class StartingPlotFinder :
                             print "removing bad feature from hills"
                             badFeaturesToRemove -= 1
                         plot.setFeatureType(FeatureTypes.NO_FEATURE,-1)
-                        if (bonusEnum != BonusTypes.NO_BONUS and not bp.PlotCanHaveBonus(plot,bonusEnum,True,True))
+                        if (bonusEnum != BonusTypes.NO_BONUS and not bp.PlotCanHaveBonus(plot,bonusEnum,True,True)):
                             print "re-adding bad feature for bonus"
                             badFeaturesToRemove += 1
                             plot.setFeatureType(featureEnum,-1)
