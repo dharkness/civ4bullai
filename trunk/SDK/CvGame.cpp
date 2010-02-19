@@ -6115,7 +6115,7 @@ void CvGame::doGlobalWarming()
 		if (getSorenRandNum(100, "Nuclear Fallout") + iGlobalWarmingDefense < GC.getDefineINT("NUCLEAR_WINTER_PROB"))
 		{
 */
-		int iOdds = GC.getDefineINT("NUCLEAR_WINTER_PROB") - iGlobalWarmingDefense;
+		int iOdds = GC.getDefineINT("NUCLEAR_WINTER_PROB"); //Fuyu: iGlobalWarmingDefense does no longer protect from nuclear winters
 		iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent();
 		iOdds /= 100;
 
