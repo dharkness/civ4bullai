@@ -243,9 +243,6 @@ class MapConstants :
         #a bonus.
         self.BonusBonus = 1.0
         
-        #Disallows Stone and Marble to be used to sweeting starting positions.
-        self.noBonusWonderClass = True
-        
         #How many squares are added to a lake for each unit of drainage flowing
         #into it.
         self.LakeSizePerDrainage = 14.0
@@ -432,14 +429,22 @@ class MapConstants :
         #---These values are for evaluating starting locations
         
         #Minimum number of hills in fat cross
-        self.MinHillsInFC = 4
+        self.MinHillsInFC = 2
 
         #Max number of peaks in fat cross
-        self.MaxPeaksInFC = 2
+        self.MaxPeaksInFC = 3
 
         #Max number of bad features(jungle) in fat cross
         self.MaxBadFeaturesInFC = 4
 
+        #Randomly allows wonder class bonuses (stone and marble) to be used to sweeten starting positions.
+        #(Chance per starting position to allow 1 wonder bonus)
+        self.allowWonderBonusChance = 0.05
+
+        #Randomly allows bonuses with continent limiter to be used to sweeting starting positions.
+        #(Chance per attempt to place an area-restricted resource in the wrong area)
+        self.ignoreAreaRestrictionChance = 0.05
+        
         #The following values are used for assigning starting locations. For now,
         #they have the same ratio that is found in CvPlot::getFoundValue
         self.CommerceValue = 20
@@ -4462,26 +4467,27 @@ class StartingPlotFinder :
 
         bonusCount = 0
         
+        allowBonusWonderClass = (PRand.random() <= mc.allowWonderBonusChance)
+
         #Do this process in 3 passes for each yield type, then an extra production pass
         yields = []
         yields.append(YieldTypes.YIELD_PRODUCTION)
         yields.append(YieldTypes.YIELD_COMMERCE)
         yields.append(YieldTypes.YIELD_FOOD)
-        yields.append(YieldTypes.YIELD_PRODUCTION)
 
         plotList = []
         for i in range(gc.getNUM_CITY_PLOTS()):
-            plotList.append(plot = plotCity(x,y,i))
+            plotList.append(plotCity(x,y,i))
         plotList = ShuffleList(plotList)
 
-        for n in range(len(yields)):
+        for n in range(len(yields)*bonuses + 1):
             for plot in plotList:
                 food,value = self.getCityPotentialValue(x,y)
                 
-                currentYield = yields[n]
+                currentYield = yields[(n+bonusCount)%(len(yields))]
                 #switch to food if food is needed
                 usablePlots = food/gc.getFOOD_CONSUMPTION_PER_POPULATION()
-                if usablePlots <= gc.getNUM_CITY_PLOTS()/2 + 1:
+                if usablePlots <= (2*gc.getNUM_CITY_PLOTS())/3:
                     currentYield = YieldTypes.YIELD_FOOD
                     
                 if debugOut: print "value now at %(v)d" % {"v":value}
@@ -4507,7 +4513,7 @@ class StartingPlotFinder :
                     bonusInfo = gc.getBonusInfo(bonusEnum)
                     if bonusInfo.isNormalize() == False:
                         continue
-                    if bonusInfo.getBonusClassType() == gc.getInfoTypeForString("BONUSCLASS_WONDER") and mc.noBonusWonderClass:
+                    if bonusInfo.getBonusClassType() == gc.getInfoTypeForString("BONUSCLASS_WONDER") and not allowBonusWonderClass:
                         continue
                     if bonusInfo.getYieldChange(currentYield) < 1:
                         continue
@@ -4515,10 +4521,16 @@ class StartingPlotFinder :
                     gc.getTechInfo(bonusInfo.getTechCityTrade()).getEra() <= game.getStartEra():
                         if bp.PlotCanHaveBonus(plot,bonusEnum,False,False) == False:
                             if debugOut: print "Plot can't have %(b)s" % {"b":bonusInfo.getType()}
-                            continue
+                            if PRand.random() > mc.ignoreAreaRestrictionChance:
+                                continue
+                            elif bp.PlotCanHaveBonus(plot,bonusEnum,False,True) == False:
+                                continue
+                            elif debugOut: print "ignoring area restriction.."
                         if debugOut: print "Setting bonus type at %(x)d,%(y)d to %(b)s" % \
                         {"x":plot.getX(),"y":plot.getY(),"b":bonusInfo.getType()}
                         plot.setBonusType(bonusEnum)
+                        if bonusInfo.getBonusClassType() == gc.getInfoTypeForString("BONUSCLASS_WONDER"):
+                            allowBonusWonderClass = False
                         bonusCount += 1
                         break
                 #restore the feature if possible
