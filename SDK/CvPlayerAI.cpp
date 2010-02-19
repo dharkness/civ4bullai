@@ -12078,7 +12078,23 @@ void CvPlayerAI::AI_changePeacetimeTradeValue(PlayerTypes eIndex, int iChange)
 					{
 						if (GET_TEAM((TeamTypes)iI).AI_getWorstEnemy() == getTeam())
 						{
+/*************************************************************************************************/
+/** BETTER AI (Better Diplomatics) Sephi		                	    						**/
+/*************************************************************************************************/
+/** orig
 							GET_TEAM((TeamTypes)iI).AI_changeEnemyPeacetimeTradeValue(GET_PLAYER(eIndex).getTeam(), iChange);
+**/
+                            //make sure that if A trades with B and A is C's worst enemy, C is only mad at B if C has met B before
+                            //A = this
+                            //B = eIndex
+                            //C = (TeamTypes)iI
+                            if (GET_TEAM((TeamTypes)iI).isHasMet(GET_PLAYER(eIndex).getTeam()))
+                            {
+							GET_TEAM((TeamTypes)iI).AI_changeEnemyPeacetimeTradeValue(GET_PLAYER(eIndex).getTeam(), iChange);
+						}
+/*************************************************************************************************/
+/** End															    							**/
+/*************************************************************************************************/
 						}
 					}
 				}
@@ -12122,7 +12138,24 @@ void CvPlayerAI::AI_changePeacetimeGrantValue(PlayerTypes eIndex, int iChange)
 					{
 						if (GET_TEAM((TeamTypes)iI).AI_getWorstEnemy() == getTeam())
 						{
+/*************************************************************************************************/
+/** BETTER AI (Better Diplomatics) Sephi		                	    						**/
+/*************************************************************************************************/
+/** orig
 							GET_TEAM((TeamTypes)iI).AI_changeEnemyPeacetimeGrantValue(GET_PLAYER(eIndex).getTeam(), iChange);
+**/
+                            //make sure that if A trades with B and A is C's worst enemy, C is only mad at B if C has met B before
+                            //A = this
+                            //B = eIndex
+                            //C = (TeamTypes)iI
+                            if (GET_TEAM((TeamTypes)iI).isHasMet(GET_PLAYER(eIndex).getTeam()))
+                            {
+                                GET_TEAM((TeamTypes)iI).AI_changeEnemyPeacetimeGrantValue(GET_PLAYER(eIndex).getTeam(), iChange);
+                            }
+/*************************************************************************************************/
+/** End															    							**/
+/*************************************************************************************************/
+
 						}
 					}
 				}

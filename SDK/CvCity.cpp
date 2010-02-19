@@ -235,9 +235,11 @@ void CvCity::init(int iID, PlayerTypes eOwner, int iX, int iY, bool bBumpUnits, 
 /* original bts code
 		if (pPlot->getFeatureType() != NO_FEATURE)
 */
-		// From Mongoose SDK
+		// From Mongoose SDK, updated by Fuyu
 		// Don't remove floodplains from tiles when founding city
-		if ((pPlot->getFeatureType() != NO_FEATURE) && (pPlot->getFeatureType() != (FeatureTypes)GC.getInfoTypeForString("FEATURE_FLOOD_PLAINS")))
+		if (pPlot->getFeatureType() != NO_FEATURE && 
+			(GC.getFeatureInfo(pPlot->getFeatureType()).getDefenseModifier() != 0 ||
+			 GC.getFeatureInfo(pPlot->getFeatureType()).isNoImprovement()))
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */
 /************************************************************************************************/

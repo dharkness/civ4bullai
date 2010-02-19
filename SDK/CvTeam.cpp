@@ -947,7 +947,13 @@ void CvTeam::doTurn()
 
 				for (iJ = 0; iJ < MAX_CIV_TEAMS; iJ++)
 				{
-					if (GET_TEAM((TeamTypes)iJ).isAlive())
+					//if (GET_TEAM((TeamTypes)iJ).isAlive())
+					// Mongoose BarbarianPassiveTechFix BEGIN
+					//
+					if (GET_TEAM((TeamTypes)iJ).isAlive() && !GET_TEAM((TeamTypes)iJ).isBarbarian())
+					//
+					// Mongoose BarbarianPassiveTechFix END
+					//
 					{
 						if (GET_TEAM((TeamTypes)iJ).isHasTech((TechTypes)iI))
 						{
@@ -962,7 +968,13 @@ void CvTeam::doTurn()
 				{
 					FAssertMsg(iPossibleCount > 0, "iPossibleCount is expected to be greater than 0");
 
-					changeResearchProgress(((TechTypes)iI), ((getResearchCost((TechTypes)iI) * ((GC.getDefineINT("BARBARIAN_FREE_TECH_PERCENT") * iCount) / iPossibleCount)) / 100), getLeaderID());
+					//changeResearchProgress(((TechTypes)iI), ((getResearchCost((TechTypes)iI) * ((GC.getDefineINT("BARBARIAN_FREE_TECH_PERCENT") * iCount) / iPossibleCount)) / 100), getLeaderID());
+					// Mongoose BarbarianPassiveTechFix BEGIN
+					//
+					changeResearchProgress((TechTypes)iI, std::max((getResearchCost((TechTypes)iI) * GC.getDefineINT("BARBARIAN_FREE_TECH_PERCENT") * iCount) / (100 * iPossibleCount), 1), getLeaderID());
+					//
+					// Mongoose BarbarianPassiveTechFix END
+					//
 				}
 			}
 		}

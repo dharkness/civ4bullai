@@ -5960,8 +5960,24 @@ void CvGame::doGlobalWarming()
 
 	for (int iI = 0; iI < iGlobalWarmingValue; iI++)
 	{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                                                               jdog5000      */
+/*                                                                                              */
+/* Gamespeed scaling                                                                            */
+/************************************************************************************************/
+/* original bts code
 		if (getSorenRandNum(100, "Global Warming") + iGlobalWarmingDefense < GC.getDefineINT("GLOBAL_WARMING_PROB"))
 		{
+*/
+		int iOdds = GC.getDefineINT("GLOBAL_WARMING_PROB");
+		iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent();
+		iOdds /= 100;
+
+		if (getSorenRandNum(100, "Global Warming") + iGlobalWarmingDefense < iOdds)
+		{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 #ifdef _MOD_GWARM
 			CvPlot* pPlot = GC.getMapINLINE().syncRandPlot(RANDPLOT_NOT_CITY); // GWMod removed check for water tile M.A.
 #else
@@ -6090,8 +6106,25 @@ void CvGame::doGlobalWarming()
 
 	for (int iI = 0; iI < iNuclearWinterValue; iI++)
 	{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                                                               jdog5000      */
+/*                                                                                              */
+/* Gamespeed scaling                                                                            */
+/************************************************************************************************/
+/* original Global Warming Mod code
 		if (getSorenRandNum(100, "Nuclear Fallout") + iGlobalWarmingDefense < GC.getDefineINT("NUCLEAR_WINTER_PROB"))
 		{
+*/
+		int iOdds = GC.getDefineINT("NUCLEAR_WINTER_PROB");
+		iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent();
+		iOdds /= 100;
+
+		if (getSorenRandNum(100, "Nuclear Fallout") + iGlobalWarmingDefense < iOdds)
+		{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
+
 			CvPlot* pPlot = GC.getMapINLINE().syncRandPlot(RANDPLOT_LAND | RANDPLOT_NOT_CITY);
 			FeatureTypes eFeature = pPlot->getFeatureType();
 
