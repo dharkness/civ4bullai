@@ -429,7 +429,7 @@ class MapConstants :
         #---These values are for evaluating starting locations
         
         #Minimum number of hills in fat cross
-        self.MinHillsInFC = 2
+        self.MinHillsInFC = 3
 
         #Max number of peaks in fat cross
         self.MaxPeaksInFC = 3
@@ -4633,7 +4633,9 @@ class StartingPlotFinder :
             for plot in plotList:
                 if badFeaturesToRemoveFromFlatlands <= 0 and badFeaturesToRemove <= 0:
                     break
-                featureInfo = gc.getFeatureInfo(plot.getFeatureType())
+                featureEnum = plot.getFeatureType()
+                featureInfo = gc.getFeatureInfo(featureEnum)
+                bonusEnum = plot.getBonusType(TeamTypes.NO_TEAM)
                 if featureInfo != None:
                     totalYield = 0
                     for yi in range(YieldTypes.NUM_YIELD_TYPES):
@@ -4646,6 +4648,10 @@ class StartingPlotFinder :
                             print "removing bad feature from hills"
                             badFeaturesToRemove -= 1
                         plot.setFeatureType(FeatureTypes.NO_FEATURE,-1)
+                        if (bonusEnum != BonusTypes.NO_BONUS and not bp.PlotCanHaveBonus(plot,bonusEnum,True,True))
+                            print "re-adding bad feature for bonus"
+                            badFeaturesToRemove += 1
+                            plot.setFeatureType(featureEnum,-1)
             #if there are not enough hills or flatlands, there will be leftovers
             badFeaturesToRemove += badFeaturesToRemoveFromFlatlands
             for plot in plotList:
