@@ -3395,34 +3395,38 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 	}
 
 /********************************************************************************/
-/* 	Alternative Building Evaluation				18/01/10		Fuyu		    */
+/* 	Alternative Building Evaluation				20/02/10		Fuyu		    */
 /* 	 - requires Actual Building Effects (BULL)								    */
 /* 	(only Anti-Shrink for now)												    */
 /********************************************************************************/
+	//Don't consider a building if it causes the city to immediately start shrinking from unhealthiness
+//For that purpose ignore bad health and unhappiness from Espionage.
 	int iGood = 0;
 	int iBad = 0;
 	int iBuildingActualHappiness = getAdditionalHappinessByBuilding(eBuilding,iGood,iBad);
 	iGood = 0;
 	iBad = 0;
 	int iBuildingActualHealth = getAdditionalHealthByBuilding(eBuilding,iGood,iBad);
-//	int iTempHealthLevel;    //unreferenced yet
-//	int iTempHappinessLevel; //unreferenced yet
-//Don't consider a building if it causes the city to immediately start shrinking from unhealthiness
-//For that purpose ignore bad health from Espionage.
+	int iTempHappinessLevel = happyLevel() - unhappyLevel() + getEspionageHappinessCounter();
+	int iTempHealthLevel = goodHealth() - badHealth() + getEspionageHealthCounter();
+	int iTempFoodDifference = getYieldRate(YIELD_FOOD) - getPopulation()*GC.getFOOD_CONSUMPTION_PER_POPULATION() - std::max(0,-iTempHealthLevel);
 	int iBadHealthFromBuilding = std::max(0,(-iBuildingActualHealth));
-	int iUnhealthyPopulationFromBuilding = std::min(0,(badHealth() - goodHealth() - getEspionageHealthCounter())) + iBadHealthFromBuilding;
+	int iUnhealthyPopulationFromBuilding = std::min(0,(-iTempHealthLevel)) + iBadHealthFromBuilding;
+//	int iTotalHealth = iTempHealthLevel + iBuildingActualHealth;
 	bool bShrinksWithPower = false;
-//	int iTotalHealth = goodHealth() - badHealth() - getEspionageHealthCounter() - iBadHealthFromBuilding;
-//Allow a bit of unhealthiness after all? Recommended settings: <= 1 - but it could be higher if the city has grown above its ideal size
-	int iAllowedShrinkRate = 0;
-	if (iUnhealthyPopulationFromBuilding > 0 && (iFoodDifference + iAllowedShrinkRate < iUnhealthyPopulationFromBuilding ))
+//Allow a bit of shrinking: Population is expendable if angry, working a bad tile, or running a not-so-good specialist
+	int iAllowedShrinkRate = GC.getFOOD_CONSUMPTION_PER_POPULATION() * (0
+		+ std::max(0,-iTempHappinessLevel)
+		+ std::max(0,(getWorkingPopulation() - AI_countGoodTiles(true, false, 50)))
+		+ std::max(0,(visiblePopulation() - AI_countGoodSpecialists(false))));
+	if (iUnhealthyPopulationFromBuilding > 0 && (iTempFoodDifference + iAllowedShrinkRate < iUnhealthyPopulationFromBuilding ))
 	{
 		return 0;
 	}
 	else if (!(bProvidesPower || isPower()))  //if the city is still without power after building this
 	{
 		int iUnhealthyPopulationFromBuildingPlusPower = std::min(0,(badHealth() - goodHealth() - getEspionageHealthCounter())) + iBadHealthFromBuilding - GC.getDefineINT("DIRTY_POWER_HEALTH_CHANGE");
-		if (iUnhealthyPopulationFromBuildingPlusPower > 0 && (iFoodDifference + iAllowedShrinkRate < iUnhealthyPopulationFromBuildingPlusPower ))
+		if (iUnhealthyPopulationFromBuildingPlusPower > 0 && (iTempFoodDifference + iAllowedShrinkRate < iUnhealthyPopulationFromBuildingPlusPower ))
 		{
 			bShrinksWithPower = true;
 		}
