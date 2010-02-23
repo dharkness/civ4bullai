@@ -3437,7 +3437,7 @@ class CvMainInterface:
 # BUG - City Arrows - end
 # BUG - BUG Option Button - Start
 			if MainOpt.isShowOptionsButton():
-			screen.show("BUGOptionsScreenWidget")
+				screen.show("BUGOptionsScreenWidget")
 # BUG - BUG Option Button - End
 # BUG - field of view slider - start
 			screen.hide(self.szSliderTextId)
@@ -3517,7 +3517,7 @@ class CvMainInterface:
 # BUG - City Arrows - end
 # BUG - BUG Option Button - Start
 			if MainOpt.isShowOptionsButton():
-			screen.show("BUGOptionsScreenWidget")
+				screen.show("BUGOptionsScreenWidget")
 # BUG - BUG Option Button - End
 # BUG - field of view slider - start
 			screen.hide(self.szSliderTextId)
@@ -3571,7 +3571,7 @@ class CvMainInterface:
 # BUG - City Arrows - end
 # BUG - BUG Option Button - Start
 			if MainOpt.isShowOptionsButton():
-			screen.show("BUGOptionsScreenWidget")
+				screen.show("BUGOptionsScreenWidget")
 # BUG - BUG Option Button - End
 # BUG - field of view slider - start
 			if (MainOpt.isShowFieldOfView()):
