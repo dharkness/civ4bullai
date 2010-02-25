@@ -477,7 +477,7 @@ void CvPlot::doImprovement()
 				if (GET_TEAM(getTeam()).isHasTech((TechTypes)(GC.getBonusInfo((BonusTypes) iI).getTechReveal())))
 				{
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                       10/22/09                                jdog5000      */
+/* UNOFFICIAL_PATCH                       02/16/10                                jdog5000      */
 /*                                                                                              */
 /* Gamespeed scaling                                                                            */
 /************************************************************************************************/
@@ -488,11 +488,12 @@ void CvPlot::doImprovement()
 						{
 */
 					int iOdds = GC.getImprovementInfo(getImprovementType()).getImprovementBonusDiscoverRand(iI);
-					iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent();
-					iOdds /= 100;
 
 					if( iOdds > 0 )
 					{
+					iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent();
+					iOdds /= 100;
+
 						if( GC.getGameINLINE().getSorenRandNum(iOdds, "Bonus Discovery") == 0)
 						{
 /************************************************************************************************/

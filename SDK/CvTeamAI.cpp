@@ -2161,7 +2161,7 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eTeam, int iPowerMultiplier) c
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      02/10/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      02/18/10                                jdog5000      */
 /*                                                                                              */
 /* War Strategy AI                                                                              */
 /************************************************************************************************/
@@ -2203,12 +2203,13 @@ int CvTeamAI::AI_getEnemyPowerPercent( bool bConsiderOthers ) const
 	{
 		if( iI != getID() )
 		{
-			if( GET_TEAM((TeamTypes)iI).isAlive() )
+			if( GET_TEAM((TeamTypes)iI).isAlive() && isHasMet((TeamTypes)iI) )
 			{
 				if( isAtWar((TeamTypes)iI) )
 				{
 					int iTempPower = 220 * GET_TEAM((TeamTypes)iI).getPower(false);
 					iTempPower /= (AI_hasCitiesInPrimaryArea((TeamTypes)iI) ? 2 : 3);
+					iTempPower /= (GET_TEAM((TeamTypes)iI).isMinorCiv() ? 3 : 1);
 					iTempPower /= std::max(1, (bConsiderOthers ? GET_TEAM((TeamTypes)iI).getAtWarCount(true,true) : 1));
 					iEnemyPower += iTempPower;
 				}
@@ -3953,7 +3954,7 @@ void CvTeamAI::AI_doWar()
 
 	for (iI = 0; iI < MAX_CIV_TEAMS; iI++)
 	{
-		if (GET_TEAM((TeamTypes)iI).isAlive())
+		if (GET_TEAM((TeamTypes)iI).isAlive() && isHasMet((TeamTypes)iI))
 		{
 			if (AI_getWarPlan((TeamTypes)iI) != NO_WARPLAN)
 			{
@@ -3969,7 +3970,7 @@ void CvTeamAI::AI_doWar()
 					
 					iTimeModifier *= 50 + GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent();
 					iTimeModifier /= 150;
-					FAssert(iTimeModifier > 0);
+					FAssert(iTimeModifier >= 0);
 				}
 				if (AI_getWarPlan((TeamTypes)iI) == WARPLAN_ATTACKED_RECENT)
 				{

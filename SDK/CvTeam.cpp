@@ -1897,7 +1897,7 @@ void CvTeam::meet(TeamTypes eTeam, bool bNewDiplo)
 		{
 			if( GC.getGameINLINE().isFinalInitialized() )
 			{
-				if( eTeam != getID() )
+				if( eTeam != getID() && isAlive() && GET_TEAM(eTeam).isAlive() )
 				{
 					logBBAI("    Team %d (%S) meets team %d (%S)", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eTeam, GET_PLAYER(GET_TEAM(eTeam).getLeaderID()).getCivilizationDescription(0) );
 				}
