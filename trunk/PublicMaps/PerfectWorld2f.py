@@ -242,6 +242,13 @@ class MapConstants :
         #bonuses. People often want lots of bonuses, and for those people, this variable is definately
         #a bonus.
         self.BonusBonus = 1.0
+
+        #This variable adjusts the maximun number of identical bonuses to be placed in a
+        #single group. People tend not to like all instances of a bonus type to be found within
+        #a single 3x3 area. When set to 0 (default), the maximum group size is
+        #rounded down (number of players / 2) + 1
+        #when set to 1, this will disable all bonus grouping
+        self.BonusMaxGroupSize = 0
         
         #How many squares are added to a lake for each unit of drainage flowing
         #into it.
@@ -3749,8 +3756,12 @@ class BonusPlacer :
             if self.bonusList[i].eBonus == eBonus:
                 bonus = self.bonusList[i]
         bonusInfo = gc.getBonusInfo(eBonus)
-        
+                
+        print "AddBonusType for %(bt)s, cbc=%(cb)d dbc=%(db)d" % {"bt":bonusInfo.getType(), \
+        "cb":bonus.currentBonusCount,"db":bonus.desiredBonusCount}        
+
         if bonus.currentBonusCount >= bonus.desiredBonusCount:
+            print "AddBonusType retfalse1 currentBonusCount=%(cb)d, desiredBonusCount=%(db)d" % {"cb":bonus.currentBonusCount,"db":bonus.desiredBonusCount}
             return False
 
         bonusPlaced = False
@@ -3761,6 +3772,9 @@ class BonusPlacer :
             x = plot.getX()
             y = plot.getY()
             if self.CanPlaceBonusAt(plot,eBonus,False,False):
+            
+                print "AddBonusType:CanPlaceBonusAt for %(bt)s" % {"bt":bonusInfo.getType()}        
+            
                 #temporarily remove any feature
                 featureEnum = plot.getFeatureType()
                 if featureEnum == featureForest:
@@ -3775,8 +3789,23 @@ class BonusPlacer :
                     if bonusInfo == None or bonusInfo.isFeature(featureEnum) or (bonusInfo.getTechReveal() != TechTypes.NO_TECH):
                         plot.setFeatureType(featureEnum,featureVariety)
                 groupRange = bonusInfo.getGroupRange()
+                
+                #NEW CODE
+                #added/maxAdd: avoid grouping ALL the resources of a type together.
+                #it's annoying to find 6 wines together and nowhere else on the map.
+                added = 0
+                maxGroupSize = mc.BonusMaxGroupSize
+                if (maxGroupSize == 0):
+                    maxAdd = PRand.randint(0,gc.getGame().countCivPlayersEverAlive()/2);
+                else:
+                    maxAdd = PRand.randint(0,maxGroupSize - 1);
+                print "AddBonusType maxadd for %(bt)s = %(ma)d" % {"bt":bonusInfo.getType(),"ma":maxAdd}        
+ 
                 for dx in range(-groupRange,groupRange + 1):
                     for dy in range(-groupRange,groupRange + 1):
+                       #NEW CODE
+                        if(added >= maxAdd):
+                            break
                         if bonus.currentBonusCount < bonus.desiredBonusCount:
                             loopPlot = self.plotXY(x,y,dx,dy)
                             if loopPlot != None:
@@ -3784,6 +3813,9 @@ class BonusPlacer :
                                     raise ValueError, "plotXY returns invalid plots plot= %(x)d, %(y)d" % {"x":x,"y":y}
                                 if self.CanPlaceBonusAt(loopPlot,eBonus,False,False):
                                     if PRand.randint(0,99) < bonusInfo.getGroupRand():
+
+                                        #NEW CODE
+                                        added += 1
                                         #temporarily remove any feature
                                         featureEnum = loopPlot.getFeatureType()
                                         if featureEnum == featureForest:

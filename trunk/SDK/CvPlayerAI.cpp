@@ -1646,117 +1646,199 @@ void CvPlayerAI::AI_makeProductionDirty()
 	}
 }
 
-
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/17/10                              jdog5000        */
+/*                                                                                              */
+/* War tactics AI                                                                               */
+/************************************************************************************************/
 void CvPlayerAI::AI_conquerCity(CvCity* pCity)
 {
-	CvCity* pNearestCity;
 	bool bRaze = false;
 	int iRazeValue;
 	int iI;
 
 	if (canRaze(pCity))
 	{
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      08/20/09                              jdog5000        */
-/*                                                                                              */
-/* War tactics AI                                                                               */
-/************************************************************************************************/
 	    iRazeValue = 0;
 
-		// Scenarios ...
-		//if (GC.getGameINLINE().getElapsedGameTurns() > 20 )
+		if ( (pCity->isHolyCity()) || (pCity->hasActiveWorldWonder()))
 		{
-			if (getNumCities() > 4)
+			// BBAI TODO: Is there any circumstance under which razing is a good idea here?
+			if( gPlayerLogLevel >= 1 )
 			{
-				if (!(pCity->isHolyCity()) && !(pCity->hasActiveWorldWonder()))
+				logBBAI("    Player %d (%S) decides not to raze holy/wonder city %S", getID(), getCivilizationDescription(0), pCity->getName().GetCString() );
+			}
+		}
+		else if( getNumCities() < 4 )
+		{
+			// BBAI TODO: Is there any circumstance under which razing is a good idea here?
+			if( gPlayerLogLevel >= 1 )
+			{
+				logBBAI("    Player %d (%S) decides not to raze %S because they have few cities", getID(), getCivilizationDescription(0), pCity->getName().GetCString() );
+			}
+		}
+		else if( AI_isDoVictoryStrategy(AI_VICTORY_DOMINATION3) )
+		{
+			// Do not raze, going for domination
+			if( gPlayerLogLevel >= 1 )
+			{
+				logBBAI("    Player %d (%S) decides not to raze %S because they're going for domination", getID(), getCivilizationDescription(0), pCity->getName().GetCString() );
+			}
+		}
+		else
+		{
+			bool bFinancialTrouble = AI_isFinancialTrouble();
+			bool bBarbCity = (pCity->getPreviousOwner() == BARBARIAN_PLAYER) && (pCity->getOriginalOwner() == BARBARIAN_PLAYER);
+			bool bPrevOwnerBarb = (pCity->getPreviousOwner() == BARBARIAN_PLAYER);
+			
+			int iCloseness = pCity->AI_playerCloseness(getID());
+
+			// BBAI TODO: Highly valuable resource??
+			
+			if (GET_TEAM(getTeam()).countNumCitiesByArea(pCity->area()) == 0)
+			{
+				// Conquered city in new continent/island
+				int iBestValue;
+
+				if( pCity->area()->getNumCities() == 1 && AI_getNumAreaCitySites(pCity->area()->getID(), iBestValue) == 0 )
 				{
-					pNearestCity = GC.getMapINLINE().findCity(pCity->getX_INLINE(), pCity->getY_INLINE(), NO_PLAYER, getTeam(), true, false, NO_TEAM, NO_DIRECTION, pCity);
-
-					bool bPrevOwnerBarb = (pCity->getPreviousOwner() == BARBARIAN_PLAYER);
-					if (pNearestCity == NULL)
+					// Probably small island
+					if( iCloseness == 0 )
 					{
-						if (pCity->getPreviousOwner() != NO_PLAYER && !bPrevOwnerBarb)
+						// Safe to raze these now that AI can do pick up ...
+						iRazeValue += GC.getLeaderHeadInfo(getPersonalityType()).getRazeCityProb();
+					}
+				}
+				else
+				{
+					// At least medium sized island
+					if( iCloseness == 0 )
+					{
+						if( bFinancialTrouble )
 						{
-							if (GET_TEAM(GET_PLAYER(pCity->getPreviousOwner()).getTeam()).countNumCitiesByArea(pCity->area()) > 3)
+							// Raze if we might start incuring colony maintenance
+							iRazeValue = 100;
+						}
+						else
+						{
+							// BBAI TODO: What's right way to measure risk of losing city?
+							if (pCity->getPreviousOwner() != NO_PLAYER && !bPrevOwnerBarb)
 							{
-								iRazeValue += 30;
+								if (GET_TEAM(GET_PLAYER(pCity->getPreviousOwner()).getTeam()).countNumCitiesByArea(pCity->area()) > 3)
+								{
+									if( GET_TEAM(getTeam()).getPower(false)*9 < GET_TEAM(GET_PLAYER(pCity->getPreviousOwner()).getTeam()).getPower(true)*10 )
+									{
+										iRazeValue = 100;
+									}
+									else
+									{
+										iRazeValue += GC.getLeaderHeadInfo(getPersonalityType()).getRazeCityProb();
+									}
+								}
 							}
-						}
-					}
-					else
-					{
-						int iDistance = plotDistance(pCity->getX_INLINE(), pCity->getY_INLINE(), pNearestCity->getX_INLINE(), pNearestCity->getY_INLINE());
-						if ( iDistance > 12)
-						{
-							iRazeValue += iDistance * (bPrevOwnerBarb ? 3 : 2);
-						}
-					}
-
-					if (pCity->area()->getCitiesPerPlayer(getID()) > 0)
-					{
-						if (AI_isFinancialTrouble())
-						{
-							iRazeValue += std::max(0, (70 - 15 * pCity->getPopulation()));
-						}
-					}
-                
-			        if (getStateReligion() != NO_RELIGION)
-					{
-                        if (pCity->isHasReligion(getStateReligion()))
-                        {
-							if (GET_TEAM(getTeam()).hasShrine(getStateReligion()))
-							{
-								iRazeValue -= 50;                            
-							}
-							else
-							{
-								iRazeValue -= 10;
-							}
-						}
-					}
-                    
-                    int iCloseness = pCity->AI_playerCloseness(getID());
-                    if (iCloseness > 0)
-                    {
-                    	iRazeValue -= 25;
-                    	iRazeValue -= iCloseness * 2;
-					}
-                    else
-                    {
-                    	iRazeValue += 60;
-					}
-
-					if (pCity->area()->getCitiesPerPlayer(getID()) > 0)
-					{
-						if (pCity->getPreviousOwner() != BARBARIAN_PLAYER)
-						{
-                            iRazeValue += GC.getLeaderHeadInfo(getPersonalityType()).getRazeCityProb();
-						}
-					}
-					
-					if (iRazeValue > 0)
-					{
-					    for (iI = 0; iI < GC.getNumTraitInfos(); iI++)
-					    {
-                            if (hasTrait((TraitTypes)iI))
-                            {
-                                iRazeValue *= (100 - (GC.getTraitInfo((TraitTypes)iI).getUpkeepModifier()));
-                                iRazeValue /= 100;
-							}
-						}
-
-                        if (GC.getGameINLINE().getSorenRandNum(100, "AI Raze City") < iRazeValue)
-						{
-							bRaze = true;
-							pCity->doTask(TASK_RAZE);
 						}
 					}
 				}
 			}
+			else
+			{
+				// Distance related aspects
+				if (iCloseness > 0)
+				{
+					iRazeValue -= iCloseness;
+				}
+				else
+				{
+					iRazeValue += 50;
+
+					CvCity* pNearestTeamAreaCity = GC.getMapINLINE().findCity(pCity->getX_INLINE(), pCity->getY_INLINE(), NO_PLAYER, getTeam(), true, false, NO_TEAM, NO_DIRECTION, pCity);
+
+					if( pNearestTeamAreaCity == NULL )
+					{
+						// Shouldn't happen
+						iRazeValue += 30;
+					}
+					else
+					{
+						int iDistance = plotDistance(pCity->getX_INLINE(), pCity->getY_INLINE(), pNearestTeamAreaCity->getX_INLINE(), pNearestTeamAreaCity->getY_INLINE());
+						iDistance -= DEFAULT_PLAYER_CLOSENESS + 2;
+						if ( iDistance > 0 )
+						{
+							iRazeValue += iDistance * (bBarbCity ? 8 : 5);
+						}
+					}
+				}
+
+				if (bFinancialTrouble)
+				{
+					iRazeValue += std::max(0, (70 - 15 * pCity->getPopulation()));
+				}
+
+				// Scale down for organized
+				for (iI = 0; iI < GC.getNumTraitInfos(); iI++)
+				{
+					if (hasTrait((TraitTypes)iI))
+					{
+						iRazeValue *= (100 - (GC.getTraitInfo((TraitTypes)iI).getUpkeepModifier()));
+						iRazeValue /= 100;
+
+						if( (GC.getTraitInfo((TraitTypes)iI).getUpkeepModifier() > 0) && gPlayerLogLevel >= 1 )
+						{
+							logBBAI("      Reduction for upkeep modifier %d", (GC.getTraitInfo((TraitTypes)iI).getUpkeepModifier()) );
+						}
+					}
+				}
+
+				// Non-distance related aspects
+				iRazeValue += GC.getLeaderHeadInfo(getPersonalityType()).getRazeCityProb();
+	                
+				if (getStateReligion() != NO_RELIGION)
+				{
+					if (pCity->isHasReligion(getStateReligion()))
+					{
+						if (GET_TEAM(getTeam()).hasShrine(getStateReligion()))
+						{
+							iRazeValue -= 50;
+
+							if( gPlayerLogLevel >= 1 )
+							{
+								logBBAI("      Reduction for state religion with shrine" );
+							}
+						}
+						else
+						{
+							iRazeValue -= 10;
+
+							if( gPlayerLogLevel >= 1 )
+							{
+								logBBAI("      Reduction for state religion" );
+							}
+						}
+					}
+				}
+			}
+
+			if( gPlayerLogLevel >= 1 )
+			{
+				if( bBarbCity ) logBBAI("      %S is a barb city", pCity->getName().GetCString() );
+				if( bPrevOwnerBarb ) logBBAI("      %S was last owned by barbs", pCity->getName().GetCString() );
+				logBBAI("      %S has area cities %d, closeness %d, bFinTrouble %d", pCity->getName().GetCString(), GET_TEAM(getTeam()).countNumCitiesByArea(pCity->area()), iCloseness, bFinancialTrouble );
+			}
 		}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
+
+		if( gPlayerLogLevel >= 1 )
+		{
+			logBBAI("    Player %d (%S) has odds %d to raze city %S", getID(), getCivilizationDescription(0), iRazeValue, pCity->getName().GetCString() );
+		}
+					
+		if (iRazeValue > 0)
+		{
+            if (GC.getGameINLINE().getSorenRandNum(100, "AI Raze City") < iRazeValue)
+			{
+				bRaze = true;
+				pCity->doTask(TASK_RAZE);
+			}
+		}		
 	}
 
 	if (!bRaze)
@@ -1775,6 +1857,9 @@ void CvPlayerAI::AI_conquerCity(CvCity* pCity)
 /************************************************************************************************/
 	}
 }
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 
 bool CvPlayerAI::AI_acceptUnit(CvUnit* pUnit) const
@@ -12912,8 +12997,6 @@ void CvPlayerAI::AI_doCivics()
 		iThreshold += 13;
 	}
 
-	// BBAI TODO:  Other factors?  Roll back???
-
 	int iCurValue;
 	int iBestValue;
 	for (iI = 0; iI < GC.getNumCivicOptionInfos(); iI++)
@@ -13716,8 +13799,23 @@ void CvPlayerAI::AI_doDiplo()
 										{
 											if (AI_getContactTimer(((PlayerTypes)iI), CONTACT_ASK_FOR_HELP) == 0)
 											{
-												// BBAI TODO: Check more often if far behind
-												if (GC.getGameINLINE().getSorenRandNum(GC.getLeaderHeadInfo(getPersonalityType()).getContactRand(CONTACT_ASK_FOR_HELP), "AI Diplo Ask For Help") == 0)
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/12/10                                jdog5000      */
+/*                                                                                              */
+/* Diplomacy                                                                                    */
+/************************************************************************************************/
+												int iRand = GC.getLeaderHeadInfo(getPersonalityType()).getContactRand(CONTACT_ASK_FOR_HELP);
+												int iTechPerc = GET_TEAM(getTeam()).getBestKnownTechScorePercent();
+												if( iTechPerc < 90 )
+												{
+													iRand *= std::max(1, iTechPerc - 60);
+													iRand /= 30;
+												}
+
+												if (GC.getGameINLINE().getSorenRandNum(iRand, "AI Diplo Ask For Help") == 0)
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 												{
 													iBestValue = 0;
 													eBestReceiveTech = NO_TECH;
@@ -14026,8 +14124,23 @@ void CvPlayerAI::AI_doDiplo()
 									{
 										if (AI_getContactTimer(((PlayerTypes)iI), CONTACT_TRADE_TECH) == 0)
 										{
-											// BBAI TODO: Check more often if behind
-											if (GC.getGameINLINE().getSorenRandNum(GC.getLeaderHeadInfo(getPersonalityType()).getContactRand(CONTACT_TRADE_TECH), "AI Diplo Trade Tech") == 0)
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/12/10                                jdog5000      */
+/*                                                                                              */
+/* Diplomacy                                                                                    */
+/************************************************************************************************/
+											int iRand = GC.getLeaderHeadInfo(getPersonalityType()).getContactRand(CONTACT_ASK_FOR_HELP);
+											int iTechPerc = GET_TEAM(getTeam()).getBestKnownTechScorePercent();
+											if( iTechPerc < 90 )
+											{
+												iRand *= std::max(1, iTechPerc - 60);
+												iRand /= 30;
+											}
+						
+											if (GC.getGameINLINE().getSorenRandNum(iRand, "AI Diplo Trade Tech") == 0)
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 											{
 												iBestValue = 0;
 												eBestReceiveTech = NO_TECH;
@@ -16888,7 +17001,18 @@ int CvPlayerAI::AI_getStrategyHash() const
 
 		for (iI = 0; iI < MAX_CIV_TEAMS; iI++)
 		{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       02/14/10                        denev & jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
 			if ((GET_TEAM((TeamTypes)iI).isAlive()) && (iI != getID()))
+*/
+			if ((GET_TEAM((TeamTypes)iI).isAlive()) && (iI != getTeam()))
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 			{
 				if (GET_TEAM(getTeam()).AI_getWarPlan((TeamTypes)iI) != NO_WARPLAN)
 				{
@@ -16911,9 +17035,22 @@ int CvPlayerAI::AI_getStrategyHash() const
 					
 					if ((GET_TEAM(getTeam()).AI_getWarPlan((TeamTypes)iI) == WARPLAN_DOGPILE) && (GET_TEAM(getTeam()).AI_getWarPlanStateCounter((TeamTypes)iI) < 20))
 					{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       02/14/10                             jdog5000         */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
 						for (iJ = 0; iJ < MAX_TEAMS; iJ++)
 						{
 							if ((iJ != iI) && iJ != getID())
+*/
+						for (iJ = 0; iJ < MAX_CIV_TEAMS; iJ++)
+						{
+							if ((iJ != iI) && iJ != getTeam() && GET_TEAM((TeamTypes)iJ).isAlive())
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 							{
 								if ((atWar((TeamTypes)iI, (TeamTypes)iJ)) && !GET_TEAM((TeamTypes)iI).isAVassal())
 								{
@@ -16939,7 +17076,18 @@ int CvPlayerAI::AI_getStrategyHash() const
 		
 		for (iI = 0; iI < MAX_CIV_TEAMS; iI++)
 		{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       02/14/10                             jdog5000         */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
 			if ((GET_TEAM((TeamTypes)iI).isAlive()) && (iI != getID()))
+*/
+			if ((GET_TEAM((TeamTypes)iI).isAlive()) && (iI != getTeam()))
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 			{
 				CvTeamAI& kOtherTeam = GET_TEAM((TeamTypes)iI);
 				iTheirVictoryCountdown = std::min(iTheirVictoryCountdown, kOtherTeam.AI_getLowestVictoryCountdown());

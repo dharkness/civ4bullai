@@ -3417,7 +3417,7 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 //Allow a bit of shrinking: Population is expendable if angry, working a bad tile, or running a not-so-good specialist
 	int iAllowedShrinkRate = GC.getFOOD_CONSUMPTION_PER_POPULATION() * (0
 		+ std::max(0,-iTempHappinessLevel)
-		+ std::max(0,(getWorkingPopulation() - AI_countGoodTiles(true, false, 50)))
+		+ std::min(1, std::max(0,(getWorkingPopulation() - AI_countGoodTiles(true, false, 50))))
 		+ std::max(0,(visiblePopulation() - AI_countGoodSpecialists(false))));
 	if (iUnhealthyPopulationFromBuilding > 0 && (iTempFoodDifference + iAllowedShrinkRate < iUnhealthyPopulationFromBuilding ))
 	{
@@ -3561,6 +3561,15 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 				}
 				
 				int iBuildingHappiness = kBuilding.getHappiness();
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      01/17/10                                Afforess      */
+/*                                                                                              */
+/* City AI                                                                                      */
+/************************************************************************************************/
+				iBuildingHappiness += GET_PLAYER(getOwnerINLINE()).getExtraBuildingHappiness(eBuilding);
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 				if (iBuildingHappiness != 0)
 				{
 					iValue += (std::min(iBuildingHappiness, iAngryPopulation) * 10) 
@@ -3626,7 +3635,21 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 					if (isDirtyPower() && !(kBuilding.isDirtyPower()))
 					{
 						iValue += (std::min(-(GC.getDefineINT("DIRTY_POWER_HEALTH_CHANGE")), iBadHealth) * 8);
+
 					}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      01/17/10                      Afforess & jdog5000     */
+/*                                                                                              */
+/* City AI                                                                                      */
+/************************************************************************************************/
+					// Dirty Power is dirty, subtract value would have added above
+					else if (!isPower() && kBuilding.isDirtyPower())
+					{
+						iValue -= (std::min(-(GC.getDefineINT("DIRTY_POWER_HEALTH_CHANGE")), iBadHealth) * 8);
+					}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 				}
 
 				if (kBuilding.isNoUnhealthyPopulation())
@@ -3644,6 +3667,15 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 				}
 
 				int iBuildingHealth = kBuilding.getHealth();
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      01/17/10                                Afforess      */
+/*                                                                                              */
+/* City AI                                                                                      */
+/************************************************************************************************/
+				iBuildingHealth += GET_PLAYER(getOwnerINLINE()).getExtraBuildingHealth(eBuilding);
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 				if (iBuildingHealth != 0)
 				{
 					iValue += (std::min(iBuildingHealth, iBadHealth) * 12)

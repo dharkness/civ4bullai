@@ -6317,7 +6317,11 @@ void CvUnitAI::AI_exploreSeaMove()
 	return;
 }
 
-
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/07/10                                jdog5000      */
+/*                                                                                              */
+/* Naval AI                                                                                     */
+/************************************************************************************************/
 void CvUnitAI::AI_assaultSeaMove()
 {
 	PROFILE_FUNC();
@@ -6325,12 +6329,6 @@ void CvUnitAI::AI_assaultSeaMove()
 	FAssert(AI_getUnitAIType() == UNITAI_ASSAULT_SEA);
 
 	bool bEmpty = !getGroup()->hasCargo();
-
-/********************************************************************************/
-/* 	BETTER_BTS_AI_MOD						11/30/08	Solver & jdog5000	*/
-/* 																			*/
-/* 	Naval AI																*/
-/********************************************************************************/
 	bool bFull = (getGroup()->AI_isFull() && (getGroup()->getCargo() > 0));
 
 	if (plot()->isCity(true))
@@ -6382,15 +6380,7 @@ void CvUnitAI::AI_assaultSeaMove()
 			}
 		}
 	}
-/********************************************************************************/
-/* 	BETTER_BTS_AI_MOD						END								*/
-/********************************************************************************/
 
-/********************************************************************************/
-/* 	BETTER_BTS_AI_MOD						08/15/09			jdog5000	*/
-/* 																			*/
-/* 	Naval AI																*/
-/********************************************************************************/
 	if (bEmpty)
 	{
 		if (AI_anyAttack(1, 65))
@@ -6627,7 +6617,7 @@ void CvUnitAI::AI_assaultSeaMove()
 		{
 			if ( iCargo > 0 )
 			{
-				if (AI_group(UNITAI_ASSAULT_SEA))
+				if (AI_group(UNITAI_ASSAULT_SEA,-1,-1,-1,/*bIgnoreFaster*/true,false,false,/*iMaxPath*/5,false,/*bCargoOnly*/true,false,MISSIONAI_ASSAULT))
 				{
 					return;
 				}
@@ -6646,17 +6636,9 @@ void CvUnitAI::AI_assaultSeaMove()
 			}
 		}
 	}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 	
 	if (!bIsCity)
 	{
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/18/09                                jdog5000      */
-/*                                                                                              */
-/* Naval AI, bugfix                                                                             */
-/************************************************************************************************/
 		if( iCargo >= iTargetInvasionSize )
 		{
 			bAttack = true;
@@ -6763,16 +6745,8 @@ void CvUnitAI::AI_assaultSeaMove()
 				}
 			}
 		}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 	}
 
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      08/20/09                                jdog5000      */
-/*                                                                                              */
-/* Barbarian AI                                                                                 */
-/************************************************************************************************/
 	if (bIsBarbarian)
 	{
 		if (getGroup()->isFull() || iCargo > iTargetInvasionSize)
@@ -6812,18 +6786,10 @@ void CvUnitAI::AI_assaultSeaMove()
 
 			getGroup()->pushMission(MISSION_SKIP);
 			return;
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 		}
 	}
 	else
 	{
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      01/26/09                                jdog5000      */
-/*                                                                                              */
-/* Naval AI                                                                                     */
-/************************************************************************************************/
 		if (bAttack || bReinforce)
 		{
 			if( bIsCity )
@@ -6839,6 +6805,8 @@ void CvUnitAI::AI_assaultSeaMove()
 			}
 
 			FAssert(getGroup()->hasCargo());
+
+			//BBAI TODO: Check that group has escorts, otherwise usually wait
 
 			if( bAttack )
 			{
@@ -6892,50 +6860,17 @@ void CvUnitAI::AI_assaultSeaMove()
 				return;
 			}
 		}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
-	}
-
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      01/11/09                                jdog5000      */
-/*                                                                                              */
-/* Naval AI                                                                                     */
-/************************************************************************************************/
-/* original bts code
-	if (bFull)
-	{
-		if (AI_group(UNITAI_ASSAULT_SEA, -1, -1, -1, true))
-		{
-			return;
-		}
-	}
-	else
-	{
-		if (AI_pickup(UNITAI_ATTACK_CITY))
-		{
-			return;
-		}
-
-		if (AI_pickup(UNITAI_ATTACK))
-		{
-			return;
 		}
 		
-		if (AI_pickup(UNITAI_COUNTER))
-		{
-			return;
-		}
-*/
 	if ((bFull || bReinforce) && !bAttack)
 	{
 		// Group with nearby transports with units on board
-		if (AI_group(UNITAI_ASSAULT_SEA, -1, /*iMaxOwnUnitAI*/ -1, -1, true, false, false, 2, false, true, false))
+		if (AI_group(UNITAI_ASSAULT_SEA, -1, /*iMaxOwnUnitAI*/ -1, -1, true, false, false, 2, false, true, false, MISSIONAI_ASSAULT))
 		{
 			return;
 		}
 
-		if (AI_group(UNITAI_ASSAULT_SEA, -1, -1, -1, true))
+		if (AI_group(UNITAI_ASSAULT_SEA, -1, -1, -1, true, false, false, 10, false, true, false, MISSIONAI_ASSAULT))
 		{
 			return;
 		}
@@ -6991,25 +6926,8 @@ void CvUnitAI::AI_assaultSeaMove()
 				}
 			}
 		}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 	}
 		
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      12/08/08                                jdog5000      */
-/*                                                                                              */
-/* Naval AI                                                                                     */
-/************************************************************************************************/
-/* original bts code
-	// if we are in a city, and at/preparing land war, and we have cargo, unload, even if full, since AI_assaultSeaTransport already had its chance
-	if (bIsCity && bLandWar && getGroup()->hasCargo())
-	{
-		getGroup()->unloadAll();
-		getGroup()->pushMission(MISSION_SKIP);
-		return;
-	}
-*/
 	if (bIsCity && bLandWar && getGroup()->hasCargo())
 	{
 		// Enemy units in this player's territory
@@ -7020,9 +6938,6 @@ void CvUnitAI::AI_assaultSeaMove()
 			return;
 		}
 	}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 	
 	if (AI_retreatToCity(true))
 	{
@@ -7042,6 +6957,9 @@ void CvUnitAI::AI_assaultSeaMove()
 	getGroup()->pushMission(MISSION_SKIP);
 	return;
 }
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 
 void CvUnitAI::AI_settlerSeaMove()
@@ -9707,7 +9625,7 @@ bool CvUnitAI::AI_shadow(UnitAITypes eUnitAI, int iMax, int iMaxRatio, bool bWit
 /************************************************************************************************/
 // Added new options to aid transport grouping
 // Returns true if a group was joined or a mission was pushed...
-bool CvUnitAI::AI_group(UnitAITypes eUnitAI, int iMaxGroup, int iMaxOwnUnitAI, int iMinUnitAI, bool bIgnoreFaster, bool bIgnoreOwnUnitType, bool bStackOfDoom, int iMaxPath, bool bAllowRegrouping, bool bWithCargoOnly, bool bInCityOnly)
+bool CvUnitAI::AI_group(UnitAITypes eUnitAI, int iMaxGroup, int iMaxOwnUnitAI, int iMinUnitAI, bool bIgnoreFaster, bool bIgnoreOwnUnitType, bool bStackOfDoom, int iMaxPath, bool bAllowRegrouping, bool bWithCargoOnly, bool bInCityOnly, MissionAITypes eIgnoreMissionAIType)
 {
 	PROFILE_FUNC();
 
@@ -9781,6 +9699,8 @@ bool CvUnitAI::AI_group(UnitAITypes eUnitAI, int iMaxGroup, int iMaxOwnUnitAI, i
 											{
 												if( !bInCityOnly || pLoopUnit->plot()->isCity() )
 												{
+													if( (eIgnoreMissionAIType == NO_MISSIONAI) || (eIgnoreMissionAIType != pLoopUnit->getGroup()->AI_getMissionAIType()) )
+													{
 													if (!(pPlot->isVisibleEnemyUnit(this)))
 													{
 														if (generatePath(pPlot, 0, true, &iPathTurns))
@@ -9839,6 +9759,7 @@ bool CvUnitAI::AI_group(UnitAITypes eUnitAI, int iMaxGroup, int iMaxOwnUnitAI, i
 				}
 			}
 		}
+	}
 	}
 	
 	if (pBestUnit != NULL)
@@ -15930,6 +15851,35 @@ bool CvUnitAI::AI_assaultSeaTransport(bool bBarbarian)
 	{
 		FAssert(!(pBestPlot->isImpassable()));
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/11/10                                jdog5000      */
+/*                                                                                              */
+/* War tactics AI                                                                               */
+/************************************************************************************************/
+		// Cancel missions of all those coming to join departing transport
+		CvSelectionGroup* pLoopGroup = NULL;
+		int iLoop = 0;
+		CvPlayer& kPlayer = GET_PLAYER(getOwnerINLINE());
+
+		for(pLoopGroup = kPlayer.firstSelectionGroup(&iLoop); pLoopGroup != NULL; pLoopGroup = kPlayer.nextSelectionGroup(&iLoop))
+		{
+			if( pLoopGroup != getGroup() )
+			{
+				if( pLoopGroup->AI_getMissionAIType() == MISSIONAI_GROUP && pLoopGroup->getHeadUnitAI() == AI_getUnitAIType() )
+				{
+					CvUnit* pMissionUnit = pLoopGroup->AI_getMissionAIUnit();
+
+					if( pMissionUnit != NULL && pMissionUnit->getGroup() == getGroup() )
+					{
+						pLoopGroup->clearMissionQueue();
+					}
+				}
+			}
+		}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+
 		if ((pBestPlot == pBestAssaultPlot) || (stepDistance(pBestPlot->getX_INLINE(), pBestPlot->getY_INLINE(), pBestAssaultPlot->getX_INLINE(), pBestAssaultPlot->getY_INLINE()) == 1))
 		{
 			if (atPlot(pBestAssaultPlot))
@@ -16371,6 +16321,27 @@ bool CvUnitAI::AI_assaultSeaReinforce(bool bBarbarian)
 	if ((pBestPlot != NULL) && (pBestAssaultPlot != NULL))
 	{
 		FAssert(!(pBestPlot->isImpassable()));
+
+		// Cancel missions of all those coming to join departing transport
+		CvSelectionGroup* pLoopGroup = NULL;
+		int iLoop = 0;
+		CvPlayer& kPlayer = GET_PLAYER(getOwnerINLINE());
+
+		for(pLoopGroup = kPlayer.firstSelectionGroup(&iLoop); pLoopGroup != NULL; pLoopGroup = kPlayer.nextSelectionGroup(&iLoop))
+		{
+			if( pLoopGroup != getGroup() )
+			{
+				if( pLoopGroup->AI_getMissionAIType() == MISSIONAI_GROUP && pLoopGroup->getHeadUnitAI() == AI_getUnitAIType() )
+				{
+					CvUnit* pMissionUnit = pLoopGroup->AI_getMissionAIUnit();
+
+					if( pMissionUnit != NULL && pMissionUnit->getGroup() == getGroup() )
+					{
+						pLoopGroup->clearMissionQueue();
+					}
+				}
+			}
+		}
 
 		if ((pBestPlot == pBestAssaultPlot) || (stepDistance(pBestPlot->getX_INLINE(), pBestPlot->getY_INLINE(), pBestAssaultPlot->getX_INLINE(), pBestAssaultPlot->getY_INLINE()) == 1))
 		{

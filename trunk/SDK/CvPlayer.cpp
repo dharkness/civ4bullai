@@ -786,6 +786,18 @@ void CvPlayer::reset(PlayerTypes eID, bool bConstructorCall)
 	m_bStrike = false;
 
 /************************************************************************************************/
+/* UNOFFICIAL_PATCH                       12/07/09                             EmperorFool      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+	// Free Tech Popup Fix
+	m_bChoosingFreeTech = false;
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
+
+
+/************************************************************************************************/
 /* AI_AUTO_PLAY_MOD                        09/01/07                            MRGENIE          */
 /*                                                                                              */
 /*                                                                                              */
@@ -795,16 +807,6 @@ void CvPlayer::reset(PlayerTypes eID, bool bConstructorCall)
 /* AI_AUTO_PLAY_MOD                        END                                                  */
 /************************************************************************************************/
 
-/************************************************************************************************/
-/* UNOFFICIAL_PATCH                       12/07/09                            Emperor Fool      */
-/*                                                                                              */
-/* Bugfix                                                                                       */
-/************************************************************************************************/
-	// Free Tech Popup Fix
-	m_bChoosingFreeTech = false;
-/************************************************************************************************/
-/* UNOFFICIAL_PATCH                        END                                                  */
-/************************************************************************************************/
 
 	m_eID = eID;
 	updateTeamType();
@@ -5982,7 +5984,7 @@ bool CvPlayer::canFound(int iX, int iY, bool bTestVisible) const
 	}
 
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                       10/04/09                    EmperorFool & jdog5000    */
+/* UNOFFICIAL_PATCH                       02/16/10                    EmperorFool & jdog5000    */
 /*                                                                                              */
 /* Bugfix                                                                                       */
 /************************************************************************************************/
@@ -6876,7 +6878,18 @@ void CvPlayer::removeBuildingClass(BuildingClassTypes eBuildingClass)
 		{
 			if (pLoopCity->getNumRealBuilding(eBuilding) > 0)
 			{
-				pLoopCity->setNumRealBuilding(eBuilding, pLoopCity->getNumRealBuilding(eBuilding) - 1); //Fuyu: Unofficial Patch code by EmperorFool
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       02/16/10                          EmperorFool         */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
+				pLoopCity->setNumRealBuilding(eBuilding, 0);
+*/
+				pLoopCity->setNumRealBuilding(eBuilding, pLoopCity->getNumRealBuilding(eBuilding) - 1);
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 				break;
 			}
 		}
@@ -7888,7 +7901,7 @@ bool CvPlayer::canDoCivics(CivicTypes eCivic) const
 	PROFILE_FUNC();
 
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                       10/05/09                                jdog5000      */
+/* UNOFFICIAL_PATCH                       02/16/10                                jdog5000      */
 /*                                                                                              */
 /* Bugfix                                                                                       */
 /************************************************************************************************/
