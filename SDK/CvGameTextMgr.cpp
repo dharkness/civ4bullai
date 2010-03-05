@@ -16543,10 +16543,26 @@ void CvGameTextMgr::setScoreHelp(CvWStringBuffer &szString, PlayerTypes ePlayer)
 		}
 		int iTech = player.getTechScore();
 		int iMaxTech = GC.getGameINLINE().getMaxTech();
-		int iTechScore = (GC.getDefineINT("SCORE_TECH_FACTOR") * iTech) / iMaxTech;
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/24/10                                jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+		int iTechScore = 0;
+		if( iMaxTech > 0 )
+		{
+			iTechScore = (GC.getDefineINT("SCORE_TECH_FACTOR") * iTech) / iMaxTech;
+		}
 		int iWonders = player.getWondersScore();
 		int iMaxWonders = GC.getGameINLINE().getMaxWonders();
-		int iWondersScore = (GC.getDefineINT("SCORE_WONDER_FACTOR") * iWonders) / iMaxWonders;
+		int iWondersScore = 0;
+		if( iMaxWonders > 0 )
+		{
+			iWondersScore = (GC.getDefineINT("SCORE_WONDER_FACTOR") * iWonders) / iMaxWonders;
+		}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 		int iTotalScore = iPopScore + iLandScore + iTechScore + iWondersScore;
 		int iVictoryScore = player.calculateScore(true, true);
 		if (iTotalScore == player.calculateScore())

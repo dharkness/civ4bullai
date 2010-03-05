@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!-- -->
+<!-- Game options for new features in Better BTS AI -->
+<!-- by jdog5000 -->
+<!-- -->
+<Civ4Defines xmlns="x-schema:CIV4GlobalDefinesSchema.xml">
+	<Define>
+		<!-- Better BTS AI: Use new air combat mechanics -->
+		<DefineName>BBAI_AIR_COMBAT</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Better BTS AI: Vassals of human player build some extra military units (recommended for multiplayer only) -->
+		<DefineName>BBAI_HUMAN_VASSAL_WAR_BUILD</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Better BTS AI: Turns defensive pacts into something more like an alliance, the pact does not break on war declaration.  (Def: 0) -->
+		<DefineName>BBAI_ALLIANCE_OPTION</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Better BTS AI: Allows human player to offer themselves as vassal to an AI.  The AI has been taught to value this appropriately.  (Def: 0) -->
+		<DefineName>BBAI_HUMAN_AS_VASSAL_OPTION</DefineName>
+		<iDefineIntVal>0</iDefineIntVal>
+	</Define>
+</Civ4Defines>

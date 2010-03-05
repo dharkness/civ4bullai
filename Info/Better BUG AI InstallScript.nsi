@@ -13,8 +13,8 @@
 ;These are the variables you need to define for your mod
 
 !define NAME "Better BUG AI" ;Full Name of Mod
-!define VERSION "2010-02-25" ;Mod Version Number
-!define VERSION_VERBOSE "Better BTS AI 0.84b r522+, BULL 1.1+ r155, BUG 4.3 r2165"
+!define VERSION "2010-03-05" ;Mod Version Number
+!define VERSION_VERBOSE "* Better BTS AI 0.90e r532$\n* BULL 1.1+ r155$\n* BUG 4.3 r2165"
 
 !define MOD_LOC "Better BUG AI" ;Name of Mod Folder
 !define SHORT_NAME "Better BUG AI" ;Shorthand/nick of your mod
@@ -281,7 +281,11 @@ Function findCivRootDir
 	ReadRegStr $R0 HKLM \
 	"SOFTWARE\Microsoft\Windows NT\CurrentVersion" CurrentVersion
 	StrCpy $R1 $R0 1
-	StrCmp $R1 '6' lbl_winnt_vista_7 lbl_winnt_xp
+	IntCmp $R1 6 lbl_winnt_vista_7 lbl_winnt_xp lbl_winnt_vista_7
+	
+	#Invalid command? wtf
+	#${VersionCompare} $R0 "6.0" $R1
+	#IntCmp $R1 2 lbl_winnt_xp lbl_winnt_vista_7
 	
 	lbl_winnt_xp:
 	StrCpy $0 "$INSTDIR1\Mods"
@@ -337,7 +341,8 @@ Function setWelcomePageText
 	${If} $CurrentVersion == "true" ;BtS found and everything apears normal
 		StrCpy $WelcomePageText "This wizard will guide you through the installation of \
 		${NAME} (${VERSION}),  $\n$\n\
-		consisting of: ${VERSION_VERBOSE} $\n$\n\
+		consisting of: $\n\
+		${VERSION_VERBOSE} $\n$\n\
 		Please ensure that Civilization 4 is not running while installing, \
 		otherwise the installation may not work as expected.  $\n$\n\
 		Click $\"Next$\" to continue."
@@ -441,7 +446,7 @@ Function .onInit
 
 	${Else}	;BtS is either updated to the current version, or the registry check failed
 		${If} $CivRootDir == "$INSTDIR1\Mods"		;No valid UserSettings install location was found, tell user the subsequent issues (will need to launch as an administrator)
-			StrCmp $R1 '6' 0 continue
+			IntCmp $R1 6 0 continue 0
 			MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
 			"Setup will install the UserSettings folder in the main ${NAME} install directory.  $\n$\n\
 			If ${MOD_LOC} is installed in the Program Files directory (default ${BTS} installation), \
@@ -560,10 +565,16 @@ LangString DESC_Section6 ${LANG_ENGLISH} "Creates a shortcut on the Quick Launch
 ;the mod files itself:
 Section /o "${MOD_LOC}" Section1
 	SectionIn RO ;Locks selection
-	SetOutPath "$INSTDIR1\Mods\${MOD_LOC}" ;${MOD_LOC} is used so that the intall directory only pertains to the Mod's folder (essential for uninstalling and patching, etc)
 	${If} ${FileExists} "$INSTDIR1\Mods\${MOD_LOC}\Assets\Python"
+		MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
+			"Setup has detected an existing Python folder in $INSTDIR1\Mods\${MOD_LOC}\Assets\ $\n\
+			and will now proceed to delete its contents to avoid problems with leftover python modules from earlier versions." \
+		IDOK continue
+		Abort
+		continue:
 		RMDir /r "$INSTDIR1\Mods\${MOD_LOC}\Assets\Python"
 	${EndIf}
+	SetOutPath "$INSTDIR1\Mods\${MOD_LOC}" ;${MOD_LOC} is used so that the intall directory only pertains to the Mod's folder (essential for uninstalling and patching, etc)
 	File /r "${MYCLSDIR}\*.*" ;*.* is used because the contents, and not the main folder of the install is installed, because as stated above the mod's folder itself is the install directory
 	WriteINIStr "$INSTDIR1\Mods\${MOD_LOC}\${SHORT_NAME} Info.url" "InternetShortcut" "URL" "${URL}"
 

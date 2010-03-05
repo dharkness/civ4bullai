@@ -337,13 +337,25 @@ bool CvSelectionGroupAI::AI_update()
 // Returns attack odds out of 100 (the higher, the better...)
 int CvSelectionGroupAI::AI_attackOdds(const CvPlot* pPlot, bool bPotentialEnemy) const
 {
-	//PROFILE_FUNC();
+	PROFILE_FUNC();
 
 	CvUnit* pAttacker;
 
 	FAssert(getOwnerINLINE() != NO_PLAYER);
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/21/10                                jdog5000      */
+/*                                                                                              */
+/* Efficiency, Lead From Behind                                                                 */
+/************************************************************************************************/
+	// From Lead From Behind by UncutDragon
+/* original code
 	if (pPlot->getBestDefender(NO_PLAYER, getOwnerINLINE(), NULL, !bPotentialEnemy, bPotentialEnemy) == NULL)
+*/	// modified
+	if (!pPlot->hasDefender(false, NO_PLAYER, getOwnerINLINE(), NULL, !bPotentialEnemy, bPotentialEnemy))
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	{
 		return 100;
 	}
@@ -362,6 +374,8 @@ int CvSelectionGroupAI::AI_attackOdds(const CvPlot* pPlot, bool bPotentialEnemy)
 
 CvUnit* CvSelectionGroupAI::AI_getBestGroupAttacker(const CvPlot* pPlot, bool bPotentialEnemy, int& iUnitOdds, bool bForce, bool bNoBlitz) const
 {
+	PROFILE_FUNC();
+
 	CLLNode<IDInfo>* pUnitNode;
 	CvUnit* pLoopUnit;
 	CvUnit* pBestUnit;
@@ -407,29 +421,45 @@ CvUnit* CvSelectionGroupAI::AI_getBestGroupAttacker(const CvPlot* pPlot, bool bP
 				{
 					if (bForce || pLoopUnit->canMoveInto(pPlot, /*bAttack*/ true, /*bDeclareWar*/ bPotentialEnemy))
 					{
-						iOdds = pLoopUnit->AI_attackOdds(pPlot, bPotentialEnemy);
-						
-						iValue = iOdds;
-						FAssertMsg(iValue > 0, "iValue is expected to be greater than 0");
-
-						if (pLoopUnit->collateralDamage() > 0)
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/21/10                                jdog5000      */
+/*                                                                                              */
+/* Lead From Behind                                                                             */
+/************************************************************************************************/
+						// From Lead From Behind by UncutDragon
+						if (GC.getLFBEnable() && GC.getLFBUseCombatOdds())
 						{
-							iPossibleTargets = std::min((pPlot->getNumVisibleEnemyDefenders(pLoopUnit) - 1), pLoopUnit->collateralDamageMaxUnits());
+							pLoopUnit->LFBgetBetterAttacker(&pBestUnit, pPlot, bPotentialEnemy, iBestOdds, iValue);
+						} 
+						else 
+						{
+							iOdds = pLoopUnit->AI_attackOdds(pPlot, bPotentialEnemy);
+						
+							iValue = iOdds;
+							FAssertMsg(iValue > 0, "iValue is expected to be greater than 0");
 
-							if (iPossibleTargets > 0)
+							if (pLoopUnit->collateralDamage() > 0)
 							{
-								iValue *= (100 + ((pLoopUnit->collateralDamage() * iPossibleTargets) / 5));
-								iValue /= 100;
+								iPossibleTargets = std::min((pPlot->getNumVisibleEnemyDefenders(pLoopUnit) - 1), pLoopUnit->collateralDamageMaxUnits());
+
+								if (iPossibleTargets > 0)
+								{
+									iValue *= (100 + ((pLoopUnit->collateralDamage() * iPossibleTargets) / 5));
+									iValue /= 100;
+								}
+							}
+
+							// if non-human, prefer the last unit that has the best value (so as to avoid splitting the group)
+							if (iValue > iBestValue || (!bIsHuman && iValue > 0 && iValue == iBestValue))
+							{
+								iBestValue = iValue;
+								iBestOdds = iOdds;
+								pBestUnit = pLoopUnit;
 							}
 						}
-
-						// if non-human, prefer the last unit that has the best value (so as to avoid splitting the group)
-						if (iValue > iBestValue || (!bIsHuman && iValue > 0 && iValue == iBestValue))
-						{
-							iBestValue = iValue;
-							iBestOdds = iOdds;
-							pBestUnit = pLoopUnit;
-						}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 					}
 				}
 			}

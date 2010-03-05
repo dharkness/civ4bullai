@@ -1339,7 +1339,7 @@ void CvSelectionGroup::startMission()
 		}
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      02/10/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      03/02/10                                jdog5000      */
 /*                                                                                              */
 /* War tactics AI                                                                               */
 /************************************************************************************************/
@@ -1354,16 +1354,15 @@ void CvSelectionGroup::startMission()
 				pLoopUnit = ::getUnit(pUnitNode->m_data);
 				pUnitNode = nextUnitNode(pUnitNode);
 
-				if( pLoopUnit->canPillage(plot()) )
+				if( pLoopUnit->canMove() && pLoopUnit->canPillage(plot()) )
 				{
 					iMaxMovesLeft = std::max( iMaxMovesLeft, pLoopUnit->movesLeft() );
 				}
 			}
 
-			bool bDidPillage = true;
-			while( iMaxMovesLeft > 0 && bDidPillage )
+			bool bDidPillage = false;
+			while( iMaxMovesLeft > 0 && !bDidPillage )
 			{
-				bDidPillage = false;
 				pUnitNode = headUnitNode();
 				int iNextMaxMovesLeft = 0;
 
@@ -1372,7 +1371,7 @@ void CvSelectionGroup::startMission()
 					pLoopUnit = ::getUnit(pUnitNode->m_data);
 					pUnitNode = nextUnitNode(pUnitNode);
 
-					if( pLoopUnit->canPillage(plot()) )
+					if( pLoopUnit->canMove() && pLoopUnit->canPillage(plot()) )
 					{
 						if( pLoopUnit->movesLeft() >= iMaxMovesLeft )
 						{
@@ -1380,6 +1379,7 @@ void CvSelectionGroup::startMission()
 							{
 								bAction = true;
 								bDidPillage = true;
+								break;
 							}
 						}
 
@@ -3694,6 +3694,8 @@ bool CvSelectionGroup::groupDeclareWar(CvPlot* pPlot, bool bForce)
 // Returns true if attack was made...
 bool CvSelectionGroup::groupAttack(int iX, int iY, int iFlags, bool& bFailedAlreadyFighting)
 {
+	PROFILE_FUNC();
+
 	CvPlot* pDestPlot = GC.getMapINLINE().plotINLINE(iX, iY);
 
 	if (iFlags & MOVE_THROUGH_ENEMY)
@@ -3724,11 +3726,24 @@ bool CvSelectionGroup::groupAttack(int iX, int iY, int iFlags, bool& bFailedAlre
 				if (pBestAttackUnit)
 				{
 					// if there are no defenders, do not attack
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/21/10                                jdog5000      */
+/*                                                                                              */
+/* Lead From Behind                                                                             */
+/************************************************************************************************/
+// From Lead From Behind by UncutDragon
+/* original code
 					CvUnit* pBestDefender = pDestPlot->getBestDefender(NO_PLAYER, getOwnerINLINE(), pBestAttackUnit, true);
 					if (NULL == pBestDefender)
 					{
 						return false;
 					}
+*/					// modified
+					if (!pDestPlot->hasDefender(false, NO_PLAYER, getOwnerINLINE(), pBestAttackUnit, true))
+						return false;
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 // BUG - Safe Move - start
 					if (isHuman())

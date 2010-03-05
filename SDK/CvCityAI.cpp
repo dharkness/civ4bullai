@@ -1163,16 +1163,19 @@ void CvCityAI::AI_chooseProduction()
     
 	if (((iTargetCulturePerTurn > 0) || (getPopulation() > 5)) && (getCommerceRate(COMMERCE_CULTURE) == 0))
 	{
-		if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE, 30))
+		if( !(kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE)) )
 		{
-			return;
+			if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE, 30))
+			{
+				return;
+			}
 		}
 	}
 
 	// Early game worker logic
 	if( isCapital() && (GC.getGame().getElapsedGameTurns() < ((30 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent()) / 100)))
 	{
-		if( !bDanger )
+		if( !bDanger && !(kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE)) )
 		{
 			if (!bWaterDanger && (iNeededSeaWorkers > 0) && (getPopulation() < 3))
 			{
@@ -1269,7 +1272,7 @@ void CvCityAI::AI_chooseProduction()
 
 			if ((getPopulation() > 3) && (getCommerceRate(COMMERCE_CULTURE) < 5))
 			{
-				if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE, 30 + iWarTroubleThreshold, 0, 50))
+				if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE, 30, 0 + 3*iWarTroubleThreshold, 50))
 				{
 					return;
 				}
@@ -1355,7 +1358,7 @@ void CvCityAI::AI_chooseProduction()
 	
 	if (!bPrimaryArea)
 	{
-		if (AI_chooseBuilding(BUILDINGFOCUS_FOOD, 60, 10 + iWarTroubleThreshold))
+		if (AI_chooseBuilding(BUILDINGFOCUS_FOOD, 60, 10 + 2*iWarTroubleThreshold, 50))
 		{
 			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose BUILDINGFOCUS_FOOD 1", getName().GetCString());
 			return;
@@ -1364,7 +1367,7 @@ void CvCityAI::AI_chooseProduction()
 	
 	if (!bDanger && ((kPlayer.getCurrentEra() > (GC.getGame().getStartEra() + iProductionRank / 2))) || (kPlayer.getCurrentEra() > (GC.getNumEraInfos() / 2)))
 	{
-		if (AI_chooseBuilding(BUILDINGFOCUS_PRODUCTION, 20, 15))
+		if (AI_chooseBuilding(BUILDINGFOCUS_PRODUCTION, 20 - iWarTroubleThreshold, 15, ((bLandWar || bAssault) ? 25 : -1)))
 		{
 			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose BUILDINGFOCUS_PRODUCTION 1", getName().GetCString());
 			return;	
@@ -1451,7 +1454,7 @@ void CvCityAI::AI_chooseProduction()
     //this can be overridden by "wait and grow more"
     if (bDanger && (iExistingWorkers == 0) && (isCapital() || (iNeededWorkers > 0) || (iNeededSeaWorkers > 0)))
     {
-		if( !(bDefenseWar && iWarSuccessRatio < -50) )
+		if( !(bDefenseWar && iWarSuccessRatio < -50) && !(kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE)) )
 		{
 			if ((AI_countNumBonuses(NO_BONUS, /*bIncludeOurs*/ true, /*bIncludeNeutral*/ true, -1, /*bLand*/ true, /*bWater*/ false) > 0) || 
 				(isCapital() && (getPopulation() > 3) && iNumCitiesInArea > 1))
@@ -1622,6 +1625,7 @@ void CvCityAI::AI_chooseProduction()
 	UnitTypes eBestSpreadUnit = NO_UNIT;
 	int iBestSpreadUnitValue = -1;
 	
+	if( !bDanger && !(kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE)) )
 	{
 		int iSpreadUnitRoll = (100 - iBuildUnitProb) / 3;
 		iSpreadUnitRoll += bLandWar ? 0 : 10;
@@ -1676,7 +1680,7 @@ void CvCityAI::AI_chooseProduction()
 				int iSettlerSeaNeeded = std::min(iNumWaterAreaCitySites, ((iTotalCities + 4) / 8) + 1);
 				if (kPlayer.getCapitalCity() != NULL)
 				{
-					int iOverSeasColonies = iTotalCities - kPlayer.getCapitalCity()->area()->getCitiesPerPlayer(getOwnerINLINE());;
+					int iOverSeasColonies = iTotalCities - kPlayer.getCapitalCity()->area()->getCitiesPerPlayer(getOwnerINLINE());
 					int iLoop = 2;
 					int iExtras = 0;
 					while (iOverSeasColonies >= iLoop)
@@ -3373,60 +3377,73 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 	ReligionTypes eStateReligion = kOwner.getStateReligion();
 
 	bool bAreaAlone = kOwner.AI_isAreaAlone(area());
-	bool bProvidesPower = (kBuilding.isPower() || ((kBuilding.getPowerBonus() != NO_BONUS) && hasBonus((BonusTypes)(kBuilding.getPowerBonus()))) || kBuilding.isAreaCleanPower()); //Fuyu added areapower
-
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/24/10                        jdog5000 & Fuyu       */
+/*                                                                                              */
+/* City AI, Bugfix                                                                              */
+/************************************************************************************************/
 	int iHasMetCount = GET_TEAM(getTeam()).getHasMetCivCount(true);
+
 	int iFoodDifference = foodDifference(false);
 
-	int iHappinessLevel = happyLevel() - unhappyLevel(1);
+	// Reduce reaction to espionage induced happy/health problems
+	int iHappinessLevel = happyLevel() - unhappyLevel(1) + getEspionageHappinessCounter()/2;
 	int iAngryPopulation = range(-iHappinessLevel, 0, (getPopulation() + 1));
-	int iHealthLevel = goodHealth() - badHealth(/*bNoAngry*/ false, std::max(0, (iHappinessLevel + 1) / 2));
+	int iHealthLevel = goodHealth() - badHealth(/*bNoAngry*/ false, std::max(0, (iHappinessLevel + 1) / 2)) + getEspionageHealthCounter()/2;
 	int iBadHealth = std::max(0, -iHealthLevel);
 
-	int iHappyModifier = (iHappinessLevel >= iHealthLevel && iHappinessLevel <= 6) ? 6 : 3;
-	int iHealthModifier = (iHealthLevel > iHappinessLevel && iHealthLevel <= 4) ? 4 : 2;
+	int iHappyModifier = (iHappinessLevel <= iHealthLevel && iHappinessLevel <= 6) ? 6 : 3;
+	int iHealthModifier = (iHealthLevel < iHappinessLevel && iHealthLevel <= 4) ? 4 : 2;
 	if (iHappinessLevel >= 10)
 	{
 		iHappyModifier = 1;
 	}
-	if (iHealthLevel >= 8) //Fuyu Fix
+	if (iHealthLevel >= 8)
 	{
 		iHealthModifier = 0;
 	}
 
+	bool bProvidesPower = (kBuilding.isPower() || ((kBuilding.getPowerBonus() != NO_BONUS) && hasBonus((BonusTypes)(kBuilding.getPowerBonus()))) || kBuilding.isAreaCleanPower());
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+
 /********************************************************************************/
 /* 	Alternative Building Evaluation				20/02/10		Fuyu		    */
 /* 	 - requires Actual Building Effects (BULL)								    */
-/* 	(only Anti-Shrink for now)												    */
+/* 																			    */
+/* 	TODO:																		*/
+/* 		value riverPlotYieldChanges higher when we are already working on river	*/
+/* 		add getBuildingYieldChange() ?										    */
+/* 		more consistancy (values from yield changes should not differ so much	*/
+/* 			depending on where they come from)									*/
 /********************************************************************************/
 	//Don't consider a building if it causes the city to immediately start shrinking from unhealthiness
 //For that purpose ignore bad health and unhappiness from Espionage.
-	int iGood = 0;
-	int iBad = 0;
+	int iGood = 0; int iBad = 0;
 	int iBuildingActualHappiness = getAdditionalHappinessByBuilding(eBuilding,iGood,iBad);
-	iGood = 0;
-	iBad = 0;
+	iGood = 0; iBad = 0;
 	int iBuildingActualHealth = getAdditionalHealthByBuilding(eBuilding,iGood,iBad);
-	int iTempHappinessLevel = happyLevel() - unhappyLevel() + getEspionageHappinessCounter();
-	int iTempHealthLevel = goodHealth() - badHealth() + getEspionageHealthCounter();
-	int iTempFoodDifference = getYieldRate(YIELD_FOOD) - getPopulation()*GC.getFOOD_CONSUMPTION_PER_POPULATION() - std::max(0,-iTempHealthLevel);
+	int iBaseHappinessLevel = happyLevel() - unhappyLevel() + getEspionageHappinessCounter();
+	int iBaseHealthLevel = goodHealth() - badHealth() + getEspionageHealthCounter();
+	int iBaseFoodDifference = getYieldRate(YIELD_FOOD) - getPopulation()*GC.getFOOD_CONSUMPTION_PER_POPULATION() - std::max(0,-iBaseHealthLevel);
 	int iBadHealthFromBuilding = std::max(0,(-iBuildingActualHealth));
-	int iUnhealthyPopulationFromBuilding = std::min(0,(-iTempHealthLevel)) + iBadHealthFromBuilding;
-//	int iTotalHealth = iTempHealthLevel + iBuildingActualHealth;
+	int iUnhealthyPopulationFromBuilding = std::min(0,(-iBaseHealthLevel)) + iBadHealthFromBuilding;
+//	int iTotalHealth = iBaseHealthLevel + iBuildingActualHealth;
 	bool bShrinksWithPower = false;
 //Allow a bit of shrinking: Population is expendable if angry, working a bad tile, or running a not-so-good specialist
 	int iAllowedShrinkRate = GC.getFOOD_CONSUMPTION_PER_POPULATION() * (0
-		+ std::max(0,-iTempHappinessLevel)
+		+ std::max(0,-iBaseHappinessLevel)
 		+ std::min(1, std::max(0,(getWorkingPopulation() - AI_countGoodTiles(true, false, 50))))
 		+ std::max(0,(visiblePopulation() - AI_countGoodSpecialists(false))));
-	if (iUnhealthyPopulationFromBuilding > 0 && (iTempFoodDifference + iAllowedShrinkRate < iUnhealthyPopulationFromBuilding ))
+	if (iUnhealthyPopulationFromBuilding > 0 && (iBaseFoodDifference + iAllowedShrinkRate < iUnhealthyPopulationFromBuilding ))
 	{
 		return 0;
 	}
 	else if (!(bProvidesPower || isPower()))  //if the city is still without power after building this
 	{
 		int iUnhealthyPopulationFromBuildingPlusPower = std::min(0,(badHealth() - goodHealth() - getEspionageHealthCounter())) + iBadHealthFromBuilding - GC.getDefineINT("DIRTY_POWER_HEALTH_CHANGE");
-		if (iUnhealthyPopulationFromBuildingPlusPower > 0 && (iTempFoodDifference + iAllowedShrinkRate < iUnhealthyPopulationFromBuildingPlusPower ))
+		if (iUnhealthyPopulationFromBuildingPlusPower > 0 && (iBaseFoodDifference + iAllowedShrinkRate < iUnhealthyPopulationFromBuildingPlusPower ))
 		{
 			bShrinksWithPower = true;
 		}
@@ -3559,64 +3576,52 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 				{
 					iValue += ((iAngryPopulation * 10) + getPopulation());
 				}
-				
-				int iBuildingHappiness = kBuilding.getHappiness();
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      01/17/10                                Afforess      */
+/* BETTER_BTS_AI_MOD                      02/24/10                              jdog5000        */
 /*                                                                                              */
 /* City AI                                                                                      */
 /************************************************************************************************/
-				iBuildingHappiness += GET_PLAYER(getOwnerINLINE()).getExtraBuildingHappiness(eBuilding);
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
-				if (iBuildingHappiness != 0)
-				{
-					iValue += (std::min(iBuildingHappiness, iAngryPopulation) * 10) 
-						+ (std::max(0, iBuildingHappiness - iAngryPopulation) * iHappyModifier);
-				}
+				int iGood, iBad = 0;
+				int iBuildingActualHappiness = getAdditionalHappinessByBuilding(eBuilding,iGood,iBad);
 
-				iValue += (kBuilding.getAreaHappiness() * iNumCitiesInArea * 8);
-				iValue += (kBuilding.getGlobalHappiness() * iNumCities * 8);
+				if( iBuildingActualHappiness < 0 )
+				{
+					// Building causes net decrease in city happiness
+					iValue -= (-iBuildingActualHappiness + iAngryPopulation) * 6
+						+ (-iBuildingActualHappiness) * iHappyModifier;
 
-				int iWarWearinessPercentAnger = kOwner.getWarWearinessPercentAnger();
-				int iWarWearinessModifer = kBuilding.getWarWearinessModifier();
-				if (iWarWearinessModifer > 0)
-				{
-					iValue += (std::min(-(((iWarWearinessModifer * iWarWearinessPercentAnger) / 100) / GC.getPERCENT_ANGER_DIVISOR()), iAngryPopulation) * 8);
-					iValue += (-iWarWearinessModifer * iHappyModifier) / 16;
+					// BBAI TODO: Check for potential shrink in population
+					
 				}
-				
-				int iGlobalWarWearinessModifer = kBuilding.getGlobalWarWearinessModifier();
-				if (iGlobalWarWearinessModifer > 0)
+				else if( iBuildingActualHappiness > 0 )
 				{
-					iValue += (-(((iGlobalWarWearinessModifer * iWarWearinessPercentAnger / 100) / GC.getPERCENT_ANGER_DIVISOR())) * iNumCities);
-					iValue += (-iGlobalWarWearinessModifer * iHappyModifier) / 16;
+					// Building causes net increase in city happiness
+					iValue += (std::min(iBuildingActualHappiness, iAngryPopulation) * 10) 
+						+ (std::max(0, iBuildingActualHappiness - iAngryPopulation) * iHappyModifier);
 				}
 
 				iValue += (-kBuilding.getHurryAngerModifier() * getHurryPercentAnger()) / 100;
 
-				int iStateReligionHappiness = kBuilding.getStateReligionHappiness();
-				if (kBuilding.getReligionType() == eStateReligion && iStateReligionHappiness != 0)
-				{
-					iValue += (std::min(iStateReligionHappiness, iAngryPopulation) * 8)
-						+ (std::max(0, iStateReligionHappiness - iAngryPopulation) * iHappyModifier);
-				}
-
 				for (iI = 0; iI < NUM_COMMERCE_TYPES; iI++)
 				{
-					iValue += (std::min(((kBuilding.getCommerceHappiness(iI) * kOwner.getCommercePercent((CommerceTypes)iI)) / 100), iAngryPopulation) * 8);
 					iValue += (kBuilding.getCommerceHappiness(iI) * iHappyModifier) / 4;
 				}
 
-				for (iI = 0; iI < GC.getNumBonusInfos(); iI++)
+				int iWarWearinessModifer = kBuilding.getWarWearinessModifier();
+				if (iWarWearinessModifer != 0)
 				{
-					if (hasBonus((BonusTypes)iI))
-					{
-						int iBonusHappinessChange = kBuilding.getBonusHappinessChanges(iI);
-						iValue += (std::min(iBonusHappinessChange, iAngryPopulation) * 8)
-							+ (std::max(0, iBonusHappinessChange - iAngryPopulation) * iHappyModifier);
-					}
+					iValue += (-iWarWearinessModifer * iHappyModifier) / 16;
+				}
+
+				iValue += (kBuilding.getAreaHappiness() * (iNumCitiesInArea - 1) * 8);
+				iValue += (kBuilding.getGlobalHappiness() * iNumCities * 8);
+
+				int iWarWearinessPercentAnger = kOwner.getWarWearinessPercentAnger();
+				int iGlobalWarWearinessModifer = kBuilding.getGlobalWarWearinessModifier();
+				if (iGlobalWarWearinessModifer != 0)
+				{
+					iValue += (-(((iGlobalWarWearinessModifer * iWarWearinessPercentAnger / 100) / GC.getPERCENT_ANGER_DIVISOR())) * iNumCities);
+					iValue += (-iGlobalWarWearinessModifer * iHappyModifier) / 16;
 				}
 
 				for (iI = 0; iI < GC.getNumBuildingClassInfos(); iI++)
@@ -3626,74 +3631,42 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 						iValue += (kBuilding.getBuildingHappinessChanges(iI) * kOwner.getBuildingClassCount((BuildingClassTypes)iI) * 8);
 					}
 				}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 			}
 
 			if (((iFocusFlags & BUILDINGFOCUS_HEALTHY) || (iPass > 0)) && !isNoUnhealthyPopulation())
 			{
-				if (bProvidesPower)
-				{
-					if (isDirtyPower() && !(kBuilding.isDirtyPower()))
-					{
-						iValue += (std::min(-(GC.getDefineINT("DIRTY_POWER_HEALTH_CHANGE")), iBadHealth) * 8);
-
-					}
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      01/17/10                      Afforess & jdog5000     */
+/* BETTER_BTS_AI_MOD                      02/24/10                          jdog5000 & Fuyu     */
 /*                                                                                              */
 /* City AI                                                                                      */
 /************************************************************************************************/
-					// Dirty Power is dirty, subtract value would have added above
-					else if (!isPower() && kBuilding.isDirtyPower())
-					{
-						iValue -= (std::min(-(GC.getDefineINT("DIRTY_POWER_HEALTH_CHANGE")), iBadHealth) * 8);
-					}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
-				}
+				int iGood, iBad = 0;
+				int iBuildingActualHealth = getAdditionalHealthByBuilding(eBuilding,iGood,iBad);
 
-				if (kBuilding.isNoUnhealthyPopulation())
+				if( iBuildingActualHealth < 0 )
 				{
-					int iUnhealthyPopulation = unhealthyPopulation();
-					iValue += (std::min(iUnhealthyPopulation, iBadHealth) * 12)
-						+ (std::max(0, iUnhealthyPopulation - iBadHealth) * iHealthModifier);
-				}
+					// Building causes net decrease in city health
+					iValue -= (-iBuildingActualHealth + iBadHealth) * 6
+						+ (-iBuildingActualHealth) * iHealthModifier;
 
-				if (kBuilding.isBuildingOnlyHealthy())
+					// BBAI TODO: Check for potential shrink in population
+					
+				}
+				else if( iBuildingActualHealth > 0 )
 				{
-					int iBuildingBadHealth = -getBuildingBadHealth();
-					iValue += (std::min(iBuildingBadHealth, iBadHealth) * 12)
-						+ ((std::max(0, iBuildingBadHealth - iBadHealth) + 1) * iHealthModifier);
+					// Building causes net increase in city health
+					iValue += (std::min(iBuildingActualHealth, iBadHealth) * 10)
+						+ (std::max(0, iBuildingActualHealth - iBadHealth) * iHealthModifier);
 				}
 
-				int iBuildingHealth = kBuilding.getHealth();
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      01/17/10                                Afforess      */
-/*                                                                                              */
-/* City AI                                                                                      */
-/************************************************************************************************/
-				iBuildingHealth += GET_PLAYER(getOwnerINLINE()).getExtraBuildingHealth(eBuilding);
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
-				if (iBuildingHealth != 0)
-				{
-					iValue += (std::min(iBuildingHealth, iBadHealth) * 12)
-						+ (std::max(0, iBuildingHealth - iBadHealth) * iHealthModifier);
-				}
-
-				iValue += (kBuilding.getAreaHealth() * iNumCitiesInArea * 4);
+				iValue += (kBuilding.getAreaHealth() * (iNumCitiesInArea-1) * 4);
 				iValue += (kBuilding.getGlobalHealth() * iNumCities * 4);
-
-				for (iI = 0; iI < GC.getNumBonusInfos(); iI++)
-				{
-					if (hasBonus((BonusTypes)iI))
-					{
-						int iBonusHealthChange = kBuilding.getBonusHealthChanges(iI);
-						iValue += (std::min(iBonusHealthChange, iBadHealth) * 12)
-							+ (std::max(0, iBonusHealthChange - iBadHealth) * iHealthModifier);
-					}
-				}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 			}
 
 			if ((iFocusFlags & BUILDINGFOCUS_EXPERIENCE) || (iPass > 0))
@@ -3865,16 +3838,35 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 				{
 					iTempValue /= 3;
 				}
-				
+
 
 				iValue += iTempValue;
 			}
 
 			if (iPass > 0)
 			{
-				if (kBuilding.isAreaCleanPower())
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/24/10                       jdog5000 & Afforess    */
+/*                                                                                              */
+/* City AI                                                                                      */
+/************************************************************************************************/
+				if (kBuilding.isAreaCleanPower() && !(area()->isCleanPower(getTeam())))
 				{
-					iValue += ((iNumCitiesInArea - 1) * 10); // XXX count cities without clean power???  -1 from Fuyu because it now bProvidesPower
+					int iLoop;
+					for( CvCity* pLoopCity = GET_PLAYER(getOwnerINLINE()).firstCity(&iLoop); pLoopCity != NULL; pLoopCity = GET_PLAYER(getOwnerINLINE()).nextCity(&iLoop) )
+					{
+						if( pLoopCity->area() == area() )
+						{
+							if( pLoopCity->isDirtyPower() )
+							{
+								iValue += 12;
+							}
+							else if( !(pLoopCity->isPower()) )
+							{
+								iValue += 8;
+							}
+						}
+					}
 				}
 
 				if (kBuilding.getDomesticGreatGeneralRateModifier() != 0)
@@ -3882,13 +3874,8 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 					iValue += (kBuilding.getDomesticGreatGeneralRateModifier() / 10);
 				}
 
-				if (kBuilding.isAreaBorderObstacle())
+				if (kBuilding.isAreaBorderObstacle() && !(area()->isBorderObstacle(getTeam())))
 				{
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      01/07/10                       Afforess & jdog5000    */
-/*                                                                                              */
-/* City AI                                                                                      */
-/************************************************************************************************/
 					if( !GC.getGameINLINE().isOption(GAMEOPTION_NO_BARBARIANS) )
 					{
 						iValue += (iNumCitiesInArea);
@@ -3898,10 +3885,10 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 							iValue += (iNumCitiesInArea);
 						}
 					}
+				}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
-				}
 
 				if (kBuilding.isGovernmentCenter())
 				{
@@ -4309,7 +4296,7 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 					iTempValue += ((kBuilding.getPowerYieldModifier(YIELD_PRODUCTION) * getBaseYieldRate(YIELD_PRODUCTION)) / ((bProvidesPower || isPower()) ? 24 : 30));
 
 */
-					//Fuyu Shrink consideration, and "? 24 : 30" is not enough / too much -> "? 20 : 35" (full value if there is already power, less if you still have to build a power plant. No value if you can't build any powrplant without shrinking the city)
+					//Fuyu Shrink consideration; and "? 24 : 30" is not enough / too much -> "? 20 : 35" (full value if there is already power, less if you still have to build a power plant. No value if you can't build any powerplant without shrinking the city)
 					if (!bShrinksWithPower)
 					{
 						iTempValue += ((kBuilding.getPowerYieldModifier(YIELD_PRODUCTION) * getBaseYieldRate(YIELD_PRODUCTION)) / ((bProvidesPower || isPower()) ? 20 : 35));
@@ -6265,7 +6252,7 @@ void CvCityAI::AI_getYieldMultipliers( int &iFoodMultiplier, int &iProductionMul
 		iExtraFoodForGrowth ++;
 	}
 
-	int iFoodDifference = iFoodTotal - ((iTargetSize * GC.getFOOD_CONSUMPTION_PER_POPULATION()) + iExtraFoodForGrowth);;
+	int iFoodDifference = iFoodTotal - ((iTargetSize * GC.getFOOD_CONSUMPTION_PER_POPULATION()) + iExtraFoodForGrowth);
 	
 	iDesiredFoodChange = -iFoodDifference + std::max(0, -iHealth);
 	if (iTargetSize > getPopulation())
@@ -7125,7 +7112,7 @@ void CvCityAI::AI_updateBestBuild()
 		iExtraFoodForGrowth ++;
 	}
 
-	int iFoodDifference = iFoodTotal - ((iTargetSize * GC.getFOOD_CONSUMPTION_PER_POPULATION()) + iExtraFoodForGrowth);;
+	int iFoodDifference = iFoodTotal - ((iTargetSize * GC.getFOOD_CONSUMPTION_PER_POPULATION()) + iExtraFoodForGrowth);
 	
 	int iDesiredFoodChange = -iFoodDifference + std::max(0, -iHealth);
 	if (iTargetSize > getPopulation())

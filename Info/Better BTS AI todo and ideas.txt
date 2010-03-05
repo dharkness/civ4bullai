@@ -1,21 +1,31 @@
 -----------------------------------------------------------
 
-For BBAI 0.83
-x Human as vassal option
-x Alliances option
-x Pop rush defense
-
 For BBAI 0.85
 
-- Check war strategy changes
-- Nuke AI: don't always launch first, don't be predictable
-- Breakout power calculations into units, production
+x Finish merging in LFB
+- Check that LFB code makes sense
+x Recomment LFB code
+- Get AI to produce medic units
+x Bring over city razing, enemy power percent changes from RevDCM
+x Afforess city building value changes
+x Recomment Afforess changes
+x Fast units pillage first
+- Naval escorts
 - Turtle strategy: don't send offensive forays if war prospects are bleak
-- Missionary AI
+- Nuke AI: don't always launch first, don't be predictable
+- Breakout power calculations into land, sea, air, production?
 - DPII diplomacy changes
-- Trade tech more when behind
-- Early worker build logic
-- Early settler logic
+x Trade tech more when behind
+x Spilt Global defines xml files
+- Check xml files work
+x Use new variables for XML
+- Compare speed of 0.90 versus 0.81
+- Check AI building of power plants/factories with new health code
+- Check AI valuation of building happiness 
+- UNITAI_COUNTER valuation of interception based on enemy air power
+x AI_unitValue of attack city seige needs to scale up with army size, factor in air power
+- Does AI adjust espionage slider without Alphabet?
+
 
 -----------------------------------------------------------
 
@@ -27,6 +37,7 @@ Air AI
 Espionage AI
 x Spies trigger revolt when troops have city surrounded
 - Why do spies recalculate move every turn?
+- Gives spies auto-explore option (in CvUnit, look for AUTOMATE_EXPLORE)
 
 Victory Strategy
 - Add XML fields to leaderhead
@@ -43,12 +54,10 @@ City AI:
 - Better logic (centralized) for determining when to relocate capital
 x Gold (or pop) rush defense when threatened and unprepared
 x Rush defenses just after being declared on if behind in power
-x Strike: no units
 x Check worker production in small cities
-x Cities which are not on water areas need to build settlers to enable fast colonization!  Maybe use count of settler sea units to prompt non-coastal settler production?
 x At early pop 3 -> 4, Granary build is often abandoned in favor of Barracks
 - Cities build culture to grab bonuses
-- Probabilities in build priorities cause wasted hammers, especially when pop changes frequently
+x Probabilities in build priorities cause wasted hammers, especially when pop changes frequently
 
 Worker AI:
 - Build railroads on mines etc with high priority to speed industrial revolution
@@ -58,6 +67,9 @@ War strategy AI:
 - Target cities to stop potential victory - capital for space, high culture cities for cultural.  Use war declaration code as a guide for how to determine if other player is close
 - Consider closeness to cultural victory, other conditions
 x Cancel war plans if they've been silent too long, no units moving to attack (invasion plans before astronomy issue)
+
+Tech selection AI:
+- Peaceful civs put off Rifling too long, boosting defenses is necessary for builders too
 
 Unit AI:
 x Attack stacks should stage in coastal cities if in assault areas
@@ -69,7 +81,8 @@ x Attack stacks should stage in coastal cities if in assault areas
 - Issues with enemy units having many first strikes -> invincible to many units.  Need some sense of expected damage dealt when weighting attackers or at least some adjustment for high first strike count.
 - Tactical nukes (UNITAI_ICBM) retreat when in threatened city?
 - Adjust anyAttack odds threshold up if more enemy units than friendly units?
-- How to get AI medic units in attack stacks, keep them alive on attacks/defense
+- How to get AI medic units in attack stacks, keep them alive on attacks/defense (see lead from behind)
+- Missiles moving into empty forts
 
 Nuke AI:
 - Add leader head personality variable to control how "nuke happy" an AI is
@@ -112,12 +125,15 @@ Diplomacy:
 x WHEOOHRN hiding
 
 Logging system:
-- Log unit disband, upgrade expenses, attack stack movement, goodies
+- Log upgrade expenses, attack stack movement, goodies
 - Log player strategies
 - Log religion founding
 
 Expose AI variables:
 - ?
+
+Efficiency:
+- Cache CvPlayer::getBestRoute
 
 -----------------------------------------------------------
 
@@ -153,4 +169,4 @@ Rework power calculations so that:
 2)  Better economic/production power understanding (can enemy out produce us?)
 3)  Better tech power understanding (do we need to catch up in military tech?)
 
-Compare tech rates with Aggressive AI and not
+New random method for techs: value is not random, but weights randomized selection.  Break unit, building, other weights into sub functions?

@@ -1,10 +1,10 @@
-Better BUG AI (2010-02-25)
+Better BUG AI (2010-03-05)
 --------------------------
 http://forums.civfanatics.com/showthread.php?t=354019
 
 
 Components:
-Better BTS AI 0.84b r522+ (523-525: only the parts without Lead From Behind)
+Better BTS AI 0.90e r532* 
 * AI Logging
 BULL 1.1+ r155
 * Fractional Trade Routes
@@ -12,9 +12,7 @@ BULL 1.1+ r155
 * City Governours Build Workers
 BUG 4.3 r2165
 
-other components that are not (yet) part of one of those 3:
-* BarbarianPassiveTechFix (from MongooseSDK)
-* No diplo hits from trading with someone's Worst Enemy if you haven't met that someone yet (by Sephi)
+ - *Floodplains fix stays, Workboarts stay military units for my mod (was changed in BetterAI)
 -----------------------------------------------------------------------------------------------------------------
 my very own changes:
 
@@ -31,6 +29,6 @@ my very own changes:
           o CIV4UnitInfos.xml: SAM Infantry is now available as an upgrade to the Grenadier (previously Infantry)
             - to avoid massive upgrading of riflemen to SAM when the AI hits Rocketery before Assembly line.
 ------------------------------------------------------------------------------------------------------------------
-The source files for the DLL of this release are available at sourceforge project bullai. This will be revision 39
+The source files for the DLL of this release are available at sourceforge project bullai.
 http link: http://bullai.svn.sourceforge.net/viewvc/bullai/trunk/SDK/
 SVN link: https://bullai.svn.sourceforge.net/svnroot/bullai/trunk/SDK/

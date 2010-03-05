@@ -522,17 +522,17 @@ void CvPlayerAI::AI_doTurnUnitsPost()
 		return;
 	}
 
-/********************************************************************************/
-/* 	BETTER_BTS_AI_MOD						9/15/08			jdog5000		*/
-/* 																			*/
-/* 	Gold AI																	*/
-/********************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/24/10                                jdog5000      */
+/*                                                                                              */
+/* Gold AI                                                                                      */
+/************************************************************************************************/
 	bool bAnyWar = (GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0);
 	int iStartingGold = getGold();
 	int iTargetGold = AI_goldTarget();
 	int iUpgradeBudget = (AI_goldToUpgradeAllUnits() / (bAnyWar ? 1 : 2));
 
-	iUpgradeBudget = std::min(iUpgradeBudget, iStartingGold - (iTargetGold - iUpgradeBudget));
+	iUpgradeBudget = std::min(iUpgradeBudget, iStartingGold - ((iTargetGold > iUpgradeBudget) ? (iTargetGold - iUpgradeBudget) : iStartingGold/2));
 
 	if( AI_isFinancialTrouble() )
 	{
@@ -543,9 +543,9 @@ void CvPlayerAI::AI_doTurnUnitsPost()
 	iUpgradeBudget = std::max(iUpgradeBudget,1);
 
 	bool bUnderBudget = true;
-/********************************************************************************/
-/* 	BETTER_BTS_AI_MOD						END								*/
-/********************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	CvPlot* pLastUpgradePlot = NULL;
 	for (iPass = 0; iPass < 4; iPass++)
@@ -700,6 +700,22 @@ void CvPlayerAI::AI_doTurnUnitsPost()
 	{
 		return;
 	}
+
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/24/10                                jdog5000      */
+/*                                                                                              */
+/* AI Logging                                                                                   */
+/************************************************************************************************/
+	if( gPlayerLogLevel > 2 )
+	{
+		if( iStartingGold - getGold() > 0 )
+		{
+			logBBAI("    %S spends %d on unit upgrades out of budget of %d, %d gold remaining", getCivilizationDescription(0), iStartingGold - getGold(), iUpgradeBudget, getGold());
+		}
+	}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                       06/16/09                                jdog5000      */
@@ -3889,7 +3905,18 @@ int CvPlayerAI::AI_goldTarget() const
 {
 	int iGold = 0;
 
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       02/24/10                                jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                      */
+/************************************************************************************************/
+/* original bts code
 	if (GC.getGameINLINE().getElapsedGameTurns() >= 40)
+*/
+	if (GC.getGameINLINE().getElapsedGameTurns() >= 40 || getNumCities() > 3)
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 	{
 		int iMultiplier = 0;
 		iMultiplier += GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent();
@@ -9482,6 +9509,12 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI, CvArea* pArea
 		break;
 
 	case UNITAI_ATTACK_CITY:
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/24/10                                jdog5000      */
+/*                                                                                              */
+/* War strategy AI                                                                              */
+/************************************************************************************************/
+		// Effect army composition to have more collateral/bombard units
 		iFastMoverMultiplier = AI_isDoStrategy(AI_STRATEGY_FASTMOVERS) ? 4 : 1;
 		
 		iTempValue = ((iCombatValue * iCombatValue) / 75) + (iCombatValue / 2);
@@ -9498,36 +9531,127 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI, CvArea* pArea
 		{
 			iValue += (iTempValue * 8) / 100;
 		}		
-		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getCityAttackModifier()) / 100);
+		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getCityAttackModifier()) / 75);
+/* Collateral Damage valuation moved to bombard part
 		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getCollateralDamage()) / 400);
+*/
 		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getMoves() * iFastMoverMultiplier) / 4);
 		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getWithdrawalProbability()) / 100);
+/*
 		if (!AI_isDoStrategy(AI_STRATEGY_AIR_BLITZ))
 		{
-			int iBombardValue = GC.getUnitInfo(eUnit).getBombardRate() * 4;
-			if (iBombardValue > 0)
+*/
+			if (GC.getUnitInfo(eUnit).getBombardRate() > 0 || GC.getUnitInfo(eUnit).getCollateralDamageMaxUnits() > 0)
 			{
-				//Percentage change
-				//Total Bombard == 0 : 600%
-				//Total Bombard == 100 : 200%
-				//Total Bombard == 200: 100%
-				//Total Bombard == 300: 50%
-				//Total Bombard == 400: 
-				int iTotalBombardRate = AI_calculateTotalBombard(DOMAIN_LAND);
-				if (iTotalBombardRate < 100)
+				/* original code
+				int iBombardValue = GC.getUnitInfo(eUnit).getBombardRate() * 4;
+				*/
+				int iBombardValue = GC.getUnitInfo(eUnit).getBombardRate() * (GC.getUnitInfo(eUnit).isIgnoreBuildingDefense() ? 3 : 2);
+				// Army composition needs to scale with army size, bombard unit potency
+
+
+				
+				//modified AI_calculateTotalBombard(DOMAIN_LAND) code
+				int iI;
+				int iTotalBombard = 0;
+				int iSiegeUnits = 0;
+				int iSiegeImmune = 0;
+				int iTotalSiegeMaxUnits = 0;
+				
+				for (iI = 0; iI < GC.getNumUnitClassInfos(); iI++)
 				{
-					iBombardValue *= 4 * (200 - iTotalBombardRate);
-					iBombardValue /= 100;
+					UnitTypes eLoopUnit = ((UnitTypes)(GC.getCivilizationInfo(getCivilizationType()).getCivilizationUnits(iI)));
+					if (eLoopUnit != NO_UNIT)
+					{
+						if (GC.getUnitInfo(eLoopUnit).getDomainType() == DOMAIN_LAND)
+						{
+							int iBombardRate = GC.getUnitInfo(eLoopUnit).getBombardRate();
+							
+							if (iBombardRate > 0)
+							{
+								iTotalBombard += (iBombardRate * getUnitClassCount((UnitClassTypes)iI) * (GC.getUnitInfo(eUnit).isIgnoreBuildingDefense() ? 3 : 2)) / 2;
+							}
+							
+							int iBombRate = GC.getUnitInfo(eLoopUnit).getBombRate();
+							if (iBombRate > 0)
+							{
+								iTotalBombard += iBombRate * getUnitClassCount((UnitClassTypes)iI);
+							}
+							
+							
+							if (GC.getUnitInfo(eLoopUnit).getCollateralDamageMaxUnits() != 0 && GC.getUnitInfo(eLoopUnit).getCollateralDamage() != 0)
+							{
+								iTotalSiegeMaxUnits += GC.getUnitInfo(eLoopUnit).getCollateralDamageMaxUnits() * getUnitClassCount((UnitClassTypes)iI);
+								iSiegeUnits += getUnitClassCount((UnitClassTypes)iI);
+							}
+							else if (GC.getUnitInfo(eLoopUnit).getUnitCombatCollateralImmune(GC.getUnitInfo(eUnit).getUnitCombatType()))
+							{
+								iSiegeImmune+= getUnitClassCount((UnitClassTypes)iI);
+							}
+						}
+					}
+				}
+
+				int iNumOffensiveUnits = AI_totalUnitAIs(UNITAI_ATTACK_CITY) + AI_totalUnitAIs(UNITAI_ATTACK) + AI_totalUnitAIs(UNITAI_COUNTER)/2;
+				int iNumDefensiveUnits = AI_totalUnitAIs(UNITAI_CITY_DEFENSE) + AI_totalUnitAIs(UNITAI_RESERVE) + AI_totalUnitAIs(UNITAI_CITY_COUNTER)/2 + AI_totalUnitAIs(UNITAI_COLLATERAL)/2;
+				iSiegeUnits += (iSiegeImmune*iNumOffensiveUnits)/(iNumOffensiveUnits+iNumDefensiveUnits);
+
+				int iMAX_HIT_POINTS = GC.getDefineINT("MAX_HIT_POINTS");
+
+				int iCollateralDamageMaxUnitsWeight = (100 * (iNumOffensiveUnits - iSiegeUnits)) / std::max(1,iTotalSiegeMaxUnits);
+				iCollateralDamageMaxUnitsWeight = std::min(100, iCollateralDamageMaxUnitsWeight);
+				//to decrease value further for units with low damage limits:
+				int iCollateralDamageLimitWeight = 100*iMAX_HIT_POINTS - std::max(0, ((iMAX_HIT_POINTS - GC.getUnitInfo(eUnit).getCollateralDamageLimit()) * (100 -  iCollateralDamageMaxUnitsWeight)));
+				iCollateralDamageLimitWeight /= iMAX_HIT_POINTS;
+				int iCollateralValue = iCombatValue * GC.getUnitInfo(eUnit).getCollateralDamage() * GC.getDefineINT("COLLATERAL_COMBAT_DAMAGE");
+				iCollateralValue /= 100;
+				iCollateralValue *= std::max(100, (GC.getUnitInfo(eUnit).getCollateralDamageMaxUnits() * iCollateralDamageMaxUnitsWeight * iCollateralDamageMaxUnitsWeight) / 100);
+				iCollateralValue /= 100;
+				iCollateralValue *= iCollateralDamageLimitWeight;
+				iCollateralValue /= 100;
+				iCollateralValue /= iMAX_HIT_POINTS;
+				iValue += iCollateralValue;
+				
+				//int iTotalBombardValue = 4 * iTotalBombard;
+				int iNumBombardUnits = 2 * iTotalBombard / iBombardValue;
+				int iAIDesiredBombardFraction = std::max( 5, /*default: 10*/ GC.getDefineINT("BBAI_BOMBARD_ATTACK_STACK_FRACTION"));
+				int iActualBombardFraction = (100*iNumBombardUnits)/std::max(1, iNumOffensiveUnits);
+
+				int iTempBombardValue = 0;
+				if (iTotalBombard < 200) //still less than 200 bombard points
+				{
+					iTempBombardValue = iBombardValue * (500 - 2*iTotalBombard);
+					iTempBombardValue /= 100;
+					//iTempBombardValue is at most (5 * iBombardValue)
+				}
+				if (iActualBombardFraction < iAIDesiredBombardFraction)
+				{
+					iBombardValue *= iAIDesiredBombardFraction + 3 * (iAIDesiredBombardFraction - iActualBombardFraction);
+					iBombardValue /= iAIDesiredBombardFraction;
+					//new iBombardValue is at most (4 * old iBombardValue)
 				}
 				else
 				{
-					iBombardValue *= 100;
-					iBombardValue /= std::min(400, iTotalBombardRate);
+					iBombardValue *= iAIDesiredBombardFraction;
+					iBombardValue /= range(iActualBombardFraction,1,99);
 				}
-				iValue += iBombardValue;
-			}
-		}
 
+				if (iTempBombardValue > iBombardValue)
+				{
+					iBombardValue = iTempBombardValue;
+				}
+				
+				if (!AI_isDoStrategy(AI_STRATEGY_AIR_BLITZ))
+				{
+					iValue += iBombardValue;
+				}
+			}
+/*
+		}
+*/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 		break;
 
 	case UNITAI_COLLATERAL:
@@ -9588,7 +9712,18 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI, CvArea* pArea
 
 		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getMoves()) / 2);
 		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getWithdrawalProbability()) / 100);
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/24/10                                jdog5000      */
+/*                                                                                              */
+/* War strategy AI                                                                              */
+/************************************************************************************************/
+/* original code
 		iValue += (GC.getUnitInfo(eUnit).getInterceptionProbability() * 2);
+*/
+		iValue += (GC.getUnitInfo(eUnit).getInterceptionProbability());
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/	
 		break;
 
 	case UNITAI_CITY_DEFENSE:
@@ -12163,23 +12298,25 @@ void CvPlayerAI::AI_changePeacetimeTradeValue(PlayerTypes eIndex, int iChange)
 					{
 						if (GET_TEAM((TeamTypes)iI).AI_getWorstEnemy() == getTeam())
 						{
-/*************************************************************************************************/
-/** BETTER AI (Better Diplomatics) Sephi		                	    						**/
-/*************************************************************************************************/
-/** orig
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       03/02/10                                Sephi         */
+/*                                                                                              */
+/* Bug fix                                                                                      */
+/************************************************************************************************/
+/* orig bts code
 							GET_TEAM((TeamTypes)iI).AI_changeEnemyPeacetimeTradeValue(GET_PLAYER(eIndex).getTeam(), iChange);
-**/
+*/
                             //make sure that if A trades with B and A is C's worst enemy, C is only mad at B if C has met B before
                             //A = this
                             //B = eIndex
                             //C = (TeamTypes)iI
                             if (GET_TEAM((TeamTypes)iI).isHasMet(GET_PLAYER(eIndex).getTeam()))
                             {
-							GET_TEAM((TeamTypes)iI).AI_changeEnemyPeacetimeTradeValue(GET_PLAYER(eIndex).getTeam(), iChange);
-						}
-/*************************************************************************************************/
-/** End															    							**/
-/*************************************************************************************************/
+								GET_TEAM((TeamTypes)iI).AI_changeEnemyPeacetimeTradeValue(GET_PLAYER(eIndex).getTeam(), iChange);
+							}
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 						}
 					}
 				}
@@ -12223,24 +12360,25 @@ void CvPlayerAI::AI_changePeacetimeGrantValue(PlayerTypes eIndex, int iChange)
 					{
 						if (GET_TEAM((TeamTypes)iI).AI_getWorstEnemy() == getTeam())
 						{
-/*************************************************************************************************/
-/** BETTER AI (Better Diplomatics) Sephi		                	    						**/
-/*************************************************************************************************/
-/** orig
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       03/02/10                                Sephi         */
+/*                                                                                              */
+/* Bug fix                                                                                      */
+/************************************************************************************************/
+/* orig bts code
 							GET_TEAM((TeamTypes)iI).AI_changeEnemyPeacetimeGrantValue(GET_PLAYER(eIndex).getTeam(), iChange);
-**/
+*/
                             //make sure that if A trades with B and A is C's worst enemy, C is only mad at B if C has met B before
                             //A = this
                             //B = eIndex
                             //C = (TeamTypes)iI
                             if (GET_TEAM((TeamTypes)iI).isHasMet(GET_PLAYER(eIndex).getTeam()))
                             {
-                                GET_TEAM((TeamTypes)iI).AI_changeEnemyPeacetimeGrantValue(GET_PLAYER(eIndex).getTeam(), iChange);
-                            }
-/*************************************************************************************************/
-/** End															    							**/
-/*************************************************************************************************/
-
+								GET_TEAM((TeamTypes)iI).AI_changeEnemyPeacetimeGrantValue(GET_PLAYER(eIndex).getTeam(), iChange);
+							}
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 						}
 					}
 				}
@@ -16537,10 +16675,6 @@ int CvPlayerAI::AI_getVictoryStrategyHash() const
 
 	return m_iVictoryStrategyHash;
 }
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/		
-
 
 
 bool CvPlayerAI::AI_isDoStrategy(int iStrategy) const
@@ -16739,7 +16873,7 @@ int CvPlayerAI::AI_getStrategyHash() const
 					{
 						if (!kLoopUnit.isSuicide())
 						{
-							if ((kLoopUnit.getBombRate() > 5) && (kLoopUnit.getAirCombat() > 0))
+							if ((kLoopUnit.getBombRate() > 10) && (kLoopUnit.getAirCombat() > 0))
 							{
 								bHasBomber = true;								
 							}

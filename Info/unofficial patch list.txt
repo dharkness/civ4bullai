@@ -13,6 +13,13 @@ Outstanding issues:
 
 Unofficial Patch Change List
 
+Version 1.50 changes:
+
+- CvUnitInfos.xml - Workboats no longer qualify for military production bonuses under Police State, do not count as military units for support either
+- CvCityAi::AI_buildingValueThreshold - Fixed bug causing AI cities to over value buildings which unlock specialists in many circumstances when picking what to build
+
+
+
 Version 1.40 changes:
 
 - CvGameTextMgr::setBuildingHelp - Fixed issue in mods with display of exposing spies text for buildings which lower espionage defense (thanks Afforess)
