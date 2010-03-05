@@ -1207,6 +1207,89 @@ protected:
 
 	FProfiler* m_Profiler;		// profiler
 	CvString m_szDllProfileText;
+
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/21/10                                jdog5000      */
+/*                                                                                              */
+/* Efficiency, Options                                                                          */
+/************************************************************************************************/
+public:
+	int getDefineINT( const char * szName, const int iDefault ) const;
+	
+// BBAI Options
+public:
+	bool getBBAI_AIR_COMBAT();
+	bool getBBAI_HUMAN_VASSAL_WAR_BUILD();
+	bool getBBAI_ALLIANCE_OPTION();
+	bool getBBAI_HUMAN_AS_VASSAL_OPTION();
+
+protected:
+	bool m_bBBAI_AIR_COMBAT;
+	bool m_bBBAI_HUMAN_VASSAL_WAR_BUILD;
+	bool m_bBBAI_ALLIANCE_OPTION;
+	bool m_bBBAI_HUMAN_AS_VASSAL_OPTION;
+
+// BBAI AI Variables
+public:
+	int getWAR_SUCCESS_CITY_CAPTURING();
+	int getBBAI_ATTACK_CITY_STACK_RATIO();
+	int getBBAI_SKIP_BOMBARD_BEST_ATTACK_ODDS();
+	int getBBAI_SKIP_BOMBARD_BASE_STACK_RATIO();
+	int getBBAI_SKIP_BOMBARD_MIN_STACK_RATIO();
+
+protected:
+	int m_iWAR_SUCCESS_CITY_CAPTURING;
+	int m_iBBAI_ATTACK_CITY_STACK_RATIO;
+	int m_iBBAI_SKIP_BOMBARD_BEST_ATTACK_ODDS;
+	int m_iBBAI_SKIP_BOMBARD_BASE_STACK_RATIO;
+	int m_iBBAI_SKIP_BOMBARD_MIN_STACK_RATIO;
+
+// Tech Diffusion
+public:
+	bool getTECH_DIFFUSION_ENABLE();
+	int getTECH_DIFFUSION_KNOWN_TEAM_MODIFIER();
+	int getTECH_DIFFUSION_WELFARE_THRESHOLD();
+	int getTECH_DIFFUSION_WELFARE_MODIFIER();
+	int getTECH_COST_FIRST_KNOWN_PREREQ_MODIFIER();
+	int getTECH_COST_KNOWN_PREREQ_MODIFIER();
+	int getTECH_COST_MODIFIER();
+
+protected:
+	bool m_bTECH_DIFFUSION_ENABLE;
+	int m_iTECH_DIFFUSION_KNOWN_TEAM_MODIFIER;
+	int m_iTECH_DIFFUSION_WELFARE_THRESHOLD;
+	int m_iTECH_DIFFUSION_WELFARE_MODIFIER;
+	int m_iTECH_COST_FIRST_KNOWN_PREREQ_MODIFIER;
+	int m_iTECH_COST_KNOWN_PREREQ_MODIFIER;
+	int m_iTECH_COST_MODIFIER;
+	
+// From Lead From Behind by UncutDragon
+public:
+	bool getLFBEnable();
+	int getLFBBasedOnGeneral();
+	int getLFBBasedOnExperience();
+	int getLFBBasedOnLimited();
+	int getLFBBasedOnHealer();
+	int getLFBBasedOnAverage();
+	bool getLFBUseSlidingScale();
+	bool getLFBUseCombatOdds();
+	int getCOMBAT_DIE_SIDES();
+	int getCOMBAT_DAMAGE();
+
+protected:
+	bool m_bLFBEnable;
+	int m_iLFBBasedOnGeneral;
+	int m_iLFBBasedOnExperience;
+	int m_iLFBBasedOnLimited;
+	int m_iLFBBasedOnHealer;
+	int m_iLFBBasedOnAverage;
+	bool m_bLFBUseSlidingScale;
+	bool m_bLFBUseCombatOdds;
+	int m_iCOMBAT_DIE_SIDES;
+	int m_iCOMBAT_DAMAGE;
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 };
 
 extern CvGlobals gGlobals;	// for debugging

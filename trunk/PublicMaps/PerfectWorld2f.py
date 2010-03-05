@@ -246,7 +246,7 @@ class MapConstants :
         #This variable adjusts the maximun number of identical bonuses to be placed in a
         #single group. People tend not to like all instances of a bonus type to be found within
         #a single 3x3 area. When set to 0 (default), the maximum group size is
-        #rounded down (number of players / 2) + 1
+        #(number of players) - 1
         #when set to 1, this will disable all bonus grouping
         self.BonusMaxGroupSize = 0
         
@@ -3796,7 +3796,7 @@ class BonusPlacer :
                 added = 0
                 maxGroupSize = mc.BonusMaxGroupSize
                 if (maxGroupSize == 0):
-                    maxAdd = PRand.randint(0,gc.getGame().countCivPlayersEverAlive()/2);
+                    maxAdd = PRand.randint(0,gc.getGame().countCivPlayersEverAlive()-1);
                 else:
                     maxAdd = PRand.randint(0,maxGroupSize - 1);
                 print "AddBonusType maxadd for %(bt)s = %(ma)d" % {"bt":bonusInfo.getType(),"ma":maxAdd}        

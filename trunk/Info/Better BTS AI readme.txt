@@ -73,44 +73,56 @@ _________________________
 
 The full change log from plain BTS is in changelog.txt, only the most recent changes are listed below.  There are hundreds of places where AI logic has been overhauled, tweaked, or better integrated with other pieces.
 
-New in Better BTS AI 0.83
+New in Better BTS AI 0.90
 
-Merged in UP 1.40
+Added the Lead From Behind mod by UncutDragon (improves selection of order for attack for both human and AI stacks, preserving GG, medics, experienced units)
 
 Bugfix
-- Fixed bug where AI would avoid techs leading to maintenance reducing buildings when in financial trouble (thanks Afforess)
-- Fixed bug where AI calculated benefit of maintenance reducing buildings and then ignored it when picking techs
-- Fixed bug where an AI city with civ, civic, or city bonuses for GP rate would be less inclined to use specialists (thanks Maniac)
+- Fixed divide by 0 issue with debug text which could cause crashes in debug logging when loading world builder scenarios using a non-Final_Release DLL
 
-City AI
-- Cities now consider how many missionaries they already have plus those being trained when deciding whether to train another
-- Same as above for executives
-- Under most circumstances, barracks now a few steps later in AI build priority queue in early game
-- Split early game worker logic out into separate clause to customize
-- AI may now build workers first in its capital if it has things for them to do
-- Fixed logic for high priority first worker to get access to bonuses, now only counts bonuses which can be improved now or with tech currently being researched
-- Cities for a player in a strike situation (very very rare) now will build buildings to help lower costs/raise income, instead of training defenders which would be disbanded anyway
-- Removed improper dependence on need for land workers when deciding whether to build early sea workers
-- AI cities will now pop or gold rush defenses when civ is in big trouble, especially right after being attacked
+War strategy AI
+- AI calculations of the state of their wars now work better with minor civs (for mods)
+- AI valuation of how much bombard strength it needs to build for its attack stacks now scales with map size, unit bombard power (AI previously aimed to have 100 bombard strength total)
+- Reduced AI valuation of interception probability as criteria for UNITAI_COUNTER units, to reduce drive to switch infantry to SAM
+
+War tactics AI
+- Reworked AI logic for when to raze cities it conquers
+- AI carriers will now move to support/air defend ground troops, support invasions
+
+Naval AI
+- Assault transports no longer set off to join transport groups already mounting assaults
+- When assault transports head out for invasion, other transport groups which were going to join them will now pick a new mission
+- Improved handling for when multiple transports are moving to pickup a stack of stranded units, the closest set of transports will now get the task
+
+Pirate AI
+- Reduced suicide of pirateers starting from inside their own borders
 
 Worker AI
-- Fixed illogical ordering where city decided how many workers it needed before selecting what it would have them do (caused small problems for deciding when to build workers)
+- Fixed several issues and improved efficiency of CvUnitAI::AI_nextCityToImprove
 
-Victory Strategy
-- AIs will now send their spaceships even if someone else looks like they're going to beat them, as the other player's capital might be captured (thanks r_rolo1)
+City AI
+- When at war, AI now is less zealotful in building production buildings.  They have to be able to be completed faster, and it will only start them probabilistically so not all cities will be building them at once
+- Improved AI city build decisions when empire is under seige, especially for small empires
+- Added calculations of actual health/happy effects of buildings from BUG mod (thanks EmperorFool)
+- Fixed logic bugs in AI valuation of when happy or healthy from buildings was extra important
+- AI now actually considers health effects of power, dirty power, coal, and oil
+- Reworked AI valuation of buildings with health effects so all effects are considered
+- Buildings with negative health effects are now strongly avoided if city has health problems
+- AI now better evaluates when building bAreaCleanPower building is useful
+- Reworked AI valuation of buildings with happiness effects so all effects are considered
+- Buildings with negative happiness effects are now strongly avoided if city has happiness problems
+- AI now values buildings which reduce war weariness, previously only avoided buildings which increased it
 
-Diplomacy
-- WHEOOHRN no longer shows exactly when AI begins war plans in all circumstances.  If AI is just planning war, it now only shows after attitude and power denial checks.
-- Vassal master no longer will give away techs to vassals that are close to it in tech score
-- Some fixes and hacks so that trade denials appear correctly when the human player offers themselves as a vassal to an AI
+Diplomacy AI
+- All AIs will check more frequently for tech trades when behind in tech race, biggest benefit for those who typically wait longest
 
-General
-- Fixed issue blocking all terrain units from planning paths to distant areas
-- Added option to CvPlayer::countReligionSpreadUnits and CvPlayer::countCorporationSpreadUnits to include units being trained
+Gold AI
+- Improved AI budgeting for unit upgrades in scenarios, advanced start
+
+Efficiency
+- Several efficiency improvements were added with Lead From Behind
+- Improved efficiency of several unit motion selection loops, reducing number of calls to generatePath
 
 Customization
-- Added BBAI_ALLAINCE_OPTION to change defensive pacts so they do not cancel after war declaration, cause allies to declare war as well.  This is easy for human players to abuse.
-- Added BBAI_HUMAN_AS_VASSAL_OPTION to enable human players to offer themselves as vassals to AIs.  Some AI logic has also been added to make this work better.
-
-CIV4UnitInfos
-- Removed UNITAI_CITY_DEFENSE from Swordsmen
+- Split GlobalDefinesAlt.xml into a few separate files by type
+- Improved handling of default values for new BBAI variables in case xml files are accidentally missing or something

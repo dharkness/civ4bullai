@@ -4871,7 +4871,7 @@ bool CvPlayer::canTradeItem(PlayerTypes eWhoTo, TradeData item, bool bTestDenial
 /*                                                                                              */
 /* Customization                                                                                */
 /************************************************************************************************/
-		if (!isHuman() || GET_PLAYER(eWhoTo).isHuman() || (GC.getDefineINT("BBAI_HUMAN_AS_VASSAL_OPTION") == 1))
+		if (!isHuman() || GET_PLAYER(eWhoTo).isHuman() || (GC.getBBAI_HUMAN_AS_VASSAL_OPTION()))
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
@@ -7051,6 +7051,10 @@ RouteTypes CvPlayer::getBestRoute(CvPlot* pPlot) const
 	iBestValue = 0;
 	eBestRoute = NO_ROUTE;
 
+	// BBAI TODO: Efficiency: Could cache this, decent savings on large maps
+	// Perhaps save best route type per player each turn, then just check that
+	// one first and only check others if can't do best.
+
 	for (iI = 0; iI < GC.getNumBuildInfos(); iI++)
 	{
 		eRoute = ((RouteTypes)(GC.getBuildInfo((BuildTypes)iI).getRoute()));
@@ -7460,7 +7464,7 @@ int CvPlayer::calculateResearchModifier(TechTypes eTech) const
 /*                                                                                              */
 /* Tech Diffusion                                                                               */
 /************************************************************************************************/
-	if( GC.getDefineINT("TECH_DIFFUSION_ENABLE") )
+	if( GC.getTECH_DIFFUSION_ENABLE() )
 	{
 		double knownExp = 0.0;
 		// Tech flows better through open borders
@@ -7487,7 +7491,7 @@ int CvPlayer::calculateResearchModifier(TechTypes eTech) const
 			}
 		}
 
-		int techDiffMod = GC.getDefineINT("TECH_DIFFUSION_KNOWN_TEAM_MODIFIER");
+		int techDiffMod = GC.getTECH_DIFFUSION_KNOWN_TEAM_MODIFIER();
 		if (knownExp > 0.0)
 		{
 			iModifier += techDiffMod - (int)(techDiffMod * pow(0.85, knownExp) + 0.5);
@@ -7495,12 +7499,12 @@ int CvPlayer::calculateResearchModifier(TechTypes eTech) const
 
 		// Tech flows downhill to those who are far behind
 		int iTechScorePercent = GET_TEAM(getTeam()).getBestKnownTechScorePercent();
-		int iWelfareThreshold = GC.getDefineINT("TECH_DIFFUSION_WELFARE_THRESHOLD");
+		int iWelfareThreshold = GC.getTECH_DIFFUSION_WELFARE_THRESHOLD();
 		if( iTechScorePercent < iWelfareThreshold )
 		{
 			if( knownExp > 0.0 )
 			{
-				iModifier += (GC.getDefineINT("TECH_DIFFUSION_WELFARE_MODIFIER") * GC.getGameINLINE().getCurrentEra() * (iWelfareThreshold - iTechScorePercent))/200;
+				iModifier += (GC.getTECH_DIFFUSION_WELFARE_MODIFIER() * GC.getGameINLINE().getCurrentEra() * (iWelfareThreshold - iTechScorePercent))/200;
 			}
 		}
 	}
@@ -7549,14 +7553,14 @@ int CvPlayer::calculateResearchModifier(TechTypes eTech) const
 
 	if( iPossiblePaths > iUnknownPaths )
 	{
-		iModifier += GC.getDefineINT("TECH_COST_FIRST_KNOWN_PREREQ_MODIFIER");
+		iModifier += GC.getTECH_COST_FIRST_KNOWN_PREREQ_MODIFIER();
 		iPossiblePaths--;
-		iModifier += (iPossiblePaths - iUnknownPaths) * GC.getDefineINT("TECH_COST_KNOWN_PREREQ_MODIFIER");
+		iModifier += (iPossiblePaths - iUnknownPaths) * GC.getTECH_COST_KNOWN_PREREQ_MODIFIER();
 	}
 
 	iModifier -= GC.getEraInfo((EraTypes)GC.getTechInfo(eTech).getEra()).getTechCostModifier();
 
-	iModifier -= GC.getDefineINT("TECH_COST_MODIFIER");
+	iModifier -= GC.getTECH_COST_MODIFIER();
 
 	return iModifier;
 /************************************************************************************************/
@@ -14772,7 +14776,7 @@ int CvPlayer::getEspionageMissionCostModifier(EspionageMissionTypes eMission, Pl
 
 				if (hasHolyCity(eReligion))
 				{
-					iReligionModifier += GC.getDefineINT("ESPIONAGE_CITY_HOLY_CITY_MOD");;
+					iReligionModifier += GC.getDefineINT("ESPIONAGE_CITY_HOLY_CITY_MOD");
 				}
 			}
 

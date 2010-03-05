@@ -2140,7 +2140,7 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eTeam, int iPowerMultiplier) c
 		}
 */
 		// Scale better for small empires, particularly necessary if WAR_SUCCESS_CITY_CAPTURING > 10
-		if (AI_getWarSuccess(eTeam) + std::min(getNumCities(), 4) * GC.getDefineINT("WAR_SUCCESS_CITY_CAPTURING") > GET_TEAM(eTeam).AI_getWarSuccess(getID()))
+		if (AI_getWarSuccess(eTeam) + std::min(getNumCities(), 4) * GC.getWAR_SUCCESS_CITY_CAPTURING() > GET_TEAM(eTeam).AI_getWarSuccess(getID()))
 		{
 			return DENIAL_JOKING;
 		}
@@ -2185,7 +2185,7 @@ int CvTeamAI::AI_getWarSuccessCapitulationRatio() const
 		}
 	}
 
-	int iDivisor = std::max(25, std::min(getNumCities(), 4) * GC.getDefineINT("WAR_SUCCESS_CITY_CAPTURING"));
+	int iDivisor = std::max(25, std::min(getNumCities(), 4) * GC.getWAR_SUCCESS_CITY_CAPTURING());
 
 	iSumWarSuccess = range((100*iSumWarSuccess)/iDivisor, -99, 99);
 
@@ -2277,7 +2277,7 @@ bool CvTeamAI::AI_acceptSurrender( TeamTypes eSurrenderTeam )
 				{
 					if (GET_TEAM(eSurrenderTeam).AI_getAtWarCounter((TeamTypes)iI) >= 10)
 					{
-						if (GET_TEAM(eSurrenderTeam).AI_getWarSuccess((TeamTypes)iI) + std::min(GET_TEAM(eSurrenderTeam).getNumCities(), 4) * GC.getDefineINT("WAR_SUCCESS_CITY_CAPTURING") < GET_TEAM((TeamTypes)iI).AI_getWarSuccess(eSurrenderTeam))
+						if( (GET_TEAM(eSurrenderTeam).AI_getWarSuccess((TeamTypes)iI) + std::min(GET_TEAM(eSurrenderTeam).getNumCities(), 4) * GC.getWAR_SUCCESS_CITY_CAPTURING()) < GET_TEAM((TeamTypes)iI).AI_getWarSuccess(eSurrenderTeam))
 						{
 							return true;
 						}
@@ -4630,7 +4630,7 @@ int CvTeamAI::AI_getTechMonopolyValue(TechTypes eTech, TeamTypes eTeam) const
 					int iCombatRatio = (GC.getUnitInfo(eLoopUnit).getCombat() * 100) / std::max(1, GC.getGameINLINE().getBestLandUnitCombat());
 					if (iCombatRatio > 50)
 					{
-						iValue += ((bWarPlan ? 100 : 50) * (iCombatRatio - 40)) / 50;;
+						iValue += ((bWarPlan ? 100 : 50) * (iCombatRatio - 40)) / 50;
 					}
 
 					switch (GC.getUnitInfo(eLoopUnit).getDefaultUnitAIType())

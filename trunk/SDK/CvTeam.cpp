@@ -947,13 +947,19 @@ void CvTeam::doTurn()
 
 				for (iJ = 0; iJ < MAX_CIV_TEAMS; iJ++)
 				{
-					//if (GET_TEAM((TeamTypes)iJ).isAlive())
-					// Mongoose BarbarianPassiveTechFix BEGIN
-					//
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       03/01/10                     Mongoose & jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
+					if (GET_TEAM((TeamTypes)iJ).isAlive())
+*/
+					// From Mongoose SDK, BarbarianPassiveTechFix
 					if (GET_TEAM((TeamTypes)iJ).isAlive() && !GET_TEAM((TeamTypes)iJ).isBarbarian())
-					//
-					// Mongoose BarbarianPassiveTechFix END
-					//
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 					{
 						if (GET_TEAM((TeamTypes)iJ).isHasTech((TechTypes)iI))
 						{
@@ -968,13 +974,19 @@ void CvTeam::doTurn()
 				{
 					FAssertMsg(iPossibleCount > 0, "iPossibleCount is expected to be greater than 0");
 
-					//changeResearchProgress(((TechTypes)iI), ((getResearchCost((TechTypes)iI) * ((GC.getDefineINT("BARBARIAN_FREE_TECH_PERCENT") * iCount) / iPossibleCount)) / 100), getLeaderID());
-					// Mongoose BarbarianPassiveTechFix BEGIN
-					//
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       03/01/10                     Mongoose & jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
+					changeResearchProgress(((TechTypes)iI), ((getResearchCost((TechTypes)iI) * ((GC.getDefineINT("BARBARIAN_FREE_TECH_PERCENT") * iCount) / iPossibleCount)) / 100), getLeaderID());
+*/
+					// From Mongoose SDK, BarbarianPassiveTechFix
 					changeResearchProgress((TechTypes)iI, std::max((getResearchCost((TechTypes)iI) * GC.getDefineINT("BARBARIAN_FREE_TECH_PERCENT") * iCount) / (100 * iPossibleCount), 1), getLeaderID());
-					//
-					// Mongoose BarbarianPassiveTechFix END
-					//
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 				}
 			}
 		}
@@ -1620,7 +1632,7 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 		CvEventReporter::getInstance().changeWar(true, getID(), eTeam);
 
 
-		if( GC.getDefineINT("BBAI_ALLIANCE_OPTION") != 1 )
+		if( !GC.getBBAI_ALLIANCE_OPTION() )
 		{
 			cancelDefensivePacts();
 		}
@@ -1641,7 +1653,7 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 			}
 		}
 
-		if( GC.getDefineINT("BBAI_ALLIANCE_OPTION") != 1 )
+		if( !GC.getBBAI_ALLIANCE_OPTION() )
 		{
 			GET_TEAM(eTeam).cancelDefensivePacts();
 		}
@@ -1889,7 +1901,7 @@ void CvTeam::meet(TeamTypes eTeam, bool bNewDiplo)
 		GET_TEAM(eTeam).makeHasMet(getID(), bNewDiplo);
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      11/08/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      02/20/10                                jdog5000      */
 /*                                                                                              */
 /* AI logging                                                                                   */
 /************************************************************************************************/
@@ -2481,7 +2493,7 @@ bool CvTeam::isMasterPlanningLandWar(CvArea* pArea)
 			}
 			else if( GET_TEAM((TeamTypes)iI).isHuman() )
 			{
-				if( GC.getDefineINT("BBAI_HUMAN_VASSAL_WAR_BUILD") > 0 )
+				if( GC.getBBAI_HUMAN_VASSAL_WAR_BUILD() )
 				{
 					if( (pArea->getNumCities() - countNumCitiesByArea(pArea) - GET_TEAM((TeamTypes)iI).countNumCitiesByArea(pArea)) > 2 )
 					{

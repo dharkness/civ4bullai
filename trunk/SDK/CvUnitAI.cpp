@@ -752,6 +752,22 @@ int CvUnitAI::AI_attackOdds(const CvPlot* pPlot, bool bPotentialEnemy) const
 		return 100;
 	}
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/21/10                                jdog5000      */
+/*                                                                                              */
+/* Efficiency, Lead From Behind                                                                 */
+/************************************************************************************************/
+	// From Lead From Behind by UncutDragon
+	if (GC.getLFBEnable() && GC.getLFBUseCombatOdds())
+	{
+		// Combat odds are out of 1000 - we need odds out of 100
+		CvUnit* pThis = (CvUnit*)this;
+		int iOdds = (getCombatOdds(pThis, pDefender) + 5) / 10;
+		iOdds += GET_PLAYER(getOwnerINLINE()).AI_getAttackOddsChange();
+
+		return std::max(1, std::min(iOdds, 99));
+	}
+
 	iOurStrength = ((getDomainType() == DOMAIN_AIR) ? airCurrCombatStr(NULL) : currCombatStr(NULL, NULL));
 	iOurFirepower = ((getDomainType() == DOMAIN_AIR) ? iOurStrength : currFirepower(NULL, NULL));
 
@@ -775,8 +791,17 @@ int CvUnitAI::AI_attackOdds(const CvPlot* pPlot, bool bPotentialEnemy) const
 
 	iStrengthFactor = ((iOurFirepower + iTheirFirepower + 1) / 2);
 
+	// UncutDragon
+/* original code
 	iDamageToUs = std::max(1,((GC.getDefineINT("COMBAT_DAMAGE") * (iTheirFirepower + iStrengthFactor)) / (iOurFirepower + iStrengthFactor)));
 	iDamageToThem = std::max(1,((GC.getDefineINT("COMBAT_DAMAGE") * (iOurFirepower + iStrengthFactor)) / (iTheirFirepower + iStrengthFactor)));
+*/	// modified
+	iDamageToUs = std::max(1,((GC.getCOMBAT_DAMAGE() * (iTheirFirepower + iStrengthFactor)) / (iOurFirepower + iStrengthFactor)));
+	iDamageToThem = std::max(1,((GC.getCOMBAT_DAMAGE() * (iOurFirepower + iStrengthFactor)) / (iTheirFirepower + iStrengthFactor)));
+	// /UncutDragon
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	iHitLimitThem = pDefender->maxHitPoints() - combatLimit();
 
@@ -1114,6 +1139,24 @@ int CvUnitAI::AI_sacrificeValue(const CvPlot* pPlot) const
 			iValue /= 100;
 		}
 	}
+
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/21/10                                jdog5000      */
+/*                                                                                              */
+/* From Lead From Behind                                                                        */
+/************************************************************************************************/
+	// From Lead From Behind by UncutDragon
+	if (GC.getLFBEnable())
+	{
+		// Reduce the value of sacrificing 'valuable' units - based on great general, limited, healer, experience
+		iValue *= 100;
+		int iRating = LFBgetRelativeValueRating();
+		if (iRating > 0)
+			iValue /= (iRating * 100 / GC.getLFBBasedOnAverage());
+	}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
     return iValue;
 }
@@ -2635,8 +2678,8 @@ void CvUnitAI::AI_attackCityMove()
 		//stack attack
 		if (getGroup()->getNumUnits() > 1)
 		{ 
-			// BBAI TODO: 110 causes suicide sometimes ... 
-			int iRatio = std::max( GC.getDefineINT("BBAI_ATTACK_CITY_STACK_RATIO"), 100 );
+			// BBAI TODO: What value here avoids suicides?
+			int iRatio = GC.getDefineINT("BBAI_ATTACK_CITY_STACK_RATIO");
 			if (AI_stackAttackCity(1, iRatio, true))
 			{
 				return;
@@ -4912,7 +4955,7 @@ void CvUnitAI::AI_spyMove()
 					{
 						return;
 					}
-				}				
+				}
 				else if (GC.getGame().getSorenRandNum(100, "AI Spy Skip Turn") > 5)
 				{
 					// don't get stuck forever
@@ -5318,18 +5361,17 @@ void CvUnitAI::AI_barbAttackSeaMove()
 	return;
 }
 
-
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/23/10                                jdog5000      */
+/*                                                                                              */
+/* Pirate AI                                                                                    */
+/************************************************************************************************/
 void CvUnitAI::AI_pirateSeaMove()
 {
 	PROFILE_FUNC();
 
 	CvArea* pWaterArea;
 
-/********************************************************************************/
-/* 	BETTER_BTS_AI_MOD						7/3/08			jdog5000		*/
-/* 																			*/
-/* 	Naval AI																*/
-/********************************************************************************/
 	// heal in defended, unthreatened forts and cities
 	if (plot()->isCity(true) && (GET_PLAYER(getOwnerINLINE()).AI_getOurPlotStrength(plot(),0,true,false) > 0) && !(GET_PLAYER(getOwnerINLINE()).AI_getAnyPlotDanger(plot(), 2, false)) )
 	{
@@ -5338,26 +5380,16 @@ void CvUnitAI::AI_pirateSeaMove()
 			return;
 		}
 	}
-/********************************************************************************/
-/* 	BETTER_BTS_AI_MOD						END								*/
-/********************************************************************************/
+
 	if (plot()->isOwned() && (plot()->getTeam() == getTeam()))
 	{
-		if (AI_anyAttack(2, 30))
+		if (AI_anyAttack(2, 40))
 		{
 			return;			
 		}
 		
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      09/01/09                                jdog5000      */
-/*                                                                                              */
-/* Pirate AI                                                                                    */
-/************************************************************************************************/
 		//if (AI_protect(30))
 		if (AI_protect(40, 3))
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 		{
 			return;
 		}
@@ -5365,25 +5397,11 @@ void CvUnitAI::AI_pirateSeaMove()
 
 		if (((AI_getBirthmark() / 8) % 2) == 0)
 		{
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      01/03/09                                jdog5000      */
-/*                                                                                              */
-/* Pirate AI                                                                                    */
-/************************************************************************************************/
-/* original bts code
-			if (AI_group(UNITAI_PIRATE_SEA, 1, 0))
-			{
-				return;
-			}
-*/
 			// Previously code actually blocked grouping
 			if (AI_group(UNITAI_PIRATE_SEA, -1, 1, -1, true, false, false, 8))
 			{
 				return;
 			}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 		}
 	}
 	else
@@ -5441,6 +5459,9 @@ void CvUnitAI::AI_pirateSeaMove()
 	getGroup()->pushMission(MISSION_SKIP);
 	return;
 }
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 
 void CvUnitAI::AI_attackSeaMove()
@@ -6860,8 +6881,8 @@ void CvUnitAI::AI_assaultSeaMove()
 				return;
 			}
 		}
-		}
-		
+	}
+
 	if ((bFull || bReinforce) && !bAttack)
 	{
 		// Group with nearby transports with units on board
@@ -6927,7 +6948,7 @@ void CvUnitAI::AI_assaultSeaMove()
 			}
 		}
 	}
-		
+
 	if (bIsCity && bLandWar && getGroup()->hasCargo())
 	{
 		// Enemy units in this player's territory
@@ -9619,7 +9640,7 @@ bool CvUnitAI::AI_shadow(UnitAITypes eUnitAI, int iMax, int iMaxRatio, bool bWit
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      06/14/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      02/22/10                                jdog5000      */
 /*                                                                                              */
 /* Unit AI                                                                                      */
 /************************************************************************************************/
@@ -9663,6 +9684,16 @@ bool CvUnitAI::AI_group(UnitAITypes eUnitAI, int iMaxGroup, int iMaxOwnUnitAI, i
 		return false;
 	}
 
+	int iOurImpassableCount = 0;
+	CLLNode<IDInfo>* pUnitNode = getGroup()->headUnitNode();
+	while (pUnitNode != NULL)
+	{
+		CvUnit* pImpassUnit = ::getUnit(pUnitNode->m_data);
+		pUnitNode = getGroup()->nextUnitNode(pUnitNode);
+
+		iOurImpassableCount = std::max(iOurImpassableCount, GET_PLAYER(getOwnerINLINE()).AI_unitImpassableCount(pImpassUnit->getUnitType()));
+	}
+
 	iBestValue = MAX_INT;
 	pBestUnit = NULL;
 
@@ -9701,49 +9732,39 @@ bool CvUnitAI::AI_group(UnitAITypes eUnitAI, int iMaxGroup, int iMaxOwnUnitAI, i
 												{
 													if( (eIgnoreMissionAIType == NO_MISSIONAI) || (eIgnoreMissionAIType != pLoopUnit->getGroup()->AI_getMissionAIType()) )
 													{
-													if (!(pPlot->isVisibleEnemyUnit(this)))
-													{
-														if (generatePath(pPlot, 0, true, &iPathTurns))
+														if (!(pPlot->isVisibleEnemyUnit(this)))
 														{
-															if (iPathTurns <= iMaxPath)
+															if( iOurImpassableCount > 0 || AI_getUnitAIType() == UNITAI_ASSAULT_SEA )
 															{
-																int iOurImpassableCount = 0;
-																CLLNode<IDInfo>* pUnitNode = getGroup()->headUnitNode();
+																int iTheirImpassableCount = 0;
+																pUnitNode = pLoopGroup->headUnitNode();
 																while (pUnitNode != NULL)
 																{
 																	CvUnit* pImpassUnit = ::getUnit(pUnitNode->m_data);
-																	pUnitNode = getGroup()->nextUnitNode(pUnitNode);
+																	pUnitNode = pLoopGroup->nextUnitNode(pUnitNode);
 
-																	iOurImpassableCount = std::max(iOurImpassableCount, GET_PLAYER(getOwnerINLINE()).AI_unitImpassableCount(pImpassUnit->getUnitType()));
+																	iTheirImpassableCount = std::max(iTheirImpassableCount, GET_PLAYER(getOwnerINLINE()).AI_unitImpassableCount(pImpassUnit->getUnitType()));
 																}
 
-																if( iOurImpassableCount > 0 || AI_getUnitAIType() == UNITAI_ASSAULT_SEA )
+																if( iOurImpassableCount != iTheirImpassableCount )
 																{
-																	int iTheirImpassableCount = 0;
-																	pUnitNode = pLoopGroup->headUnitNode();
-																	while (pUnitNode != NULL)
-																	{
-																		CvUnit* pImpassUnit = ::getUnit(pUnitNode->m_data);
-																		pUnitNode = pLoopGroup->nextUnitNode(pUnitNode);
-
-																		iTheirImpassableCount = std::max(iTheirImpassableCount, GET_PLAYER(getOwnerINLINE()).AI_unitImpassableCount(pImpassUnit->getUnitType()));
-																	}
-
-																	if( iOurImpassableCount != iTheirImpassableCount )
-																	{
-																		continue;
-																	}
+																	continue;
 																}
+															}
 
-																iValue = 1000 * (iPathTurns + 1);
-																iValue *= 4 + pLoopGroup->getCargo();
-																iValue /= pLoopGroup->getNumUnits();
-
-
-																if (iValue < iBestValue)
+															if (generatePath(pPlot, 0, true, &iPathTurns))
+															{
+																if (iPathTurns <= iMaxPath)
 																{
-																	iBestValue = iValue;
-																	pBestUnit = pLoopUnit;
+																	iValue = 1000 * (iPathTurns + 1);
+																	iValue *= 4 + pLoopGroup->getCargo();
+																	iValue /= pLoopGroup->getNumUnits();
+
+																	if (iValue < iBestValue)
+																	{
+																		iBestValue = iValue;
+																		pBestUnit = pLoopUnit;
+																	}
 																}
 															}
 														}
@@ -9759,7 +9780,6 @@ bool CvUnitAI::AI_group(UnitAITypes eUnitAI, int iMaxGroup, int iMaxOwnUnitAI, i
 				}
 			}
 		}
-	}
 	}
 	
 	if (pBestUnit != NULL)
@@ -13057,7 +13077,7 @@ bool CvUnitAI::AI_protect(int iOddsThreshold, int iMaxPathTurns)
 							// takes longer.  Therefore, check odds first.
 							iValue = getGroup()->AI_attackOdds(pLoopPlot, true);
 
-							if (iValue >= AI_finalOddsThreshold(pLoopPlot, iOddsThreshold))
+							if ((iValue >= AI_finalOddsThreshold(pLoopPlot, iOddsThreshold)) && (iValue*50 > iBestValue))
 							{
 								int iPathTurns;
 								if( generatePath(pLoopPlot, 0, true, &iPathTurns) )
@@ -14179,15 +14199,14 @@ bool CvUnitAI::AI_bombardCity()
 		//getGroup()->AI_compareStacks(pBombardCity->plot(), /*bPotentialEnemy*/ true, /*bCheckCanAttack*/ true, /*bCheckCanMove*/ true);
 		//int iOurStrength = pBombardCity->plot()->AI_sumStrength(getOwnerINLINE(), NO_PLAYER, DOMAIN_LAND, false, false, false)
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      10/28/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      02/22/10                                jdog5000      */
 /*                                                                                              */
 /* War Tactics AI                                                                               */
 /************************************************************************************************/
 		// If we have reasonable odds, check for attacking without waiting for bombards
-		if( iAttackOdds > std::max(1, GC.getDefineINT("BBAI_SKIP_BOMBARD_BEST_ATTACK_ODDS")) )
+		if( iAttackOdds > GC.getDefineINT("BBAI_SKIP_BOMBARD_BEST_ATTACK_ODDS") )
 		{
 			int iBase = GC.getDefineINT("BBAI_SKIP_BOMBARD_BASE_STACK_RATIO");
-			iBase = ((iBase == 0) ? 300 : iBase);
 			int iComparison = getGroup()->AI_compareStacks(pBombardCity->plot(), /*bPotentialEnemy*/ true, /*bCheckCanAttack*/ true, /*bCheckCanMove*/ true);
 			
 			// Big troop advantage plus pretty good starting odds, don't wait to allow reinforcements
@@ -14197,7 +14216,6 @@ bool CvUnitAI::AI_bombardCity()
 			}
 
 			int iMin = GC.getDefineINT("BBAI_SKIP_BOMBARD_MIN_STACK_RATIO");
-			iMin = ((iMin == 0) ? 140 : iMin);
 			// Bombard at least one turn to allow bombers/ships to get some shots in too
 			if( (getFortifyTurns() > 0) && (pBombardCity->getDefenseDamage() > ((GC.getMAX_CITY_DEFENSE_DAMAGE()) / 5)) )
 			{
@@ -14340,10 +14358,19 @@ bool CvUnitAI::AI_anyAttack(int iRange, int iOddsThreshold, int iMinStack, bool 
 				{
 					if (pLoopPlot->isVisibleEnemyUnit(this) || (pLoopPlot->isCity() && AI_potentialEnemy(pLoopPlot->getTeam())))
 					{
-						if (!atPlot(pLoopPlot) && ((bFollow) ? canMoveInto(pLoopPlot, true) : (generatePath(pLoopPlot, 0, true, &iPathTurns) && (iPathTurns <= iRange))))
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/22/10                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
+						if (pLoopPlot->getNumVisibleEnemyDefenders(this) >= iMinStack)
 						{
-							if (pLoopPlot->getNumVisibleEnemyDefenders(this) >= iMinStack)
+							if (!atPlot(pLoopPlot) && ((bFollow) ? canMoveInto(pLoopPlot, true) : (generatePath(pLoopPlot, 0, true, &iPathTurns) && (iPathTurns <= iRange))))
 							{
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+ 
 								iValue = getGroup()->AI_attackOdds(pLoopPlot, true);
 
 								if (iValue >= AI_finalOddsThreshold(pLoopPlot, iOddsThreshold))
@@ -14475,10 +14502,19 @@ bool CvUnitAI::AI_leaveAttack(int iRange, int iOddsThreshold, int iStrengthThres
 				{
 					if (pLoopPlot->isVisibleEnemyUnit(this) || (pLoopPlot->isCity() && AI_potentialEnemy(pLoopPlot->getTeam(), pLoopPlot)))
 					{
-						if (!atPlot(pLoopPlot) && (generatePath(pLoopPlot, 0, true, &iPathTurns) && (iPathTurns <= iRange)))
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/22/10                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
+						if (pLoopPlot->getNumVisibleEnemyDefenders(this) > 0)
 						{
-							if (pLoopPlot->getNumVisibleEnemyDefenders(this) > 0)
+							if (!atPlot(pLoopPlot) && (generatePath(pLoopPlot, 0, true, &iPathTurns) && (iPathTurns <= iRange)))
 							{
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+						
 								iValue = getGroup()->AI_attackOdds(pLoopPlot, true);
 
 								if (iValue >= AI_finalOddsThreshold(pLoopPlot, iOddsThreshold))
@@ -15136,7 +15172,15 @@ bool CvUnitAI::AI_pillage(int iBonusValueThreshold)
 
 		if (AI_plotValid(pLoopPlot) && !(pLoopPlot->isBarbarian()))
 		{
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/22/10                                jdog5000      */
+/*                                                                                              */
+/* Unit AI, Efficiency                                                                          */
+/************************************************************************************************/
+/* original code
 			if (potentialWarAction(pLoopPlot))
+*/
+			if( pLoopPlot->isOwned() && isEnemy(pLoopPlot->getTeam(),pLoopPlot) )
 			{
 			    CvCity * pWorkingCity = pLoopPlot->getWorkingCity();
 
@@ -15148,34 +15192,39 @@ bool CvUnitAI::AI_pillage(int iBonusValueThreshold)
                         {
                             if (GET_PLAYER(getOwnerINLINE()).AI_plotTargetMissionAIs(pLoopPlot, MISSIONAI_PILLAGE, getGroup(), 1) == 0)
                             {
-                                if (generatePath(pLoopPlot, 0, true, &iPathTurns))
-                                {
-                                    iValue = AI_pillageValue(pLoopPlot, iBonusValueThreshold);
+								iValue = AI_pillageValue(pLoopPlot, iBonusValueThreshold);
+								iValue *= 1000;
 
-                                    iValue *= 1000;
+								// if not at war with this plot owner, then devalue plot if we already inside this owner's borders
+								// (because declaring war will pop us some unknown distance away)
+								if (!isEnemy(pLoopPlot->getTeam()) && plot()->getTeam() == pLoopPlot->getTeam())
+								{
+									iValue /= 10;
+								}
 
-                                    iValue /= (iPathTurns + 1);
-
-									// if not at war with this plot owner, then devalue plot if we already inside this owner's borders
-									// (because declaring war will pop us some unknown distance away)
-									if (!isEnemy(pLoopPlot->getTeam()) && plot()->getTeam() == pLoopPlot->getTeam())
+								if( iValue > iBestValue )
+								{
+									if (generatePath(pLoopPlot, 0, true, &iPathTurns))
 									{
-										iValue /= 10;
-									}
+										iValue /= (iPathTurns + 1);
 
-                                    if (iValue > iBestValue)
-                                    {
-                                        iBestValue = iValue;
-                                        pBestPlot = getPathEndTurnPlot();
-                                        pBestPillagePlot = pLoopPlot;
-                                    }
+										if (iValue > iBestValue)
+										{
+											iBestValue = iValue;
+											pBestPlot = getPathEndTurnPlot();
+											pBestPillagePlot = pLoopPlot;
+										}
+									}
                                 }
-                            }
+							}
                         }
                     }
 			    }
 			}
 		}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	}
 
 	if ((pBestPlot != NULL) && (pBestPillagePlot != NULL))
@@ -15927,7 +15976,7 @@ bool CvUnitAI::AI_assaultSeaTransport(bool bBarbarian)
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      09/01/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      02/07/10                                jdog5000      */
 /*                                                                                              */
 /* Naval AI, Efficiency                                                                         */
 /************************************************************************************************/
@@ -16087,14 +16136,23 @@ bool CvUnitAI::AI_assaultSeaReinforce(bool bBarbarian)
 														for (uint i = 0; i < aGroupCargo.size(); ++i)
 														{
 															CvUnit* pAttacker = aGroupCargo[i];
-															if( iVisibleEnemyDefenders > 0 )
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/21/10                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
+															// From Lead From Behind by UncutDragon
+															// original
+															//CvUnit* pDefender = pLoopPlot->getBestDefender(NO_PLAYER, pAttacker->getOwnerINLINE(), pAttacker, true);
+															//if (pDefender == NULL || !pAttacker->canAttack(*pDefender))
+															// modified
+															if (!pLoopPlot->hasDefender(true, NO_PLAYER, pAttacker->getOwnerINLINE(), pAttacker, true))
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 															{
-																CvUnit* pDefender = pLoopPlot->getBestDefender(NO_PLAYER, pAttacker->getOwnerINLINE(), pAttacker, true);
-																if (pDefender == NULL || !pAttacker->canAttack(*pDefender))
-																{
-																	bCanCargoAllUnload = false;
-																	break;
-																}
+																bCanCargoAllUnload = false;
+																break;
 															}
 															else if( pLoopPlot->isCity() && !(pLoopPlot->isVisible(getTeam(),false)) )
 															{
@@ -16369,7 +16427,6 @@ bool CvUnitAI::AI_assaultSeaReinforce(bool bBarbarian)
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
-
 
 
 // Returns true if a mission was pushed...
@@ -16858,7 +16915,18 @@ bool CvUnitAI::AI_specialSeaTransportMissionary()
 
 								if (iPathTurns == 1)
 								{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       02/22/10                                jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
 									iValue *= 2;
+*/
+									iCorpValue *= 2;
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 								}
 
 								iCorpValue *= 1000;
@@ -16971,15 +17039,22 @@ bool CvUnitAI::AI_specialSeaTransportSpy()
 			if (pLoopPlot->getOwnerINLINE() == eBestPlayer)
 			{
 				iValue = pLoopPlot->area()->getCitiesPerPlayer(eBestPlayer);
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/23/10                                jdog5000      */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
+				iValue *= 1000;
 
-				if (iValue > 0)
+				if (iValue > iBestValue)
 				{
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 					if (GET_PLAYER(getOwnerINLINE()).AI_plotTargetMissionAIs(pLoopPlot, MISSIONAI_ATTACK_SPY, getGroup(), 4) == 0)
 					{
 						if (generatePath(pLoopPlot, 0, true, &iPathTurns))
 						{
-							iValue *= 1000;
-
 							iValue /= (iPathTurns + 1);
 
 							if (iValue > iBestValue)
@@ -17040,8 +17115,6 @@ bool CvUnitAI::AI_carrierSeaTransport()
 	int iDX, iDY;
 	int iI;
 
-	// XXX maybe protect land troops?
-
 	iMaxAirRange = 0;
 
 	std::vector<CvUnit*> aCargoUnits;
@@ -17060,6 +17133,11 @@ bool CvUnitAI::AI_carrierSeaTransport()
 	pBestPlot = NULL;
 	pBestCarrierPlot = NULL;
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/22/10                                jdog5000      */
+/*                                                                                              */
+/* Naval AI, War tactics, Efficiency                                                            */
+/************************************************************************************************/
 	for (iI = 0; iI < GC.getMapINLINE().numPlotsINLINE(); iI++)
 	{
 		pLoopPlot = GC.getMapINLINE().plotByIndexINLINE(iI);
@@ -17068,71 +17146,81 @@ bool CvUnitAI::AI_carrierSeaTransport()
 		{
 			if (pLoopPlot->isAdjacentToLand())
 			{
-				iValue = 0;
-
-				for (iDX = -(iMaxAirRange); iDX <= iMaxAirRange; iDX++)
+				if (!(pLoopPlot->isVisibleEnemyUnit(this)))
 				{
-					for (iDY = -(iMaxAirRange); iDY <= iMaxAirRange; iDY++)
+					iValue = 0;
+
+					for (iDX = -(iMaxAirRange); iDX <= iMaxAirRange; iDX++)
 					{
-						pLoopPlotAir = plotXY(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), iDX, iDY);
-
-						if (pLoopPlotAir != NULL)
+						for (iDY = -(iMaxAirRange); iDY <= iMaxAirRange; iDY++)
 						{
-							if (plotDistance(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), pLoopPlotAir->getX_INLINE(), pLoopPlotAir->getY_INLINE()) <= iMaxAirRange)
-							{
-								if (!(pLoopPlotAir->isBarbarian()))
-								{
-									if (potentialWarAction(pLoopPlotAir))
-									{
-										if (pLoopPlotAir->isCity())
-										{
-											iValue++;
-										}
+							pLoopPlotAir = plotXY(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), iDX, iDY);
 
-										if (pLoopPlotAir->getImprovementType() != NO_IMPROVEMENT)
+							if (pLoopPlotAir != NULL)
+							{
+								if (plotDistance(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), pLoopPlotAir->getX_INLINE(), pLoopPlotAir->getY_INLINE()) <= iMaxAirRange)
+								{
+									if (!(pLoopPlotAir->isBarbarian()))
+									{
+										if (potentialWarAction(pLoopPlotAir))
 										{
-											iValue ++;
+											if (pLoopPlotAir->isCity())
+											{
+												iValue += 3;
+
+												// BBAI: Support invasions
+												iValue += (GET_PLAYER(getOwnerINLINE()).AI_plotTargetMissionAIs(pLoopPlotAir, MISSIONAI_ASSAULT, getGroup(), 2) * 6);
+											}
+
+											if (pLoopPlotAir->getImprovementType() != NO_IMPROVEMENT)
+											{
+												iValue += 2;
+											}
+
+											if (plotDistance(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), pLoopPlotAir->getX_INLINE(), pLoopPlotAir->getY_INLINE()) <= iMaxAirRange/2)
+											{
+												// BBAI: Support/air defense for land troops
+												iValue += pLoopPlotAir->plotCount(PUF_canDefend, -1, -1, getOwnerINLINE());
+											}
 										}
 									}
 								}
 							}
 						}
 					}
-				}
 
-				if (iValue > 0)
-				{
-					if (!(pLoopPlot->isVisibleEnemyUnit(this)))
+					if( iValue > 0 )
 					{
-						bool bStealth = (getInvisibleType() != NO_INVISIBLE);
-						if (GET_PLAYER(getOwnerINLINE()).AI_plotTargetMissionAIs(pLoopPlot, MISSIONAI_CARRIER, getGroup(), bStealth ? 5 : 3) <= (bStealth ? 0 : 3))
+						iValue *= 1000;
+
+						for (int iDirection = 0; iDirection < NUM_DIRECTION_TYPES; iDirection++)
 						{
-							if (generatePath(pLoopPlot, 0, true, &iPathTurns))
+							CvPlot* pDirectionPlot = plotDirection(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), (DirectionTypes)iDirection);
+							if (pDirectionPlot != NULL)
 							{
-								iValue *= 1000;
-								
-								for (int iDirection = 0; iDirection < NUM_DIRECTION_TYPES; iDirection++)
+								if (pDirectionPlot->isCity() && isEnemy(pDirectionPlot->getTeam(), pLoopPlot))
 								{
-									CvPlot* pDirectionPlot = plotDirection(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), (DirectionTypes)iDirection);
-									if (pDirectionPlot != NULL)
-									{
-										if (pDirectionPlot->isCity() && isEnemy(pDirectionPlot->getTeam(), pLoopPlot))
-										{
-											iValue /= 2;
-											break;
-										}
-									}
+									iValue /= 2;
+									break;
 								}
+							}
+						}
 
-								iValue += (GET_PLAYER(getOwnerINLINE()).AI_plotTargetMissionAIs(pLoopPlot, MISSIONAI_ASSAULT, getGroup(), 2) * 2000);
-
-								iValue /= (iPathTurns + 1);
-
-								if (iValue > iBestValue)
+						if (iValue > iBestValue)
+						{
+							bool bStealth = (getInvisibleType() != NO_INVISIBLE);
+							if (GET_PLAYER(getOwnerINLINE()).AI_plotTargetMissionAIs(pLoopPlot, MISSIONAI_CARRIER, getGroup(), bStealth ? 5 : 3) <= (bStealth ? 0 : 3))
+							{
+								if (generatePath(pLoopPlot, 0, true, &iPathTurns))
 								{
-									iBestValue = iValue;
-									pBestPlot = getPathEndTurnPlot();
-									pBestCarrierPlot = pLoopPlot;
+									iValue /= (iPathTurns + 1);
+
+									if (iValue > iBestValue)
+									{
+										iBestValue = iValue;
+										pBestPlot = getPathEndTurnPlot();
+										pBestCarrierPlot = pLoopPlot;
+									}
 								}
 							}
 						}
@@ -17141,6 +17229,9 @@ bool CvUnitAI::AI_carrierSeaTransport()
 			}
 		}
 	}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	if ((pBestPlot != NULL) && (pBestCarrierPlot != NULL))
 	{
@@ -17521,7 +17612,7 @@ bool CvUnitAI::AI_nextCityToImprove(CvCity* pCity)
 		if (pLoopCity != pCity)
 		{
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      08/19/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      02/22/10                                jdog5000      */
 /*                                                                                              */
 /* Worker AI, Efficiency                                                                        */
 /************************************************************************************************/
@@ -17530,9 +17621,6 @@ bool CvUnitAI::AI_nextCityToImprove(CvCity* pCity)
 			{
 				continue;
 			}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 
 			//iValue = pLoopCity->AI_totalBestBuildValue(area());
 			int iWorkersNeeded = pLoopCity->AI_getWorkersNeeded();
@@ -17550,23 +17638,34 @@ bool CvUnitAI::AI_nextCityToImprove(CvCity* pCity)
 					FAssert(pPlot != NULL);
 					FAssert(eBuild != NO_BUILD);
 
-					iValue *= 1000;
-
-					if (pLoopCity->isCapital())
+					if( AI_plotValid(pPlot) )
 					{
-					    iValue *= 2;
-					}
+						iValue *= 1000;
 
-					generatePath(pPlot, 0, true, &iPathTurns);
-					iValue /= (iPathTurns + 1);
+						if (pLoopCity->isCapital())
+						{
+							iValue *= 2;
+						}
 
-					if (iValue > iBestValue)
-					{
-						iBestValue = iValue;
-						eBestBuild = eBuild;
-						pBestPlot = pPlot;
-						FAssert(!atPlot(pBestPlot) || NULL == pCity || pCity->AI_getWorkersNeeded() == 0 || pCity->AI_getWorkersHave() > pCity->AI_getWorkersNeeded() + 1);
+						if( iValue > iBestValue )
+						{
+							if( generatePath(pPlot, 0, true, &iPathTurns) )
+							{
+								iValue /= (iPathTurns + 1);
+
+								if (iValue > iBestValue)
+								{
+									iBestValue = iValue;
+									eBestBuild = eBuild;
+									pBestPlot = pPlot;
+									FAssert(!atPlot(pBestPlot) || NULL == pCity || pCity->AI_getWorkersNeeded() == 0 || pCity->AI_getWorkersHave() > pCity->AI_getWorkersNeeded() + 1);
+								}
+							}
+						}
 					}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 				}
 			}
 		}
@@ -18483,7 +18582,7 @@ bool CvUnitAI::AI_routeCity()
 		if (AI_plotValid(pLoopCity->plot()))
 		{
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      08/19/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      02/22/10                                jdog5000      */
 /*                                                                                              */
 /* Unit AI, Efficiency                                                                          */
 /************************************************************************************************/
@@ -18492,9 +18591,6 @@ bool CvUnitAI::AI_routeCity()
 			{
 				continue;
 			}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 
 			pRouteToCity = pLoopCity->AI_getRouteToCity();
 
@@ -18502,12 +18598,15 @@ bool CvUnitAI::AI_routeCity()
 			{
 				if (!(pLoopCity->plot()->isVisibleEnemyUnit(this)))
 				{
-					if (generatePath(pLoopCity->plot(), MOVE_SAFE_TERRITORY, true))
+					if (!(pRouteToCity->plot()->isVisibleEnemyUnit(this)))
 					{
-						if (!(pRouteToCity->plot()->isVisibleEnemyUnit(this)))
+						if (GET_PLAYER(getOwnerINLINE()).AI_plotTargetMissionAIs(pRouteToCity->plot(), MISSIONAI_BUILD, getGroup()) == 0)
 						{
-							if (GET_PLAYER(getOwnerINLINE()).AI_plotTargetMissionAIs(pRouteToCity->plot(), MISSIONAI_BUILD, getGroup()) == 0)
+							if (generatePath(pLoopCity->plot(), MOVE_SAFE_TERRITORY, true))
 							{
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 								if (generatePath(pRouteToCity->plot(), MOVE_SAFE_TERRITORY, true))
 								{
 									getGroup()->pushMission(MISSION_ROUTE_TO, pLoopCity->getX_INLINE(), pLoopCity->getY_INLINE(), MOVE_SAFE_TERRITORY, false, false, MISSIONAI_BUILD, pRouteToCity->plot());
@@ -19164,7 +19263,7 @@ bool CvUnitAI::AI_pickup(UnitAITypes eUnitAI, bool bCountProduction, int iMaxPat
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      09/18/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      02/22/10                                jdog5000      */
 /*                                                                                              */
 /* Naval AI                                                                                     */
 /************************************************************************************************/
@@ -19228,13 +19327,14 @@ bool CvUnitAI::AI_pickupStranded(UnitAITypes eUnitAI, int iMaxPath)
 				continue;
 			}
 
+			// Units are stranded, attempt rescue
+
 			iCount = pLoopGroup->getNumUnits();
 			
-			// Units are stranded, attempt rescue
-			if ( atPlot(pLoopPlot) || GET_PLAYER(getOwnerINLINE()).AI_unitTargetMissionAIs(pHeadUnit, MISSIONAI_PICKUP, getGroup()) < ((iCount + (cargoSpace() - 1)) / cargoSpace()))
+			if( 1000*iCount > iBestValue )
 			{
 				pPickupPlot = NULL;
-				if( atPlot(pLoopPlot) || generatePath(pLoopPlot, 0, true, &iPathTurns) )
+				if( atPlot(pLoopPlot) || (AI_plotValid(pLoopPlot) && generatePath(pLoopPlot, 0, true, &iPathTurns)) )
 				{
 					pPickupPlot = pLoopPlot;
 				}
@@ -19244,7 +19344,7 @@ bool CvUnitAI::AI_pickupStranded(UnitAITypes eUnitAI, int iMaxPath)
 					{
 						pAdjacentPlot = plotDirection(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), ((DirectionTypes)iI));
 
-						if (pAdjacentPlot != NULL)
+						if (pAdjacentPlot != NULL && AI_plotValid(pAdjacentPlot))
 						{
 							if( generatePath(pAdjacentPlot, 0, true, &iPathTurns) )
 							{
@@ -19255,13 +19355,16 @@ bool CvUnitAI::AI_pickupStranded(UnitAITypes eUnitAI, int iMaxPath)
 					}
 				}
 
-				if( pPickupPlot != NULL )
+				if( pPickupPlot != NULL && iPathTurns <= iMaxPath )
 				{
+					MissionAITypes eMissionAIType = MISSIONAI_PICKUP;
+					iCount -= GET_PLAYER(getOwnerINLINE()).AI_unitTargetMissionAIs(pHeadUnit, &eMissionAIType, 1, getGroup(), iPathTurns) * cargoSpace();
+
 					iValue = 1000*iCount;
 
 					iValue /= (iPathTurns + 1);
 
-					if (iValue > iBestValue && iPathTurns <= iMaxPath)
+					if (iValue > iBestValue)
 					{
 						iBestValue = iValue;
 						pBestUnit = pHeadUnit;
@@ -20916,7 +21019,7 @@ bool CvUnitAI::AI_infiltrate()
 				if (canInfiltrate(pLoopCity->plot()))
 				{
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      08/19/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      02/22/10                                jdog5000      */
 /*                                                                                              */
 /* Unit AI, Efficiency                                                                          */
 /************************************************************************************************/
@@ -20925,13 +21028,13 @@ bool CvUnitAI::AI_infiltrate()
 					{
 						continue;
 					}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 
 					iValue = getEspionagePoints(pLoopCity->plot());
 					
-					if (iValue > 0)
+					if (iValue > iBestValue)
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 					{
 						if (generatePath(pLoopCity->plot(), 0, true, &iPathTurns))
 						{
@@ -21401,6 +21504,7 @@ bool CvUnitAI::AI_moveToStagingCity()
 			}			
 		}		
 	}
+
 	if (iWarCount > 1)
 	{
 		eTargetTeam = NO_TEAM;
@@ -21410,7 +21514,7 @@ bool CvUnitAI::AI_moveToStagingCity()
 	for (pLoopCity = GET_PLAYER(getOwnerINLINE()).firstCity(&iLoop); pLoopCity != NULL; pLoopCity = GET_PLAYER(getOwnerINLINE()).nextCity(&iLoop))
 	{
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      08/19/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      02/22/10                                jdog5000      */
 /*                                                                                              */
 /* War tactics AI, Efficiency                                                                   */
 /************************************************************************************************/
@@ -21420,6 +21524,7 @@ bool CvUnitAI::AI_moveToStagingCity()
 			// BBAI TODO: Need some knowledge of whether this is a good city to attack from ... only get that
 			// indirectly from threat.
 			iValue = pLoopCity->AI_cityThreat();
+
 			// Have attack stacks in assault areas move to coastal cities for faster loading
 			if( (area()->getAreaAIType(getTeam()) == AREAAI_ASSAULT) || (area()->getAreaAIType(getTeam()) == AREAAI_ASSAULT_MASSING) )
 			{
@@ -21447,12 +21552,12 @@ bool CvUnitAI::AI_moveToStagingCity()
 					iValue = iValue/8;
 				}
 			}
+
+			if (iValue*200 > iBestValue)
+			{
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
-
-			if (iValue > 0)
-			{
 				if (generatePath(pLoopCity->plot(), 0, true, &iPathTurns))
 				{
 					iValue *= 1000;
@@ -22776,3 +22881,61 @@ void CvUnitAI::write(FDataStreamBase* pStream)
 }
 
 // Private Functions...
+
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      02/21/10                                jdog5000      */
+/*                                                                                              */
+/* Lead From Behind                                                                             */
+/************************************************************************************************/
+// From Lead From Behind by UncutDragon
+
+void CvUnitAI::LFBgetBetterAttacker(CvUnit** ppAttacker, const CvPlot* pPlot, bool bPotentialEnemy, int& iAIAttackOdds, int& iAttackerValue) const
+{
+	CvUnit* pThis = (CvUnit*)this;
+	CvUnit* pAttacker = (*ppAttacker);
+	CvUnit* pDefender;
+	int iOdds;
+	int iValue;
+	int iAIOdds;
+
+	pDefender = pPlot->getBestDefender(NO_PLAYER, getOwnerINLINE(), this, !bPotentialEnemy, bPotentialEnemy);
+	iValue = LFBgetAttackerRank(pDefender, iOdds);
+
+	// Combat odds are out of 1000, but the AI routines need odds out of 100, and when called from AI_getBestGroupAttacker
+	// we return this value. Note that I'm not entirely sure if/how that return value is actually used ... but just in case I
+	// want to make sure I'm returning something consistent with what was there before
+	iAIOdds = (iOdds + 5) / 10;
+	iAIOdds += GET_PLAYER(getOwnerINLINE()).AI_getAttackOddsChange();
+	iAIOdds = std::max(1, std::min(iAIOdds, 99));
+
+	if (collateralDamage() > 0)
+	{
+		int iPossibleTargets = std::min((pPlot->getNumVisibleEnemyDefenders(pThis) - 1), collateralDamageMaxUnits());
+
+		if (iPossibleTargets > 0)
+		{
+			iValue *= (100 + ((collateralDamage() * iPossibleTargets) / 5));
+			iValue /= 100;
+		}
+	}
+
+	// Nothing to compare against - we're obviously better
+	if (!pAttacker)
+	{
+		(*ppAttacker) = pThis;
+		iAIAttackOdds = iAIOdds;
+		iAttackerValue = iValue;
+		return;
+	}
+
+	// Compare our adjusted value with the current best
+	if (iValue >= iAttackerValue)
+	{
+		(*ppAttacker) = pThis;
+		iAIAttackOdds = iAIOdds;
+		iAttackerValue = iValue;
+	}
+}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
