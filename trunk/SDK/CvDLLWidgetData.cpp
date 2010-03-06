@@ -4680,11 +4680,11 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 	szBuffer.append(szTempBuffer);
 	szBuffer.append(NEWLINE);
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                      12/07/09                                jdog5000       */
+/* UNOFFICIAL_PATCH                      03/04/10                                jdog5000       */
 /*                                                                                              */
 /*                                                                                              */
 /************************************************************************************************/
-	szTempBuffer.Format(L"%S", "Unofficial Patch 1.40");
+	szTempBuffer.Format(L"%S", "Unofficial Patch 1.50");
 	szBuffer.append(szTempBuffer);
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                       END                                                   */
@@ -4695,7 +4695,7 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 /*                                                                                              */
 /************************************************************************************************/
 	// Add string showing version number
-	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 0.90e");
+	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 0.90f");
 	szBuffer.append(szTempBuffer);
 #ifdef LOG_AI
 	szTempBuffer.Format(NEWLINE L"%c", gDLL->getSymbolID(BULLET_CHAR));

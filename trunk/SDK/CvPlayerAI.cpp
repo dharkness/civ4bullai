@@ -3261,14 +3261,11 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 	}
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      10/28/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      03/04/10                                jdog5000      */
 /*                                                                                              */
 /* War strategy AI                                                                              */
 /************************************************************************************************/
-	if (pCity->hasActiveWorldWonder())
-	{
-		iValue += 1 + pCity->getNumWorldWonders();
-	}
+	iValue += 2*pCity->getNumActiveWorldWonders();
 
 	for (iI = 0; iI < GC.getNumReligionInfos(); iI++)
 	{
@@ -3276,9 +3273,9 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 		{
 			iValue += 3;
 
-			if( getStateReligion() != iI )
+			if( getStateReligion() == iI )
 			{
-				iValue += 6;
+				iValue += 4;
 			}
 		}
 	}
@@ -17436,6 +17433,9 @@ int CvPlayerAI::AI_getStrategyHash() const
 
 	return m_iStrategyHash;   
 }
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/		
 
 
 void CvPlayerAI::AI_nowHasTech(TechTypes eTech)

@@ -477,7 +477,7 @@ void CvPlot::doImprovement()
 				if (GET_TEAM(getTeam()).isHasTech((TechTypes)(GC.getBonusInfo((BonusTypes) iI).getTechReveal())))
 				{
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                       02/16/10                                jdog5000      */
+/* UNOFFICIAL_PATCH                       03/04/10                                jdog5000      */
 /*                                                                                              */
 /* Gamespeed scaling                                                                            */
 /************************************************************************************************/
@@ -488,11 +488,11 @@ void CvPlot::doImprovement()
 						{
 */
 					int iOdds = GC.getImprovementInfo(getImprovementType()).getImprovementBonusDiscoverRand(iI);
-
+					
 					if( iOdds > 0 )
 					{
-					iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent();
-					iOdds /= 100;
+						iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getVictoryDelayPercent();
+						iOdds /= 100;
 
 						if( GC.getGameINLINE().getSorenRandNum(iOdds, "Bonus Discovery") == 0)
 						{
@@ -8548,14 +8548,14 @@ void CvPlot::doFeature()
 		if (iProbability > 0)
 		{
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                       10/22/09                                jdog5000      */
+/* UNOFFICIAL_PATCH                       03/04/10                                jdog5000      */
 /*                                                                                              */
 /* Gamespeed scaling                                                                            */
 /************************************************************************************************/
 /* original bts code
 			if (GC.getGameINLINE().getSorenRandNum(10000, "Feature Disappearance") < iProbability)
 */
-			int iOdds = (10000*GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getFeatureProductionPercent())/100;
+			int iOdds = (10000*GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getVictoryDelayPercent())/100;
 			if (GC.getGameINLINE().getSorenRandNum(iOdds, "Feature Disappearance") < iProbability)
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */
@@ -8611,14 +8611,14 @@ void CvPlot::doFeature()
 							if (iProbability > 0)
 							{
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                       10/22/09                                jdog5000      */
+/* UNOFFICIAL_PATCH                       03/04/10                                jdog5000      */
 /*                                                                                              */
 /* Gamespeed scaling                                                                            */
 /************************************************************************************************/
 /* original bts code
 								if (GC.getGameINLINE().getSorenRandNum(10000, "Feature Growth") < iProbability)
 */
-								int iOdds = (10000*GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getFeatureProductionPercent())/100;
+								int iOdds = (10000*GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getVictoryDelayPercent())/100;
 								if( GC.getGameINLINE().getSorenRandNum(iOdds, "Feature Growth") < iProbability )
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */
