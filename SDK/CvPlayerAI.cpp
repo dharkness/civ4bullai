@@ -9529,123 +9529,32 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI, CvArea* pArea
 			iValue += (iTempValue * 8) / 100;
 		}		
 		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getCityAttackModifier()) / 75);
-/* Collateral Damage valuation moved to bombard part
-		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getCollateralDamage()) / 400);
-*/
+		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getCollateralDamage()) / 200);
 		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getMoves() * iFastMoverMultiplier) / 4);
 		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getWithdrawalProbability()) / 100);
-/*
+
 		if (!AI_isDoStrategy(AI_STRATEGY_AIR_BLITZ))
 		{
-*/
-			if (GC.getUnitInfo(eUnit).getBombardRate() > 0 || GC.getUnitInfo(eUnit).getCollateralDamageMaxUnits() > 0)
+			int iBombardValue = GC.getUnitInfo(eUnit).getBombardRate() * 8;
+			if (iBombardValue > 0)
 			{
-				/* original code
-				int iBombardValue = GC.getUnitInfo(eUnit).getBombardRate() * 4;
-				*/
-				int iBombardValue = GC.getUnitInfo(eUnit).getBombardRate() * (GC.getUnitInfo(eUnit).isIgnoreBuildingDefense() ? 3 : 2);
-				// Army composition needs to scale with army size, bombard unit potency
-
-
-				
-				//modified AI_calculateTotalBombard(DOMAIN_LAND) code
-				int iI;
-				int iTotalBombard = 0;
-				int iSiegeUnits = 0;
-				int iSiegeImmune = 0;
-				int iTotalSiegeMaxUnits = 0;
-				
-				for (iI = 0; iI < GC.getNumUnitClassInfos(); iI++)
+				int iGoalTotalBombardRate = (GC.getUnitInfo(eUnit).isIgnoreBuildingDefense() ? 100 : 200);
+				// Note: this also counts UNITAI_COLLATERAL units, which only play defense
+				int iTotalBombardRate = AI_calculateTotalBombard(DOMAIN_LAND);
+				if (iTotalBombardRate < iGoalTotalBombardRate)
 				{
-					UnitTypes eLoopUnit = ((UnitTypes)(GC.getCivilizationInfo(getCivilizationType()).getCivilizationUnits(iI)));
-					if (eLoopUnit != NO_UNIT)
-					{
-						if (GC.getUnitInfo(eLoopUnit).getDomainType() == DOMAIN_LAND)
-						{
-							int iBombardRate = GC.getUnitInfo(eLoopUnit).getBombardRate();
-							
-							if (iBombardRate > 0)
-							{
-								iTotalBombard += (iBombardRate * getUnitClassCount((UnitClassTypes)iI) * (GC.getUnitInfo(eUnit).isIgnoreBuildingDefense() ? 3 : 2)) / 2;
-							}
-							
-							int iBombRate = GC.getUnitInfo(eLoopUnit).getBombRate();
-							if (iBombRate > 0)
-							{
-								iTotalBombard += iBombRate * getUnitClassCount((UnitClassTypes)iI);
-							}
-							
-							
-							if (GC.getUnitInfo(eLoopUnit).getCollateralDamageMaxUnits() != 0 && GC.getUnitInfo(eLoopUnit).getCollateralDamage() != 0)
-							{
-								iTotalSiegeMaxUnits += GC.getUnitInfo(eLoopUnit).getCollateralDamageMaxUnits() * getUnitClassCount((UnitClassTypes)iI);
-								iSiegeUnits += getUnitClassCount((UnitClassTypes)iI);
-							}
-							else if (GC.getUnitInfo(eLoopUnit).getUnitCombatCollateralImmune(GC.getUnitInfo(eUnit).getUnitCombatType()))
-							{
-								iSiegeImmune+= getUnitClassCount((UnitClassTypes)iI);
-							}
-						}
-					}
-				}
-
-				int iNumOffensiveUnits = AI_totalUnitAIs(UNITAI_ATTACK_CITY) + AI_totalUnitAIs(UNITAI_ATTACK) + AI_totalUnitAIs(UNITAI_COUNTER)/2;
-				int iNumDefensiveUnits = AI_totalUnitAIs(UNITAI_CITY_DEFENSE) + AI_totalUnitAIs(UNITAI_RESERVE) + AI_totalUnitAIs(UNITAI_CITY_COUNTER)/2 + AI_totalUnitAIs(UNITAI_COLLATERAL)/2;
-				iSiegeUnits += (iSiegeImmune*iNumOffensiveUnits)/(iNumOffensiveUnits+iNumDefensiveUnits);
-
-				int iMAX_HIT_POINTS = GC.getDefineINT("MAX_HIT_POINTS");
-
-				int iCollateralDamageMaxUnitsWeight = (100 * (iNumOffensiveUnits - iSiegeUnits)) / std::max(1,iTotalSiegeMaxUnits);
-				iCollateralDamageMaxUnitsWeight = std::min(100, iCollateralDamageMaxUnitsWeight);
-				//to decrease value further for units with low damage limits:
-				int iCollateralDamageLimitWeight = 100*iMAX_HIT_POINTS - std::max(0, ((iMAX_HIT_POINTS - GC.getUnitInfo(eUnit).getCollateralDamageLimit()) * (100 -  iCollateralDamageMaxUnitsWeight)));
-				iCollateralDamageLimitWeight /= iMAX_HIT_POINTS;
-				int iCollateralValue = iCombatValue * GC.getUnitInfo(eUnit).getCollateralDamage() * GC.getDefineINT("COLLATERAL_COMBAT_DAMAGE");
-				iCollateralValue /= 100;
-				iCollateralValue *= std::max(100, (GC.getUnitInfo(eUnit).getCollateralDamageMaxUnits() * iCollateralDamageMaxUnitsWeight * iCollateralDamageMaxUnitsWeight) / 100);
-				iCollateralValue /= 100;
-				iCollateralValue *= iCollateralDamageLimitWeight;
-				iCollateralValue /= 100;
-				iCollateralValue /= iMAX_HIT_POINTS;
-				iValue += iCollateralValue;
-				
-				//int iTotalBombardValue = 4 * iTotalBombard;
-				int iNumBombardUnits = 2 * iTotalBombard / iBombardValue;
-				int iAIDesiredBombardFraction = std::max( 5, /*default: 10*/ GC.getDefineINT("BBAI_BOMBARD_ATTACK_STACK_FRACTION"));
-				int iActualBombardFraction = (100*iNumBombardUnits)/std::max(1, iNumOffensiveUnits);
-
-				int iTempBombardValue = 0;
-				if (iTotalBombard < 200) //still less than 200 bombard points
-				{
-					iTempBombardValue = iBombardValue * (500 - 2*iTotalBombard);
-					iTempBombardValue /= 100;
-					//iTempBombardValue is at most (5 * iBombardValue)
-				}
-				if (iActualBombardFraction < iAIDesiredBombardFraction)
-				{
-					iBombardValue *= iAIDesiredBombardFraction + 3 * (iAIDesiredBombardFraction - iActualBombardFraction);
-					iBombardValue /= iAIDesiredBombardFraction;
-					//new iBombardValue is at most (4 * old iBombardValue)
+					iBombardValue *= (2*iGoalTotalBombardRate - iTotalBombardRate);
+					iBombardValue /= iGoalTotalBombardRate;
 				}
 				else
 				{
-					iBombardValue *= iAIDesiredBombardFraction;
-					iBombardValue /= range(iActualBombardFraction,1,99);
+					iBombardValue *= iGoalTotalBombardRate;
+					iBombardValue /= std::min(4*iGoalTotalBombardRate, 2*iTotalBombardRate - iGoalTotalBombardRate);
 				}
 
-				if (iTempBombardValue > iBombardValue)
-				{
-					iBombardValue = iTempBombardValue;
-				}
-				
-				if (!AI_isDoStrategy(AI_STRATEGY_AIR_BLITZ))
-				{
-					iValue += iBombardValue;
-				}
+				iValue += iBombardValue;
 			}
-/*
 		}
-*/
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/

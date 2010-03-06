@@ -1326,7 +1326,7 @@ void CvDLLWidgetData::doResearch(CvWidgetDataStruct &widgetDataStruct)
 	}
 
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                       12/07/09                            Emperor Fool      */
+/* UNOFFICIAL_PATCH                       12/07/09                             EmperorFool      */
 /*                                                                                              */
 /* Bugfix                                                                                       */
 /************************************************************************************************/
