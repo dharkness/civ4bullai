@@ -3235,7 +3235,7 @@ bool CvSelectionGroup::calculateIsStranded()
 
 	if( getLengthMissionQueue() > 0 )
 	{
-		return false;;
+		return false;
 	}
 	
 	if( !canAllMove() )

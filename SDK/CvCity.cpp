@@ -228,7 +228,7 @@ void CvCity::init(int iID, PlayerTypes eOwner, int iX, int iY, bool bBumpUnits, 
 	if (lResult == 1)
 	{
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                       03/03/10                     Mongoose & Fuyu			*/
+/* UNOFFICIAL_PATCH                       03/01/10                     Mongoose & jdog5000      */
 /*                                                                                              */
 /* Bugfix                                                                                       */
 /************************************************************************************************/
@@ -238,9 +238,13 @@ void CvCity::init(int iID, PlayerTypes eOwner, int iX, int iY, bool bBumpUnits, 
 		// From Mongoose SDK
 		// Don't remove floodplains from tiles when founding city
 		// But still remove fallout
+/*
 		if (pPlot->getFeatureType() != NO_FEATURE && 
 			(GC.getFeatureInfo(pPlot->getFeatureType()).getDefenseModifier() != 0 ||
 			 GC.getFeatureInfo(pPlot->getFeatureType()).isNoImprovement()))
+*/
+		// back to original, only re-add floodplains after city is removed
+		if (pPlot->getFeatureType() != NO_FEATURE)
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */
 /************************************************************************************************/
@@ -813,6 +817,37 @@ void CvCity::kill(bool bUpdatePlotGroups)
 /************************************************************************************************/
 
 	pPlot->setPlotCity(NULL);
+
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       03/04/10                                jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+	// Replace floodplains after city is removed
+	if (pPlot->getBonusType() == NO_BONUS)
+	{
+		for (int iJ = 0; iJ < GC.getNumFeatureInfos(); iJ++)
+		{
+			/* Fuyu: don't limit to riverside
+			if (GC.getFeatureInfo((FeatureTypes)iJ).isRequiresRiver())
+			{
+			*/
+				if (pPlot->canHaveFeature((FeatureTypes)iJ))
+				{
+					if (GC.getFeatureInfo((FeatureTypes)iJ).getAppearanceProbability() == 10000)
+					{
+						pPlot->setFeatureType((FeatureTypes)iJ);
+						break;
+					}
+				}
+			/*
+			}
+			*/
+		}
+	}
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 
 	area()->changeCitiesPerPlayer(getOwnerINLINE(), -1);
 
@@ -4997,6 +5032,33 @@ bool CvCity::hasActiveWorldWonder() const
 
 	return false;
 }
+
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       03/04/10                                jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+int CvCity::getNumActiveWorldWonders() const
+{
+	int iI;
+	int iCount = 0;
+
+	for (iI = 0; iI < GC.getNumBuildingInfos(); iI++)
+	{
+		if (isWorldWonderClass((BuildingClassTypes)(GC.getBuildingInfo((BuildingTypes)iI).getBuildingClassType())))
+		{
+			if (getNumRealBuilding((BuildingTypes)iI) > 0 && !(GET_TEAM(getTeam()).isObsoleteBuilding((BuildingTypes)iI)))
+			{
+				iCount++;
+			}
+		}
+	}
+
+	return iCount;
+}
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 
 
 int CvCity::getReligionCount() const

@@ -11571,7 +11571,7 @@ int CvCityAI::AI_cityThreat(bool bDangerPercent)
 					iTempValue *= 300;
 				}
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      01/04/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      03/04/10                                jdog5000      */
 /*                                                                                              */
 /* War tactics AI                                                                               */
 /************************************************************************************************/
@@ -11580,8 +11580,9 @@ int CvCityAI::AI_cityThreat(bool bDangerPercent)
 				{
 					iTempValue *= 180;
 				}
-				// Extra trust of Vassals, regardless of relations
-				else if ( GET_TEAM(GET_PLAYER((PlayerTypes)iI).getTeam()).isVassal(getTeam()) )
+				// Extra trust of/for Vassals, regardless of relations
+				else if ( GET_TEAM(GET_PLAYER((PlayerTypes)iI).getTeam()).isVassal(getTeam()) ||
+							GET_TEAM(getTeam()).isVassal(GET_PLAYER((PlayerTypes)iI).getTeam()))
 				{
 					iTempValue *= 30;
 				}
@@ -11616,6 +11617,21 @@ int CvCityAI::AI_cityThreat(bool bDangerPercent)
 						FAssert(false);
 						break;
 					}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/04/10                                jdog5000      */
+/*                                                                                              */
+/* War tactics AI                                                                               */
+/************************************************************************************************/
+					// Beef up border security next to powerful rival
+					if( GET_PLAYER((PlayerTypes)iI).getPower() > GET_PLAYER(getOwnerINLINE()).getPower() )
+					{
+						iTempValue *= std::min( 400, (100 * GET_PLAYER((PlayerTypes)iI).getPower())/(GET_PLAYER(getOwnerINLINE()).getPower()) );
+						iTempValue /= 100;
+					}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                       01/04/09                                jdog5000      */
 /*                                                                                              */
