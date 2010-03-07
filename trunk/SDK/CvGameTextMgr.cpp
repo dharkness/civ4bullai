@@ -9369,14 +9369,18 @@ void CvGameTextMgr::setBuildingActualEffects(CvWStringBuffer &szBuffer, CvWStrin
 		// Happiness
 		int iGood = 0;
 		int iBad = 0;
-		int iHappiness = pCity->getAdditionalHappinessByBuilding(eBuilding, iGood, iBad);
+		int iAngryPop = 0;
+		int iHappiness = pCity->getAdditionalHappinessByBuilding(eBuilding, iGood, iBad, iAngryPop);
 		bStarted = setResumableGoodBadChangeHelp(szBuffer, szStart, L": ", L"", iGood, gDLL->getSymbolID(HAPPY_CHAR), iBad, gDLL->getSymbolID(UNHAPPY_CHAR), false, bNewLine, bStarted);
+		bStarted = setResumableValueChangeHelp(szBuffer, szStart, L": ", L"", iAngryPop, gDLL->getSymbolID(ANGRY_POP_CHAR), false, bNewLine, bStarted);
 
 		// Health
 		iGood = 0;
 		iBad = 0;
-		int iHealth = pCity->getAdditionalHealthByBuilding(eBuilding, iGood, iBad);
+		int iSpoiledFood = 0;
+		int iHealth = pCity->getAdditionalHealthByBuilding(eBuilding, iGood, iBad, iSpoiledFood);
 		bStarted = setResumableGoodBadChangeHelp(szBuffer, szStart, L": ", L"", iGood, gDLL->getSymbolID(HEALTHY_CHAR), iBad, gDLL->getSymbolID(UNHEALTHY_CHAR), false, bNewLine, bStarted);
+		bStarted = setResumableValueChangeHelp(szBuffer, szStart, L": ", L"", iSpoiledFood, gDLL->getSymbolID(EATEN_FOOD_CHAR), false, bNewLine, bStarted);
 
 		// Yield
 		int aiYields[NUM_YIELD_TYPES];
@@ -11522,7 +11526,8 @@ bool CvGameTextMgr::setBuildingAdditionalHealthHelp(CvWStringBuffer &szBuffer, c
 	{
 		if (city.canConstruct((BuildingTypes)i, false, true, false))
 		{
-			int iGood = 0, iBad = 0, iChange = city.getAdditionalHealthByBuilding((BuildingTypes)i, iGood, iBad);
+			int iGood = 0, iBad = 0, iSpoiledFood = 0;
+			int iChange = city.getAdditionalHealthByBuilding((BuildingTypes)i, iGood, iBad, iSpoiledFood);
 			
 			if (iGood != 0 || iBad != 0)
 			{
@@ -11533,7 +11538,8 @@ bool CvGameTextMgr::setBuildingAdditionalHealthHelp(CvWStringBuffer &szBuffer, c
 				}
 
 				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo((BuildingTypes)i).getDescription());
-				setResumableGoodBadChangeHelp(szBuffer, szLabel, L": ", L"", iGood, gDLL->getSymbolID(HEALTHY_CHAR), iBad, gDLL->getSymbolID(UNHEALTHY_CHAR), false, true);
+				bool bStartedLine = setResumableGoodBadChangeHelp(szBuffer, szLabel, L": ", L"", iGood, gDLL->getSymbolID(HEALTHY_CHAR), iBad, gDLL->getSymbolID(UNHEALTHY_CHAR), false, true);
+				setResumableValueChangeHelp(szBuffer, szLabel, L": ", L"", iSpoiledFood, gDLL->getSymbolID(EATEN_FOOD_CHAR), false, true, bStartedLine);
 			}
 		}
 	}
@@ -11945,9 +11951,10 @@ bool CvGameTextMgr::setBuildingAdditionalHappinessHelp(CvWStringBuffer &szBuffer
 	{
 		if (city.canConstruct((BuildingTypes)i, false, true, false))
 		{
-			int iGood = 0, iBad = 0, iChange = city.getAdditionalHappinessByBuilding((BuildingTypes)i, iGood, iBad);
+			int iGood = 0, iBad = 0, iAngryPop = 0;
+			int iChange = city.getAdditionalHappinessByBuilding((BuildingTypes)i, iGood, iBad, iAngryPop);
 			
-			if (iGood != 0 || iBad != 0)
+			if (iGood != 0 || iBad != 0 || iAngryPop != 0)
 			{
 				if (!bStarted)
 				{
@@ -11956,7 +11963,8 @@ bool CvGameTextMgr::setBuildingAdditionalHappinessHelp(CvWStringBuffer &szBuffer
 				}
 
 				szLabel.Format(SETCOLR L"%s" ENDCOLR, TEXT_COLOR("COLOR_BUILDING_TEXT"), GC.getBuildingInfo((BuildingTypes)i).getDescription());
-				setResumableGoodBadChangeHelp(szBuffer, szLabel, L": ", L"", iGood, gDLL->getSymbolID(HAPPY_CHAR), iBad, gDLL->getSymbolID(UNHAPPY_CHAR), false, true);
+				bool bStartedLine = setResumableGoodBadChangeHelp(szBuffer, szLabel, L": ", L"", iGood, gDLL->getSymbolID(HAPPY_CHAR), iBad, gDLL->getSymbolID(UNHAPPY_CHAR), false, true);
+				setResumableValueChangeHelp(szBuffer, szLabel, L": ", L"", iAngryPop, gDLL->getSymbolID(ANGRY_POP_CHAR), false, true, bStartedLine);
 			}
 		}
 	}
@@ -15360,11 +15368,11 @@ void CvGameTextMgr::parseLeaderHeadRelationsHelp(CvWStringBuffer &szBuffer, Play
 
 	if (eThisPlayer != eOtherPlayer && kThisTeam.isHasMet(GET_PLAYER(eOtherPlayer).getTeam()))
 	{
-			getEspionageString(szBuffer, eThisPlayer, eOtherPlayer);
+		getEspionageString(szBuffer, eThisPlayer, eOtherPlayer);
 
-			getAttitudeString(szBuffer, eThisPlayer, eOtherPlayer);
+		getAttitudeString(szBuffer, eThisPlayer, eOtherPlayer);
 
-			getActiveDealsString(szBuffer, eThisPlayer, eOtherPlayer);
+		getActiveDealsString(szBuffer, eThisPlayer, eOtherPlayer);
 
 		if (eOtherPlayer == eActivePlayer)
 		{
@@ -15487,7 +15495,7 @@ void CvGameTextMgr::getActiveTeamRelationsString(CvWStringBuffer& szString, Team
 	}
 }
 
-/**
+/*
  * Shows the peace/war/enemy/pact status between eThisPlayer and eOtherPlayer (both must not be NO_PLAYER).
  * If eOtherTeam is not NO_TEAM, only relations between it and eThisTeam are shown.
  * if eSkipTeam is not NO_TEAM, relations involving it are not shown.
@@ -15502,7 +15510,7 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, PlayerTyp
 	getOtherRelationsString(szString, GET_PLAYER(eThisPlayer).getTeam(), GET_PLAYER(eOtherPlayer).getTeam(), NO_TEAM);
 }
 
-/**
+/*
  * Shows the peace/war/enemy/pact status between eThisPlayer and all rivals known to the active player.
  * If eOtherTeam is not NO_TEAM, only relations between it and eThisTeam are shown.
  * if eSkipTeam is not NO_TEAM, relations involving it are not shown.
