@@ -3420,10 +3420,10 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 /********************************************************************************/
 	//Don't consider a building if it causes the city to immediately start shrinking from unhealthiness
 //For that purpose ignore bad health and unhappiness from Espionage.
-	int iGood = 0; int iBad = 0;
-	int iBuildingActualHappiness = getAdditionalHappinessByBuilding(eBuilding,iGood,iBad);
-	iGood = 0; iBad = 0;
-	int iBuildingActualHealth = getAdditionalHealthByBuilding(eBuilding,iGood,iBad);
+	int iGood = 0; int iBad = 0; int iAngryPop = 0;
+	int iBuildingActualHappiness = getAdditionalHappinessByBuilding(eBuilding,iGood,iBad,iAngryPop);
+	iGood = 0; iBad = 0; int iSpoiledFood = 0;
+	int iBuildingActualHealth = getAdditionalHealthByBuilding(eBuilding,iGood,iBad,iSpoiledFood);
 	int iBaseHappinessLevel = happyLevel() - unhappyLevel() + getEspionageHappinessCounter();
 	int iBaseHealthLevel = goodHealth() - badHealth() + getEspionageHealthCounter();
 	int iBaseFoodDifference = getYieldRate(YIELD_FOOD) - getPopulation()*GC.getFOOD_CONSUMPTION_PER_POPULATION() - std::max(0,-iBaseHealthLevel);
@@ -3572,18 +3572,11 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 				}
 				iValue += iBestHappy * 10;
 
-				if (kBuilding.isNoUnhappiness())
-				{
-					iValue += ((iAngryPopulation * 10) + getPopulation());
-				}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                      02/24/10                              jdog5000        */
 /*                                                                                              */
 /* City AI                                                                                      */
 /************************************************************************************************/
-				int iGood, iBad = 0;
-				int iBuildingActualHappiness = getAdditionalHappinessByBuilding(eBuilding,iGood,iBad);
-
 				if( iBuildingActualHappiness < 0 )
 				{
 					// Building causes net decrease in city happiness
@@ -3614,21 +3607,31 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 				}
 
 				iValue += (kBuilding.getAreaHappiness() * (iNumCitiesInArea - 1) * 8);
-				iValue += (kBuilding.getGlobalHappiness() * iNumCities * 8);
+				iValue += (kBuilding.getGlobalHappiness() * (iNumCities - 1) * 8);
 
 				int iWarWearinessPercentAnger = kOwner.getWarWearinessPercentAnger();
 				int iGlobalWarWearinessModifer = kBuilding.getGlobalWarWearinessModifier();
 				if (iGlobalWarWearinessModifer != 0)
 				{
-					iValue += (-(((iGlobalWarWearinessModifer * iWarWearinessPercentAnger / 100) / GC.getPERCENT_ANGER_DIVISOR())) * iNumCities);
+					iValue += (-(((iGlobalWarWearinessModifer * iWarWearinessPercentAnger / 100) / GC.getPERCENT_ANGER_DIVISOR())) * (iNumCities - 1));
 					iValue += (-iGlobalWarWearinessModifer * iHappyModifier) / 16;
 				}
 
+				CvCivilizationInfo& kCivilization = GC.getCivilizationInfo(getCivilizationType());
 				for (iI = 0; iI < GC.getNumBuildingClassInfos(); iI++)
 				{
-					if (kBuilding.getBuildingHappinessChanges(iI) != 0)
+					int iBuildingHappinessChanges = kBuilding.getBuildingHappinessChanges(iI);
+					if (iBuildingHappinessChanges != 0)
 					{
-						iValue += (kBuilding.getBuildingHappinessChanges(iI) * kOwner.getBuildingClassCount((BuildingClassTypes)iI) * 8);
+						BuildingTypes eLoopBuilding = (BuildingTypes)kCivilization.getCivilizationBuildings(iI);
+						if (eLoopBuilding != NO_BUILDING)
+						{
+							iValue += (iBuildingHappinessChanges * (kOwner.getBuildingClassCount((BuildingClassTypes)iI) - getNumBuilding(eLoopBuilding)) * 8);
+						}
+						else
+						{
+							iValue += (iBuildingHappinessChanges * kOwner.getBuildingClassCount((BuildingClassTypes)iI) * 8);
+						}
 					}
 				}
 /************************************************************************************************/
@@ -3643,9 +3646,6 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 /*                                                                                              */
 /* City AI                                                                                      */
 /************************************************************************************************/
-				int iGood, iBad = 0;
-				int iBuildingActualHealth = getAdditionalHealthByBuilding(eBuilding,iGood,iBad);
-
 				if( iBuildingActualHealth < 0 )
 				{
 					// Building causes net decrease in city health
@@ -3662,8 +3662,8 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 						+ (std::max(0, iBuildingActualHealth - iBadHealth) * iHealthModifier);
 				}
 
-				iValue += (kBuilding.getAreaHealth() * (iNumCitiesInArea-1) * 4);
-				iValue += (kBuilding.getGlobalHealth() * iNumCities * 4);
+				iValue += (kBuilding.getAreaHealth() * (iNumCitiesInArea - 1 ) * 4);
+				iValue += (kBuilding.getGlobalHealth() * (iNumCities - 1) * 4);
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
