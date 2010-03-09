@@ -13,8 +13,8 @@
 ;These are the variables you need to define for your mod
 
 !define NAME "Better BUG AI" ;Full Name of Mod
-!define VERSION "2010-03-05" ;Mod Version Number
-!define VERSION_VERBOSE "* Better BTS AI 0.90e r532$\n* BULL 1.1+ r155$\n* BUG 4.3 r2165"
+!define VERSION "2010-03-09" ;Mod Version Number
+!define VERSION_VERBOSE "* Better BTS AI 0.90f r533$\n* BULL 1.1+ r159$\n* BUG 4.3 r2170"
 
 !define MOD_LOC "Better BUG AI" ;Name of Mod Folder
 !define SHORT_NAME "Better BUG AI" ;Shorthand/nick of your mod
@@ -614,7 +614,7 @@ Section "Start Menu Shortcut" Section4
 	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
 	Call preStartMenu
 	CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${NAME}.lnk" "$INSTDIR1\Civ4BeyondSword.exe" "mod=$\"${MOD_LOC}$\"" "$INSTDIR\Mods\${MOD_LOC}\${RAW_ICON}" 0
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${NAME}.lnk" "$INSTDIR1\Civ4BeyondSword.exe" "mod=$\"${MOD_LOC}$\"" # "$INSTDIR\Mods\${MOD_LOC}\${RAW_ICON}" 0
 	WriteINIStr "$SMPROGRAMS\$StartMenuFolder\${SHORT_NAME} Info.url" "InternetShortcut" "URL" "${URL}"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR1\Mods\${MOD_LOC}\Uninstall.exe"
 	!insertmacro MUI_STARTMENU_WRITE_END
@@ -624,13 +624,13 @@ SectionEnd
 
 ;Desktop shortcut
 Section "Desktop Shortcut" Section5
-	CreateShortCut "$DESKTOP\${NAME}.lnk" "$INSTDIR1\Civ4BeyondSword.exe" "mod=$\"${MOD_LOC}$\"" "$INSTDIR\Mods\${MOD_LOC}\${RAW_ICON}" 0
+	CreateShortCut "$DESKTOP\${NAME}.lnk" "$INSTDIR1\Civ4BeyondSword.exe" "mod=$\"${MOD_LOC}$\"" # "$INSTDIR\Mods\${MOD_LOC}\${RAW_ICON}" 0
 SectionEnd
 
 
 ;Quick Launch shortcut
 Section "Quick Launch Shortcut" Section6
-	CreateShortCut "$QUICKLAUNCH\${SHORT_NAME}.lnk" "$INSTDIR1\Civ4BeyondSword.exe" "mod=$\"${MOD_LOC}$\"" "$INSTDIR\Mods\${MOD_LOC}\${RAW_ICON}" 0
+	CreateShortCut "$QUICKLAUNCH\${SHORT_NAME}.lnk" "$INSTDIR1\Civ4BeyondSword.exe" "mod=$\"${MOD_LOC}$\"" # "$INSTDIR\Mods\${MOD_LOC}\${RAW_ICON}" 0
 SectionEnd
 
 
