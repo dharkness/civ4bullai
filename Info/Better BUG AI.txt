@@ -1,16 +1,16 @@
-Better BUG AI (2010-03-07)
+Better BUG AI (2010-03-09)
 --------------------------
 http://forums.civfanatics.com/showthread.php?t=354019
 
 
 Components:
-Better BTS AI 0.90f r533* 
+Better BTS AI 0.90f r533*
 * AI Logging
 BULL 1.1+ r159
 * Fractional Trade Routes
 * New Sentry Actions
 * City Governours Build Workers
-BUG 4.3 r2169
+BUG 4.3 r2170
 
  - *Workboarts stay military units for my mod (was changed in BetterAI)
 -----------------------------------------------------------------------------------------------------------------
