@@ -5858,7 +5858,7 @@ int CvPlayerAI::AI_getAttitudeVal(PlayerTypes ePlayer, bool bForced) const
 // BEGIN: Show Hidden Attitude Mod 01/22/2009
 int CvPlayerAI::AI_getFirstImpressionAttitude(PlayerTypes ePlayer) const
 {
-    int iAttitude;
+	int iAttitude = GC.getHandicapInfo(GET_PLAYER(ePlayer).getHandicapType()).getAttitudeChange();
 
 #ifdef _MOD_SHAM_SPOILER
 	bool bShowPersonalityAttitude = true;
@@ -5868,10 +5868,8 @@ int CvPlayerAI::AI_getFirstImpressionAttitude(PlayerTypes ePlayer) const
 
 	if (bShowPersonalityAttitude)
 	{
-		iAttitude = GC.getLeaderHeadInfo(getPersonalityType()).getBaseAttitude();
+		iAttitude += GC.getLeaderHeadInfo(getPersonalityType()).getBaseAttitude();
 	}
-
-	iAttitude += GC.getHandicapInfo(GET_PLAYER(ePlayer).getHandicapType()).getAttitudeChange();
 
 	if (!(GET_PLAYER(ePlayer).isHuman()) && bShowPersonalityAttitude)
 	{
@@ -9529,32 +9527,125 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI, CvArea* pArea
 			iValue += (iTempValue * 8) / 100;
 		}		
 		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getCityAttackModifier()) / 75);
-		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getCollateralDamage()) / 200);
+/* Collateral Damage valuation moved to bombard part
+		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getCollateralDamage()) / 400);
+*/
 		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getMoves() * iFastMoverMultiplier) / 4);
 		iValue += ((iCombatValue * GC.getUnitInfo(eUnit).getWithdrawalProbability()) / 100);
-
+/*
 		if (!AI_isDoStrategy(AI_STRATEGY_AIR_BLITZ))
 		{
-			int iBombardValue = GC.getUnitInfo(eUnit).getBombardRate() * 8;
-			if (iBombardValue > 0)
+*/
+			if (GC.getUnitInfo(eUnit).getBombardRate() > 0 || (GC.getUnitInfo(eUnit).getCollateralDamageMaxUnits() > 0 && GC.getUnitInfo(eUnit).getCollateralDamage() > 0))
 			{
-				int iGoalTotalBombardRate = (GC.getUnitInfo(eUnit).isIgnoreBuildingDefense() ? 100 : 200);
-				// Note: this also counts UNITAI_COLLATERAL units, which only play defense
-				int iTotalBombardRate = AI_calculateTotalBombard(DOMAIN_LAND);
-				if (iTotalBombardRate < iGoalTotalBombardRate)
+				// Army composition needs to scale with army size, bombard unit potency
+
+				//modified AI_calculateTotalBombard(DOMAIN_LAND) code
+				int iII;
+				int iTotalBombard = 0;
+				int iSiegeUnits = 0;
+				int iSiegeImmune = 0;
+				int iTotalSiegeMaxUnits = 0;
+				
+				for (iII = 0; iII < GC.getNumUnitClassInfos(); iII++)
 				{
-					iBombardValue *= (2*iGoalTotalBombardRate - iTotalBombardRate);
-					iBombardValue /= iGoalTotalBombardRate;
+					UnitTypes eLoopUnit = ((UnitTypes)(GC.getCivilizationInfo(getCivilizationType()).getCivilizationUnits(iII)));
+					if (eLoopUnit != NO_UNIT)
+					{
+						if (GC.getUnitInfo(eLoopUnit).getDomainType() == DOMAIN_LAND)
+						{
+							int iClassCount = getUnitClassCount((UnitClassTypes)iII);
+							int iBombardRate = GC.getUnitInfo(eLoopUnit).getBombardRate();
+							
+							if (iBombardRate > 0)
+							{
+								iTotalBombard += ((iBombardRate * iClassCount * ((GC.getUnitInfo(eLoopUnit).isIgnoreBuildingDefense()) ? 3 : 2)) / 2);
+							}
+							
+							int iBombRate = GC.getUnitInfo(eLoopUnit).getBombRate();
+							if (iBombRate > 0)
+							{
+								iTotalBombard += iBombRate * iClassCount;
+							}
+							
+							int iCollateralDamageMaxUnits = GC.getUnitInfo(eLoopUnit).getCollateralDamageMaxUnits();
+							if (iCollateralDamageMaxUnits > 0 && GC.getUnitInfo(eLoopUnit).getCollateralDamage() > 0)
+							{
+								iTotalSiegeMaxUnits += iCollateralDamageMaxUnits * iClassCount;
+								iSiegeUnits += iClassCount;
+							}
+							else if (GC.getUnitInfo(eLoopUnit).getUnitCombatCollateralImmune((UnitCombatTypes)GC.getUnitInfo(eUnit).getUnitCombatType()))
+							{
+								iSiegeImmune+= iClassCount;
+							}
+						}
+					}
+				}
+
+				int iNumOffensiveUnits = AI_totalUnitAIs(UNITAI_ATTACK_CITY) + AI_totalUnitAIs(UNITAI_ATTACK) + AI_totalUnitAIs(UNITAI_COUNTER)/2;
+				int iNumDefensiveUnits = AI_totalUnitAIs(UNITAI_CITY_DEFENSE) + AI_totalUnitAIs(UNITAI_RESERVE) + AI_totalUnitAIs(UNITAI_CITY_COUNTER)/2 + AI_totalUnitAIs(UNITAI_COLLATERAL)/2;
+				iSiegeUnits += (iSiegeImmune*iNumOffensiveUnits)/(iNumOffensiveUnits+iNumDefensiveUnits);
+
+				int iMAX_HIT_POINTS = GC.getDefineINT("MAX_HIT_POINTS");
+
+				int iCollateralDamageMaxUnitsWeight = (100 * (iNumOffensiveUnits - iSiegeUnits)) / std::max(1,iTotalSiegeMaxUnits);
+				iCollateralDamageMaxUnitsWeight = std::min(100, iCollateralDamageMaxUnitsWeight);
+				//to decrease value further for units with low damage limits:
+				int iCollateralDamageLimitWeight = 100*iMAX_HIT_POINTS - std::max(0, ((iMAX_HIT_POINTS - GC.getUnitInfo(eUnit).getCollateralDamageLimit()) * (100 -  iCollateralDamageMaxUnitsWeight)));
+				iCollateralDamageLimitWeight /= iMAX_HIT_POINTS;
+
+				int iCollateralValue = iCombatValue * GC.getUnitInfo(eUnit).getCollateralDamage() * GC.getDefineINT("COLLATERAL_COMBAT_DAMAGE");
+				iCollateralValue /= 100;
+				iCollateralValue *= std::max(100, (GC.getUnitInfo(eUnit).getCollateralDamageMaxUnits() * iCollateralDamageMaxUnitsWeight));
+				iCollateralValue /= 100;
+				iCollateralValue *= iCollateralDamageLimitWeight;
+				iCollateralValue /= 100;
+				iCollateralValue /= iMAX_HIT_POINTS;
+				iValue += iCollateralValue;
+				
+				if (!AI_isDoStrategy(AI_STRATEGY_AIR_BLITZ) && GC.getUnitInfo(eUnit).getBombardRate() > 0)
+			{
+					/* original code
+					int iBombardValue = GC.getUnitInfo(eUnit).getBombardRate() * 4;
+					*/
+					int iBombardValue = GC.getUnitInfo(eUnit).getBombardRate() * 2 * ((GC.getUnitInfo(eUnit).isIgnoreBuildingDefense()) ? 3 : 2);
+					//int iTotalBombardValue = 4 * iTotalBombard;
+					//int iNumBombardUnits = 2 * iTotalBombard / iBombardValue;
+					int iAIDesiredBombardFraction = std::max( 5, GC.getDefineINT("BBAI_BOMBARD_ATTACK_STACK_FRACTION")); /*default: 10*/
+					int iActualBombardFraction = (100 * 4 * iTotalBombard)/(iBombardValue * std::max(1, iNumOffensiveUnits));
+					iActualBombardFraction = std::min(100, iActualBombardFraction);
+
+
+					int iTempBombardValue = 0;
+					if (iTotalBombard < 200) //still less than 200 bombard points
+					{
+						iTempBombardValue = (iBombardValue * (300 - iTotalBombard));
+						iTempBombardValue /= 100;
+						//iTempBombardValue is at most (3 * iBombardValue)
+					}
+					if (iActualBombardFraction < iAIDesiredBombardFraction)
+				{
+						iBombardValue *= (iAIDesiredBombardFraction + 4 * (iAIDesiredBombardFraction - iActualBombardFraction));
+						iBombardValue /= iAIDesiredBombardFraction;
+						//new iBombardValue is at most (5 * old iBombardValue)
 				}
 				else
 				{
-					iBombardValue *= iGoalTotalBombardRate;
-					iBombardValue /= std::min(4*iGoalTotalBombardRate, 2*iTotalBombardRate - iGoalTotalBombardRate);
+						iBombardValue *= iAIDesiredBombardFraction;
+						iBombardValue /= std::max(1, iActualBombardFraction);
+					}
+
+					if (iTempBombardValue > iBombardValue)
+					{
+						iBombardValue = iTempBombardValue;
 				}
 
 				iValue += iBombardValue;
 			}
 		}
+/*
+		}
+*/
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/

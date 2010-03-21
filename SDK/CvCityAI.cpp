@@ -3409,7 +3409,7 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 /************************************************************************************************/
 
 /********************************************************************************/
-/* 	Alternative Building Evaluation				20/02/10		Fuyu		    */
+/* 	Alternative Building Evaluation				20.02.2010		Fuyu		    */
 /* 	 - requires Actual Building Effects (BULL)								    */
 /* 																			    */
 /* 	TODO:																		*/
@@ -3420,13 +3420,12 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 /********************************************************************************/
 	//Don't consider a building if it causes the city to immediately start shrinking from unhealthiness
 //For that purpose ignore bad health and unhappiness from Espionage.
-	int iGood = 0; int iBad = 0; int iAngryPop = 0;
-	int iBuildingActualHappiness = getAdditionalHappinessByBuilding(eBuilding,iGood,iBad,iAngryPop);
-	iGood = 0; iBad = 0; int iSpoiledFood = 0;
-	int iBuildingActualHealth = getAdditionalHealthByBuilding(eBuilding,iGood,iBad,iSpoiledFood);
+	int iBuildingActualHappiness = getAdditionalHappinessByBuilding(eBuilding);
+	int iBuildingActualHealth = getAdditionalHealthByBuilding(eBuilding);
 	int iBaseHappinessLevel = happyLevel() - unhappyLevel() + getEspionageHappinessCounter();
 	int iBaseHealthLevel = goodHealth() - badHealth() + getEspionageHealthCounter();
 	int iBaseFoodDifference = getYieldRate(YIELD_FOOD) - getPopulation()*GC.getFOOD_CONSUMPTION_PER_POPULATION() - std::max(0,-iBaseHealthLevel);
+	int iTempHappinessLevel,iTempHealthLevel;
 	int iBadHealthFromBuilding = std::max(0,(-iBuildingActualHealth));
 	int iUnhealthyPopulationFromBuilding = std::min(0,(-iBaseHealthLevel)) + iBadHealthFromBuilding;
 //	int iTotalHealth = iBaseHealthLevel + iBuildingActualHealth;
@@ -3577,6 +3576,11 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 /*                                                                                              */
 /* City AI                                                                                      */
 /************************************************************************************************/
+
+/********************************************************************************/
+/* 	Alternative Building Evaluation				09.03.2010		Fuyu		    */
+/********************************************************************************/
+/* original Better AI code
 				if( iBuildingActualHappiness < 0 )
 				{
 					// Building causes net decrease in city happiness
@@ -3592,6 +3596,75 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 					iValue += (std::min(iBuildingActualHappiness, iAngryPopulation) * 10) 
 						+ (std::max(0, iBuildingActualHappiness - iAngryPopulation) * iHappyModifier);
 				}
+*/
+
+				//Fuyu ToDo: How to handle Globe Theater national wonder?
+				//For now just give massive boost if city is high food yet not one of the main production or commerce cities
+				if (kBuilding.isNoUnhappiness() && bIsLimitedWonder)
+				{
+					iValue += (iAngryPopulation * 10) + getPopulation();
+					aiYieldRank[YIELD_FOOD] = findBaseYieldRateRank(YIELD_FOOD);
+					aiYieldRank[YIELD_COMMERCE] = findBaseYieldRateRank(YIELD_COMMERCE);
+					if (aiYieldRank[YIELD_FOOD] <= (2 + iLimitedWonderLimit))
+					{
+						if (!(isNationalWonderClass(eBuildingClass)) ||
+							((aiYieldRank[YIELD_PRODUCTION] > (2 + iLimitedWonderLimit)) 
+                            && (aiYieldRank[YIELD_COMMERCE] > (2 + iLimitedWonderLimit))))
+						{
+							iValue += getPopulation() * 5;
+						}
+					}
+				}
+				else
+				{
+					iTempHealthLevel = iBaseHealthLevel - (getEspionageHealthCounter() / 2) + std::max(0, iBuildingActualHealth);
+					iTempHappinessLevel = iBaseHappinessLevel - (getEspionageHappinessCounter() / 2);
+					int iTempCurrentHappinessLevel = iBaseHappinessLevel;
+					int iTempHappyChangeValue = 0;
+					bool bIsNegative = false;
+					if (iBuildingActualHappiness < 0)
+					{
+						bIsNegative = true;
+						iBuildingActualHappiness = -iBuildingActualHappiness;
+					}
+					if (iBuildingActualHappiness != 0)
+					{
+						for (iI = 0; iI < iBuildingActualHappiness; iI++)
+						{
+							if (bIsNegative) { iTempHappinessLevel--; iTempCurrentHappinessLevel--; }
+							
+							//The Value of Happiness
+							if (iTempHappinessLevel < 0)
+							{
+								iTempHappyChangeValue += 10;
+								if (bIsNegative) {
+									iTempHappyChangeValue += 10;
+									if (iTempCurrentHappinessLevel < 0)
+									{
+										iTempHappyChangeValue += 10;
+									}								
+								} 
+							}
+							else if (iTempHappinessLevel <= iTempHealthLevel && iTempHappinessLevel <= 6) { iTempHappyChangeValue += 6; }
+							else if (iTempHappinessLevel < 10 ) { iTempHappyChangeValue += 3; }
+							else { iTempHappyChangeValue += 1; }
+							
+							if (!bIsNegative) { iTempHappinessLevel++; iTempCurrentHappinessLevel++; }
+						}
+						
+						if (bIsNegative)
+						{
+							iValue -= iTempHappyChangeValue;
+						}
+						else 
+						{
+							iValue += iTempHappyChangeValue;
+						}
+					}
+				}
+/********************************************************************************/
+/* 	ABE END																	    */
+/********************************************************************************/
 
 				iValue += (-kBuilding.getHurryAngerModifier() * getHurryPercentAnger()) / 100;
 
@@ -3646,6 +3719,11 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 /*                                                                                              */
 /* City AI                                                                                      */
 /************************************************************************************************/
+
+/********************************************************************************/
+/* 	Alternative Building Evaluation				09.03.2010		Fuyu		    */
+/********************************************************************************/
+/* original Better AI code
 				if( iBuildingActualHealth < 0 )
 				{
 					// Building causes net decrease in city health
@@ -3661,6 +3739,54 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 					iValue += (std::min(iBuildingActualHealth, iBadHealth) * 10)
 						+ (std::max(0, iBuildingActualHealth - iBadHealth) * iHealthModifier);
 				}
+*/
+
+				iTempHappinessLevel = iBaseHappinessLevel - (getEspionageHappinessCounter() / 2) + std::max(0, iBuildingActualHappiness);
+				iTempHealthLevel = (goodHealth() - badHealth(/*bNoAngry*/ false, std::max(0, (iTempHappinessLevel + 1) / 2))) + ((getEspionageHealthCounter() + 1) / 2 ); 
+				int iTempCurrentHealthLevel = iBaseHealthLevel;
+				int iTempHealthChangeValue = 0;
+				bool bIsNegative = false;
+				if (iBuildingActualHealth < 0)
+				{
+					bIsNegative = true;
+					iBuildingActualHealth = -iBuildingActualHealth;
+				}
+				if (iBuildingActualHealth != 0)
+				{
+					for (iI = 0; iI < iBuildingActualHealth; iI++)
+					{
+						if (bIsNegative) { iTempHealthLevel--; iTempCurrentHealthLevel--; }
+					
+						//Health Values
+						if (iTempCurrentHealthLevel < 0) {
+							iTempHealthChangeValue += 10;
+							if (bIsNegative) {
+								iTempHealthChangeValue += 10;
+								if(std::max(0,iBaseFoodDifference-1) < -iTempCurrentHealthLevel)
+								{
+									iTempHealthChangeValue += 10;
+								}									
+							}
+						}
+						else if (iTempHealthLevel < 0) { iTempHealthChangeValue += 8; }
+						else if (iTempHealthLevel < iTempHappinessLevel && iTempHealthLevel <= 4) { iTempHealthChangeValue += 4; }
+						else if (iTempHealthLevel < 8 ) { iTempHealthChangeValue += 2; }
+						else { iTempHealthChangeValue += 1; }
+					
+						if (!bIsNegative) { iTempHealthLevel++; iTempCurrentHealthLevel++; }
+					}
+					if (bIsNegative)
+					{
+						iValue -= iTempHealthChangeValue;
+					}
+					else
+					{
+						iValue += iTempHealthChangeValue;
+					}
+				}
+/********************************************************************************/
+/* 	ABE END																	    */
+/********************************************************************************/
 
 				iValue += (kBuilding.getAreaHealth() * (iNumCitiesInArea - 1 ) * 4);
 				iValue += (kBuilding.getGlobalHealth() * (iNumCities - 1) * 4);
@@ -3859,11 +3985,12 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 						{
 							if( pLoopCity->isDirtyPower() )
 							{
-								iValue += 12;
+								//Fuyu: less value for cities that don't already have power
+								iValue += 8;
 							}
 							else if( !(pLoopCity->isPower()) )
 							{
-								iValue += 8;
+								iValue += 12;
 							}
 						}
 					}
@@ -7283,8 +7410,18 @@ void CvCityAI::AI_updateBestBuild()
     
     if (getProductionBuilding() != NO_BUILDING)
     {
+/********************************************************************************/
+/*	Better Evaluation							09.03.2010		Fuyu		    */
+/********************************************************************************/
+/* original code
     	iHappyAdjust += getBuildingHappiness(getProductionBuilding());
     	iHealthAdjust += getBuildingHealth(getProductionBuilding());    	
+*/
+    	iHappyAdjust += getAdditionalHappinessByBuilding(getProductionBuilding());
+    	iHealthAdjust += getAdditionalHealthByBuilding(getProductionBuilding());
+/********************************************************************************/
+/*	BE	END																		*/
+/********************************************************************************/
     }
 
 	for (iI = 0; iI < NUM_CITY_PLOTS; iI++)
@@ -10054,6 +10191,25 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 					eFinalImprovement = eImprovement;
 				}
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD																			*/
+/*																								*/
+/* City AI, FinalImprovement part moved here from inside yield loop (Fuyu)						*/
+/************************************************************************************************/
+				ImprovementTypes eCurImprovement = pPlot->getImprovementType();
+				ImprovementTypes eCurFinalImprovement = NO_IMPROVEMENT;
+				if( eCurImprovement != NO_IMPROVEMENT )
+				{
+					eCurFinalImprovement = finalImprovementUpgrade(eCurImprovement);
+					if (eCurFinalImprovement == NO_IMPROVEMENT)
+					{
+						eCurFinalImprovement = eCurImprovement;
+					}
+				}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+
 				iValue = 0;
 				
 				if (eBonus != NO_BONUS)
@@ -10129,17 +10285,28 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 
 						int iCurYield = 2*(pPlot->calculateNatureYield(((YieldTypes)iJ), getTeam(), false));
 
+/********************************************************************************/
+/*	Better Evaluation							19.03.2010		Fuyu		    */
+/********************************************************************************/
+/* Fuyu: moved FinalImprovement code up to before the loop
 						ImprovementTypes eCurImprovement = pPlot->getImprovementType();
+*/
 						if( eCurImprovement != NO_IMPROVEMENT )
 						{
+/* moved
 							ImprovementTypes eCurFinalImprovement = finalImprovementUpgrade(eCurImprovement);
 							if (eCurFinalImprovement == NO_IMPROVEMENT)
 							{
 								eCurFinalImprovement = eCurImprovement;
 							}
+*/
+
 							iCurYield += (pPlot->calculateImprovementYieldChange(eCurFinalImprovement, ((YieldTypes)iJ), getOwnerINLINE(), false, true));
 							iCurYield += (pPlot->calculateImprovementYieldChange(eCurImprovement, ((YieldTypes)iJ), getOwnerINLINE(), false, true));
 						}
+/********************************************************************************/
+/*	BE	END																		*/
+/********************************************************************************/
 
 						aiDiffYields[iJ] = (aiFinalYields[iJ] - iCurYield);
 /************************************************************************************************/
@@ -10235,7 +10402,10 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 					{
 						iValue += 2000;
 					}
-					
+/********************************************************************************/
+/*	Better Evaluation							19.03.2010		Fuyu		    */
+/********************************************************************************/
+/* original code
 					int iHappiness = GC.getImprovementInfo(eFinalImprovement).getHappiness();
 					if ((iHappiness != 0) && !(GET_PLAYER(getOwnerINLINE()).getAdvancedStartPoints() >= 0))
 					{
@@ -10269,6 +10439,71 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 						iHappyValue += std::max(0, (pPlot->getCityRadiusCount() - 1)) * ((iHappyValue > 0) ? iHappyLevel / 2 : 200);
 						iValue += iHappyValue * iHappiness;
 					}
+*/
+					//int iNewHappiness = GC.getImprovementInfo(eFinalImprovement).getHappiness();
+					//int iCurHappiness = GC.getImprovementInfo(eCurFinalImprovement).getHappiness();
+					//int iHappinessDiff = iNewHappiness - iCurHappiness;
+
+					int iHappinessDiff = GC.getImprovementInfo(eFinalImprovement).getHappiness() - ((eCurFinalImprovement != NO_IMPROVEMENT)? GC.getImprovementInfo(eCurFinalImprovement).getHappiness() : 0);
+					if ((iHappinessDiff != 0) && !(GET_PLAYER(getOwnerINLINE()).getAdvancedStartPoints() >= 0))
+					{
+						bool bIsNegative = false;
+						if (iHappinessDiff < 0)
+						{
+							bIsNegative = true;
+							iHappinessDiff = -iHappinessDiff;
+						}
+
+						int iHappyLevel = iHappyAdjust + (happyLevel() - unhappyLevel(0)) + getEspionageHappinessCounter();
+						int iHealthLevel = std::max(0, iHealthAdjust) + (goodHealth() - badHealth(false, 0)) + getEspionageHealthCounter();
+					
+						for (iJ = 0; iJ < iHappinessDiff; iJ++)
+						{
+							int iHappyValue = 0;
+
+							if (bIsNegative)
+							{
+								iHappyLevel--;
+							}
+
+							if (iHappyLevel <= 0)
+							{
+								iHappyValue += 400;
+							}
+							bool bCanGrow = true;// (getYieldRate(YIELD_FOOD) > foodConsumption());
+						
+							if (iHappyLevel <= iHealthLevel)
+							{
+								iHappyValue += 200 * std::max(0, (bCanGrow ? std::min(6, 2 + iHealthLevel - iHappyLevel) : 0) - iHappyLevel);
+							}
+							else
+							{
+								iHappyValue += 200 * std::max(0, (bCanGrow ? 1 : 0) - iHappyLevel);
+							}
+							if (!pPlot->isBeingWorked())
+							{
+								iHappyValue *= 4;
+								iHappyValue /= 3;
+							}
+
+							//iHappyValue += std::max(0, (pPlot->getCityRadiusCount() - 1)) * ((iHappyValue > 0) ? iHappyLevel / 2 : 200);
+							iHappyValue += (pPlot->getPlayerCityRadiusCount(getOwnerINLINE()) - 1) * ((iHappyValue > 0) ? 200 : 50);
+
+
+							if (!bIsNegative)
+							{
+								iHappyLevel++;
+								iValue += iHappyValue;
+							}
+							else
+							{
+								iValue -= iHappyValue;
+							}
+						}
+					}
+/********************************************************************************/
+/*	BE	END																		*/
+/********************************************************************************/
 
 					if (!isHuman())
 					{
@@ -10306,7 +10541,17 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 						while (eImprovementDowngrade != NO_IMPROVEMENT)
 						{
 							CvImprovementInfo& kImprovementDowngrade = GC.getImprovementInfo(eImprovementDowngrade);
+/********************************************************************************/
+/*	Better Evaluation							19.03.2010		Fuyu		    */
+/********************************************************************************/
+//An attempt to make replacing hamlet+ less interesting
+/* original code
 							iValue -= kImprovementDowngrade.getUpgradeTime() * 8;
+*/
+							iValue -= kImprovementDowngrade.getUpgradeTime() * ((pPlot->isBeingWorked())? 20 : 10);
+/********************************************************************************/
+/*	BE	END																		*/
+/********************************************************************************/
 							eImprovementDowngrade = (ImprovementTypes)kImprovementDowngrade.getImprovementPillage();
 						}
 
@@ -10659,7 +10904,7 @@ int CvCityAI::AI_calculateCulturePressure(bool bGreatWork)
                         iTempValue += (GET_PLAYER(getOwnerINLINE()).AI_bonusVal(eNonObsoleteBonus) * ((GET_PLAYER(getOwnerINLINE()).getNumTradeableBonuses(eNonObsoleteBonus) == 0) ? 4 : 2));
                     }
 
-                    if ((iTempValue > 80) && (pLoopPlot->getOwnerINLINE() == getID()))
+                    if ((iTempValue > 80) && (pLoopPlot->getOwnerINLINE() == getOwnerINLINE())) //UP
                     {
                         //captured territory special case
                         iTempValue *= (100 - iTempValue);
@@ -11458,7 +11703,7 @@ int CvCityAI::AI_countNumImprovableBonuses( bool bIncludeNeutral, TechTypes eExt
 int CvCityAI::AI_playerCloseness(PlayerTypes eIndex, int iMaxDistance)
 {
 	FAssert(GET_PLAYER(eIndex).isAlive());
-	FAssert(eIndex != getID());
+	FAssert(eIndex != getOwnerINLINE()); //UP
 	
 	if ((m_iCachePlayerClosenessTurn != GC.getGame().getGameTurn())
 		|| (m_iCachePlayerClosenessDistance != iMaxDistance))
