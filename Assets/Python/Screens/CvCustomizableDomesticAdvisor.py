@@ -112,7 +112,7 @@ gc = CyGlobalContext()
 ArtFileMgr = CyArtFileMgr()
 localText = CyTranslator()
 
-# hack to force repositioning if resolution (or language) changes
+# Reposition if resolution (or language) changes
 g_bMustCreatePositions = True
 def forcePositionCalc (*args):
 	global g_bMustCreatePositions
@@ -123,15 +123,15 @@ g_advisor = None
 def isCustomizing():
 	return g_advisor.customizing
 
-def getEditWidgetText(eWidgetType, iData1, iData2, bOption):
+# widget help text
+def getEditHelpText(eWidgetType, iData1, iData2, bOption):
 	if isCustomizing():
 		return BugUtil.getPlainText("TXT_KEY_CDA_STOP_EDITING")
 	else:
 		return BugUtil.getPlainText("TXT_KEY_CDA_START_EDITING")
 
+
 # Class CvDomesticAdvisor
-# Class
-# Class
 
 class CvCustomizableDomesticAdvisor:
 	"""Special Domestic Advisor Screen"""
@@ -222,6 +222,7 @@ class CvCustomizableDomesticAdvisor:
 				("BASE_COMMERCE",			38,		"int",	None,					CyCity.getBaseYieldRate, YieldTypes.YIELD_COMMERCE,			None,									None,						"u\"B\" + self.commerceIcon"),
 				("BASE_FOOD",				38,		"int",	None,					CyCity.getBaseYieldRate, YieldTypes.YIELD_FOOD,				None,									None,						"u\"B\" + self.foodIcon"),
 				("BASE_PRODUCTION",			38,		"int",	None,					CyCity.getBaseYieldRate, YieldTypes.YIELD_PRODUCTION,		None,									None,						"u\"B\" + self.hammerIcon"),
+				("CONSCRIPT_ANGER",			38,		"int",	None,					None,					0,									self.calculateConscriptAnger,			None,						"u\"D\" + self.unhappyIcon"),
 				("CONSCRIPT_UNIT",			90,		"text",	None,					None,					0,									self.calculateConscriptUnit,			None,						"localText.getText(\"TXT_KEY_CONCEPT_DRAFT\", ()).upper()"),
 				("COULD_CONSCRIPT_UNIT",	90,		"text",	None,					None,					0,									self.calculatePotentialConscriptUnit,	None,						"localText.getText(\"TXT_KEY_CONCEPT_DRAFT\", ()).upper() + u\"#\""),
 				("CORPORATIONS",			90,		"text",	None,					None,					0,									self.calculateCorporations,				None,						"localText.getText(\"TXT_KEY_CONCEPT_CORPORATIONS\", ()).upper()"),
@@ -1482,7 +1483,7 @@ class CvCustomizableDomesticAdvisor:
 	def calculateWhipAnger (self, city, szKey, arg):
 		
 		iAnger = city.getHurryAngerTimer()
-		if (city.canHurry(self.HURRY_TYPE_POP, False) or iAnger > 0):
+		if (iAnger > 0 or city.canHurry(self.HURRY_TYPE_POP, False)):
 			return iAnger
 		else:
 			return self.objectNotPossible
@@ -1491,6 +1492,14 @@ class CvCustomizableDomesticAdvisor:
 		
 		if (city.canHurry(self.HURRY_TYPE_GOLD, False)):
 			return unicode(city.hurryGold(self.HURRY_TYPE_GOLD))
+		else:
+			return self.objectNotPossible
+
+	def calculateConscriptAnger (self, city, szKey, arg):
+		
+		iAnger = city.getConscriptAngerTimer()
+		if (iAnger > 0 or city.canConscript()):
+			return iAnger
 		else:
 			return self.objectNotPossible
 

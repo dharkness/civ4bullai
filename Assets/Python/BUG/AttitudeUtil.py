@@ -360,7 +360,7 @@ def isWorstEnemy(playerOrID, enemyOrID):
 	"""
 	player, team = PlayerUtil.getPlayerAndTeam(playerOrID)
 	enemy, enemyTeam = PlayerUtil.getPlayerAndTeam(enemyOrID)
-	return not team.isHuman() and team.getID() != enemyTeam.getID() and getWorstEnemyTeam(player) == enemy.getID()
+	return not player.isHuman() and team.getID() != enemyTeam.getID() and getWorstEnemyTeam(player) == enemyTeam.getID()
 
 def getWorstEnemies(playerOrID):
 	"""
@@ -380,7 +380,7 @@ def getWorstEnemyTeam(playerOrID):
 	If <player>'s team has no worst enemy, returns -1.
 	"""
 	player, team = PlayerUtil.getPlayerAndTeam(playerOrID)
-	if not team.isHuman():
+	if not player.isHuman():
 		worstEnemyName = player.getWorstEnemyName()
 		if worstEnemyName:
 			for team in PlayerUtil.teams(alive=True, barbarian=False):
@@ -395,6 +395,8 @@ def getWorstEnemyTeams():
 	The key is team ID; the value is the worst enemy team ID.
 	If a team has no worst enemy, -1 is stored as its value.
 	Ignores dead, human, barbarian, and minor teams.
+	
+	Loops over players because CyTeam does not have getWorstEnemyName().
 	"""
 	namesToID = {}
 	for team in PlayerUtil.teams():
@@ -403,8 +405,7 @@ def getWorstEnemyTeams():
 	for player in PlayerUtil.players(True, False, False, False):
 		eTeam = player.getTeam()
 		if eTeam not in enemies:
-			team = gc.getTeam(eTeam)
-			if team.isHuman():
+			if not player.isHuman():
 				worstEnemyName = player.getWorstEnemyName()
 			else:
 				worstEnemyName = None

@@ -66,6 +66,7 @@
 ##
 ## Author: EmperorFool
 
+from CvPythonExtensions import *
 import os
 import os.path
 import sys
@@ -313,8 +314,7 @@ def init():
 	BugUtil.debug("BugPath - initializing...")
 	initAppFolder()
 	initModName()
-# EF: delay until later since Mac crashes otherwise
-#	initModFolder()
+	initModFolder()
 	initNoCustomAssetsSetting()
 	initRootFolder()
 	initDataFolder()
@@ -389,10 +389,12 @@ def initModFolder():
 	global _modFolderInitDone
 	if _modFolderInitDone:
 		return
+	if not CyGame().isFinalInitialized():
+		BugUtil.debug("BugInit - game not fully initialized")
+		return
 	BugUtil.debug("BugPath - initializing mod folder")
 	global _modDir, _modFolder
 	try:
-		from CvPythonExtensions import CyReplayInfo
 		replay = CyReplayInfo()
 		replay.createInfo(0)
 		modDir = replay.getModName().replace('\\', r'/')

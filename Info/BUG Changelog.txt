@@ -39,6 +39,8 @@ Improvements:
 
 - Production Queue
 	Items that have hammers invested already are drawn in cyan (projects only work with BULL)
+- Customizable Domestic Advisor
+	Added Draft Anger column
 - Great Person Tech Prefs
 	Added headings and limited Current and Future techs to those that can be researched
 - Unit Naming
@@ -47,6 +49,7 @@ Improvements:
 	Added option to hide the button and moved it slightly left
 - Translations
 	Added several improved Spanish translations by Gerard
+- BUG Unit Plot Lists ... uses the BUG team developed 'draw' code - newly developed so it might be a little unstable but does promise greatly enhanced performance (ie speed) when dealing with large stacks
 
 Bug Fixes:
 
@@ -54,6 +57,11 @@ Bug Fixes:
 	Fixed culture-level checking in Partisans random event; event is now possible on 3.19 and above
 - Unit Naming
 	Civilization name code uses adjective as described in hover help as opposed to noun form (English vs. England)
+- Worst Enemy
+	Fixed check in games with multiple players on a team
+	Alert ignores human teams instead of AIs
+- Multiplayer
+	Fixed city-related alerts for Hot Seat games
 
 
 MODDING
@@ -71,6 +79,9 @@ New Features:
 
 Improvements:
 
+- Simplified Initialization
+	BugInit.init() alone guards against being called twice
+	CyGame.isFinalInitialized() used to check if Civ4 is ready
 - Removed EntryPoints Modules
 	CvAppInterface, CvDiplomacyInterface, CvOptionsScreenCallbackInterface, and CvRandomEventInterface
 	If your mod needs to add code to any of these modules, use <export> and <extend> or use the original BTS modules as a base
@@ -81,6 +92,8 @@ Bug Fixes:
 	Removed unused EspionageEventManager
 - AttitudeUtil
 	Limits Worst Enemy checks to teams that are alive
+- BugUtil Logging
+	Unicode encoding errors are caught and ignored in log()
 
 
 ____________________________________________________________________________________________________

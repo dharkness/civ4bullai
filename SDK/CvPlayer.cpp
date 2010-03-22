@@ -49,6 +49,10 @@
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
+// BUG - Ignore Harmless Barbarians - start
+#include "CvBugOptions.h"
+// BUG - Ignore Harmless Barbarians - end
+
 
 // Public Functions...
 
@@ -16848,6 +16852,10 @@ void CvPlayer::doWarnings()
 		gDLL->getEntityIFace()->updateEnemyGlow(pLoopUnit->getUnitEntity());
 	}
 
+// BUG - Ignore Harmless Barbarians - start
+	bool bCheckBarbarians = isHuman() && getBugOptionBOOL("Actions__IgnoreHarmlessBarbarians", true, "BUG_IGNORE_HARMLESS_BARBARIANS");
+// BUG - Ignore Harmless Barbarians - end
+
 	//update enemy units close to your territory
 	iMaxCount = range(((getNumCities() + 4) / 7), 2, 5);
 	for (iI = 0; iI < GC.getMapINLINE().numPlotsINLINE(); iI++)
@@ -16870,6 +16878,18 @@ void CvPlayer::doWarnings()
 					{
 						if (!pUnit->isAnimal())
 						{
+// BUG - Ignore Harmless Barbarians - start
+							if (bCheckBarbarians && pUnit->isBarbarian() && pUnit->getDomainType() == DOMAIN_LAND)
+							{
+								CvArea* pArea = pUnit->area();
+								if (pArea && pArea->isBorderObstacle(getTeam()))
+								{
+									// don't show warning for land-based barbarians when player has Great Wall
+									continue;
+								}
+							}
+// BUG - Ignore Harmless Barbarians - end
+
 							pNearestCity = GC.getMapINLINE().findCity(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), getID(), NO_TEAM, !(pLoopPlot->isWater()));
 
 							if (pNearestCity != NULL)
