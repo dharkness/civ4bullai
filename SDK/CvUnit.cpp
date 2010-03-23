@@ -13263,7 +13263,11 @@ int CvUnit::LFBgetAttackerRank(const CvUnit* pDefender, int& iUnadjustedRank) co
 {
 	if (pDefender)
 	{
-		iUnadjustedRank = 1000 - pDefender->LFBgetDefenderOdds(this);
+		int iDefOdds = pDefender->LFBgetDefenderOdds(this);
+		iUnadjustedRank = 1000 - iDefOdds;
+		// If attacker has a chance to withdraw, factor that in as well
+		if (withdrawalProbability() > 0)
+			iUnadjustedRank += ((iDefOdds * withdrawalProbability()) / 100);
 	} else {
 		// No defender ... just use strength, but try to make it a number out of 1000
 		iUnadjustedRank = currCombatStr(NULL, NULL) / 5;
@@ -13277,7 +13281,9 @@ int CvUnit::LFBgetAttackerRank(const CvUnit* pDefender, int& iUnadjustedRank) co
 int CvUnit::LFBgetDefenderRank(const CvUnit* pAttacker) const
 {
 	int iRank = LFBgetDefenderOdds(pAttacker);
-	iRank = LFBgetValueAdjustedOdds(iRank);
+	// Don't adjust odds for value if attacker is limited in their damage (i.e: no risk of death)
+	if ((pAttacker != NULL) && (maxHitPoints() == pAttacker->combatLimit()))
+		iRank = LFBgetValueAdjustedOdds(iRank);
 
 	return iRank;
 }
@@ -13349,10 +13355,17 @@ int CvUnit::LFBgetValueAdjustedOdds(int iOdds) const
 {
 	// Adjust odds based on value
 	int iValue = LFBgetRelativeValueRating();
-	int iAdjustment = -250;
+	long iAdjustment = -250;
 	if (GC.getLFBUseSlidingScale())
 		iAdjustment = (iOdds - 990);
-	int iRank = iOdds + 1000 + ((iAdjustment * iValue) / GC.getLFBBasedOnAverage());
+	// Value Adjustment = (odds-990)*(value*num/denom)^2
+	long iValueAdj = (long)(iValue * GC.getLFBAdjustNumerator());
+	iValueAdj *= iValueAdj;
+	iValueAdj *= iAdjustment;
+	iValueAdj /= (long)(GC.getLFBAdjustDenominator() * GC.getLFBAdjustDenominator());
+	int iRank = iOdds + iValueAdj + 10000;
+	// Note that the +10000 is just to try keeping it > 0 - doesn't really matter, other than that -1
+	// would be interpreted later as not computed yet, which would cause us to compute it again each time
 
 	return iRank;
 }

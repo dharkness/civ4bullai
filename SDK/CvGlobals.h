@@ -1272,6 +1272,8 @@ public:
 	int getLFBBasedOnHealer();
 	int getLFBBasedOnAverage();
 	bool getLFBUseSlidingScale();
+	int getLFBAdjustNumerator();
+	int getLFBAdjustDenominator();
 	bool getLFBUseCombatOdds();
 	int getCOMBAT_DIE_SIDES();
 	int getCOMBAT_DAMAGE();
@@ -1284,6 +1286,8 @@ protected:
 	int m_iLFBBasedOnHealer;
 	int m_iLFBBasedOnAverage;
 	bool m_bLFBUseSlidingScale;
+	int	m_iLFBAdjustNumerator;
+	int	m_iLFBAdjustDenominator;
 	bool m_bLFBUseCombatOdds;
 	int m_iCOMBAT_DIE_SIDES;
 	int m_iCOMBAT_DAMAGE;
