@@ -260,6 +260,8 @@ m_paMainMenus(NULL)
 ,m_iLFBBasedOnHealer(1)
 ,m_iLFBBasedOnAverage(1)
 ,m_bLFBUseSlidingScale(true)
+,m_iLFBAdjustNumerator(1)
+,m_iLFBAdjustDenominator(3)
 ,m_bLFBUseCombatOdds(true)
 ,m_iCOMBAT_DIE_SIDES(-1)
 ,m_iCOMBAT_DAMAGE(-1)
@@ -2745,6 +2747,8 @@ void CvGlobals::cacheGlobals()
 	m_iLFBBasedOnHealer = getDefineINT("LFB_BASEDONHEALER");
 	m_iLFBBasedOnAverage = std::max(1, (m_iLFBBasedOnGeneral+m_iLFBBasedOnLimited+m_iLFBBasedOnHealer+(5*m_iLFBBasedOnExperience)+3)/4);
 	m_bLFBUseSlidingScale = !(getDefineINT("LFB_USESLIDINGSCALE") == 0);
+	m_iLFBAdjustNumerator = getDefineINT("LFB_ADJUSTNUMERATOR");
+	m_iLFBAdjustDenominator = getDefineINT("LFB_ADJUSTDENOMINATOR");
 	m_bLFBUseCombatOdds = !(getDefineINT("LFB_USECOMBATODDS") == 0);
 	m_iCOMBAT_DIE_SIDES = getDefineINT("COMBAT_DIE_SIDES");
 	m_iCOMBAT_DAMAGE = getDefineINT("COMBAT_DAMAGE");
@@ -3840,6 +3844,15 @@ int CvGlobals::getLFBBasedOnAverage()
 bool CvGlobals::getLFBUseSlidingScale()
 {
 	return m_bLFBUseSlidingScale;
+}
+int CvGlobals::getLFBAdjustNumerator()
+{
+	return m_iLFBAdjustNumerator;
+}
+
+int CvGlobals::getLFBAdjustDenominator()
+{
+	return m_iLFBAdjustDenominator;
 }
 
 bool CvGlobals::getLFBUseCombatOdds()

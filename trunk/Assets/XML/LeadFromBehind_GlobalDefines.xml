@@ -15,7 +15,7 @@
 	</Define>
 	<Define>
 		<DefineName>LFB_BASEDONLIMITED</DefineName>
-		<iDefineIntVal>2</iDefineIntVal>
+		<iDefineIntVal>3</iDefineIntVal>
 	</Define>
 	<Define>
 		<DefineName>LFB_BASEDONHEALER</DefineName>
@@ -24,6 +24,14 @@
 	<Define>
 		<DefineName>LFB_USESLIDINGSCALE</DefineName>
 		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+	<Define>
+		<DefineName>LFB_ADJUSTNUMERATOR</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+	<Define>
+		<DefineName>LFB_ADJUSTDENOMINATOR</DefineName>
+		<iDefineIntVal>3</iDefineIntVal>
 	</Define>
 	<Define>
 		<DefineName>LFB_USECOMBATODDS</DefineName>

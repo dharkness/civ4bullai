@@ -45,6 +45,8 @@ Improvements:
 	Added headings and limited Current and Future techs to those that can be researched
 - Unit Naming
 	Can use multiple counters for a single naming code
+- Civ4lerts
+	Worst Enemy alerts show the old enemy along with the new one
 - BUG Button
 	Added option to hide the button and moved it slightly left
 - Translations
@@ -60,8 +62,8 @@ Bug Fixes:
 - Worst Enemy
 	Fixed check in games with multiple players on a team
 	Alert ignores human teams instead of AIs
-- Multiplayer
-	Fixed city-related alerts for Hot Seat games
+- Hot Seat
+	City-related, Worst Enemy, and Refuses to Talk alerts work for each player
 
 
 MODDING
@@ -85,6 +87,8 @@ Improvements:
 - Removed EntryPoints Modules
 	CvAppInterface, CvDiplomacyInterface, CvOptionsScreenCallbackInterface, and CvRandomEventInterface
 	If your mod needs to add code to any of these modules, use <export> and <extend> or use the original BTS modules as a base
+- PlayerUtil
+	players() and teams() now accept active parameter that restrict to players/teams that can become active
 
 Bug Fixes:
 
