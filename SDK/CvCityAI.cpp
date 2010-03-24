@@ -4325,6 +4325,13 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 					}
 					iTempValue += (kBuilding.getGlobalSeaPlotYieldChange(iI) * kOwner.countNumCoastalCities() * 8);
 					iTempValue += (kBuilding.getYieldChange(iI) * 6);
+/********************************************************************************/
+/* 	Alternative Building Evaluation				24.03.2010		Fuyu		    */
+/********************************************************************************/
+					iTempValue += (getBuildingYieldChange(eBuildingClass, (YieldTypes)iI) * 5);
+/********************************************************************************/
+/* ABE END																	    */
+/********************************************************************************/
 					iTempValue += ((kBuilding.getYieldModifier(iI) * getBaseYieldRate((YieldTypes)iI)) / 10);
 /********************************************************************************/
 /* 	Alternative Building Evaluation				18/01/10		Fuyu		    */
@@ -4505,6 +4512,13 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 
 					iTempValue += (kBuilding.getCommerceChange(iI) * 4);
 					iTempValue += (kBuilding.getObsoleteSafeCommerceChange(iI) * 4);
+/********************************************************************************/
+/* 	Alternative Building Evaluation				24.03.2010		Fuyu		    */
+/********************************************************************************/
+					iTempValue += (getBuildingCommerceChange(eBuildingClass, (CommerceTypes)iI) * 4);
+/********************************************************************************/
+/* ABE END																	    */
+/********************************************************************************/
 					iTempValue *= 100 + kBuilding.getCommerceModifier(iI);
 					iTempValue /= 100;
 					
@@ -4767,6 +4781,13 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 					
 					iValue += (kBuilding.getCommerceChange(COMMERCE_GOLD) * 4);
 					iValue += (kBuilding.getObsoleteSafeCommerceChange(COMMERCE_GOLD) * 4);
+/********************************************************************************/
+/* 	Alternative Building Evaluation				24.03.2010		Fuyu		    */
+/********************************************************************************/
+					iValue += (getBuildingCommerceChange(eBuildingClass, COMMERCE_GOLD) * 3);
+/********************************************************************************/
+/* ABE END																	    */
+/********************************************************************************/
 				}
 
 				if (iFocusFlags & BUILDINGFOCUS_RESEARCH)
@@ -4791,16 +4812,37 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 					}
 					iValue += (kBuilding.getCommerceChange(COMMERCE_RESEARCH) * 4);
 					iValue += (kBuilding.getObsoleteSafeCommerceChange(COMMERCE_RESEARCH) * 4);
+/********************************************************************************/
+/* 	Alternative Building Evaluation				24.03.2010		Fuyu		    */
+/********************************************************************************/
+					iValue += (getBuildingCommerceChange(eBuildingClass, COMMERCE_RESEARCH) * 3);
+/********************************************************************************/
+/* ABE END																	    */
+/********************************************************************************/
 				}
 
 				if (iFocusFlags & BUILDINGFOCUS_CULTURE)
 				{
 					iTempValue = (kBuilding.getCommerceChange(COMMERCE_CULTURE) * 3);
 					iTempValue += (kBuilding.getObsoleteSafeCommerceChange(COMMERCE_CULTURE) * 3);
+/********************************************************************************/
+/* 	Alternative Building Evaluation				24.03.2010		Fuyu		    */
+/********************************************************************************/
+					iTempValue += (getBuildingCommerceChange(eBuildingClass, COMMERCE_CULTURE) * 2);
+/********************************************************************************/
+/* ABE END																	    */
+/********************************************************************************/
 					if (GC.getGameINLINE().isOption(GAMEOPTION_NO_ESPIONAGE))
 					{
 						iTempValue += (kBuilding.getCommerceChange(COMMERCE_ESPIONAGE) * 3);
 						iTempValue += (kBuilding.getObsoleteSafeCommerceChange(COMMERCE_ESPIONAGE) * 3);
+/********************************************************************************/
+/* 	Alternative Building Evaluation				24.03.2010		Fuyu		    */
+/********************************************************************************/
+						iTempValue += (getBuildingCommerceChange(eBuildingClass, COMMERCE_ESPIONAGE) * 2);
+/********************************************************************************/
+/* ABE END																	    */
+/********************************************************************************/
 					}
 
 					if ((getCommerceRate(COMMERCE_CULTURE) == 0) && (AI_calculateTargetCulturePerTurn() == 1))
@@ -4884,6 +4926,13 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 					}
 					iTempValue = (kBuilding.getCommerceChange(COMMERCE_ESPIONAGE) * 1);
 					iTempValue += (kBuilding.getObsoleteSafeCommerceChange(COMMERCE_ESPIONAGE) * 1);
+/********************************************************************************/
+/* 	Alternative Building Evaluation				24.03.2010		Fuyu		    */
+/********************************************************************************/
+					iTempValue += (getBuildingCommerceChange(eBuildingClass, COMMERCE_ESPIONAGE) * 1);
+/********************************************************************************/
+/* ABE END																	    */
+/********************************************************************************/
 					iTempValue *= 100 + kBuilding.getCommerceModifier(COMMERCE_ESPIONAGE);
 					iValue += iTempValue / 100;
 /************************************************************************************************/
