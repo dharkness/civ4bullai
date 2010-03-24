@@ -15465,6 +15465,8 @@ void CvGameTextMgr::getActiveTeamRelationsString(CvWStringBuffer& szString, Team
 {
 	CvTeamAI& kThisTeam = GET_TEAM(eThisTeam);
 	TeamTypes eActiveTeam = GC.getGameINLINE().getActiveTeam();
+	CvTeamAI& kActiveTeam = GET_TEAM(eActiveTeam);
+
 
 	if (!kThisTeam.isHasMet(eActiveTeam))
 	{
@@ -15492,6 +15494,26 @@ void CvGameTextMgr::getActiveTeamRelationsString(CvWStringBuffer& szString, Team
 	{
 		szString.append(NEWLINE);
 		szString.append(gDLL->getText(L"TXT_KEY_DEFENSIVE_PACT_WITH_YOU"));
+	}
+
+	if (kActiveTeam.AI_getWarPlan(eThisTeam) == WARPLAN_PREPARING_TOTAL)
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText(L"TXT_KEY_WARPLAN_TARGET_OF_YOU"));
+	}
+
+	if (GC.getGameINLINE().isDebugMode())
+	{
+		if (kThisTeam.AI_getWarPlan(eActiveTeam) == WARPLAN_PREPARING_TOTAL)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText(L"TXT_KEY_WARPLAN_TARGET_IS_YOU"));
+		}
+		else if (kThisTeam.AI_getWarPlan(eActiveTeam) == WARPLAN_PREPARING_LIMITED)
+		{
+			szString.append(NEWLINE);
+			szString.append(gDLL->getText(L"TXT_KEY_WARPLAN_LIMITED_TARGET_IS_YOU"));
+		}
 	}
 }
 
@@ -15523,8 +15545,8 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, TeamTypes
 	}
 
 	CvTeamAI& kThisTeam = GET_TEAM(eThisTeam);
-	CvWString szWar, szPeace, szEnemy, szPact;
-	bool bFirstWar = true, bFirstPeace = true, bFirstEnemy = true, bFirstPact = true;
+	CvWString szWar, szPeace, szEnemy, szPact, szWarPlanTotal, szWarPlanLimited;
+	bool bFirstWar = true, bFirstPeace = true, bFirstEnemy = true, bFirstPact = true, bFirstWarPlanTotal = true, bFirstWarPlanLimited = true;
 
 	for (int iTeam = 0; iTeam < MAX_CIV_TEAMS; ++iTeam)
 	{
@@ -15555,6 +15577,22 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, TeamTypes
 					setListHelp(szPact, L"", kTeam.getName().GetCString(), L", ", bFirstPact);
 					bFirstPact = false;
 				}
+
+				//Show own war plans
+				if (eThisTeam == GC.getGameINLINE().getActiveTeam() || GC.getGameINLINE().isDebugMode())
+				{
+					if (kThisTeam.AI_getWarPlan((TeamTypes)iTeam) == WARPLAN_PREPARING_TOTAL)
+					{
+						setListHelp(szWarPlanTotal, L"", kTeam.getName().GetCString(), L", ", bFirstWarPlanTotal);
+						bFirstWarPlanTotal = false;
+					}
+					else if (kThisTeam.AI_getWarPlan((TeamTypes)iTeam) == WARPLAN_PREPARING_LIMITED)
+					{
+						setListHelp(szWarPlanLimited, L"", kTeam.getName().GetCString(), L", ", bFirstWarPlanLimited);
+						bFirstWarPlanLimited = false;
+					}
+				}
+
 			}
 		}
 	}
@@ -15587,6 +15625,16 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, TeamTypes
 	{
 		szString.append(NEWLINE);
 		szString.append(gDLL->getText(L"TXT_KEY_DEFENSIVE_PACT_WITH", szPact.GetCString()));
+	}
+	if (!szWarPlanTotal.empty())
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText(L"TXT_KEY_WARPLAN_TARGET_IS", szWarPlanTotal.GetCString()));
+	}
+	if (!szWarPlanLimited.empty())
+	{
+		szString.append(NEWLINE);
+		szString.append(gDLL->getText(L"TXT_KEY_WARPLAN_LIMITED_TARGET_IS", szWarPlanLimited.GetCString()));
 	}
 }
 // BUG - Leaderhead Relations - end
