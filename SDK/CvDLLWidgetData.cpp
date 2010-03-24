@@ -4293,7 +4293,7 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 			}
 // BUG - Deals in Scoreboard - end
 
-			if (eTeam != eActiveTeam )
+			if (eTeam != eActiveTeam)
 			{
 // BUG - Relations in Scoreboard - start
 				GAMETEXT.getAllRelationsString(szBuffer, eTeam);
@@ -4308,7 +4308,7 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 // BUG - end
 		}
 
-		if (eTeam != eActiveTeam )
+		if (eTeam != eActiveTeam)
 		{
 			if( !(kActiveTeam.isAtWar(eTeam)))
 			{
