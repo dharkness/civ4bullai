@@ -3489,14 +3489,29 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
             szTempBuffer.Format(L"Crush, ");
             szBuffer.append(szTempBuffer);
 		}
-        if (kPlayer.AI_isDoStrategy(AI_STRATEGY_PRODUCTION))
+		if (kPlayer.AI_isDoStrategy(AI_STRATEGY_ALERT1))
         {
-            szTempBuffer.Format(L"Production, ");
+            szTempBuffer.Format(L"Alert1, ");
             szBuffer.append(szTempBuffer);
-        }
-		if (kPlayer.AI_isDoStrategy(AI_STRATEGY_PEACE))
+		}
+		if (kPlayer.AI_isDoStrategy(AI_STRATEGY_ALERT2))
         {
-            szTempBuffer.Format(L"Peace, ");
+            szTempBuffer.Format(L"Alert2, ");
+            szBuffer.append(szTempBuffer);
+		}
+		if (kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE))
+        {
+            szTempBuffer.Format(L"Turtle, ");
+            szBuffer.append(szTempBuffer);
+		}
+		if (kPlayer.AI_isDoStrategy(AI_STRATEGY_LAST_STAND))
+        {
+            szTempBuffer.Format(L"LastStand, ");
+            szBuffer.append(szTempBuffer);
+		}
+		if (kPlayer.AI_isDoStrategy(AI_STRATEGY_FINAL_WAR))
+        {
+            szTempBuffer.Format(L"FinalWar, ");
             szBuffer.append(szTempBuffer);
         }
         if (kPlayer.AI_isDoStrategy(AI_STRATEGY_GET_BETTER_UNITS))
@@ -3504,9 +3519,19 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
             szTempBuffer.Format(L"GetBetterUnits, ");
             szBuffer.append(szTempBuffer);
         }
-		if (kPlayer.AI_isDoStrategy(AI_STRATEGY_FINAL_WAR))
+		if (kPlayer.AI_isDoStrategy(AI_STRATEGY_PRODUCTION))
         {
-            szTempBuffer.Format(L"FinalWar, ");
+            szTempBuffer.Format(L"Production, ");
+            szBuffer.append(szTempBuffer);
+        }
+		if (kPlayer.AI_isDoStrategy(AI_STRATEGY_MISSIONARY))
+        {
+            szTempBuffer.Format(L"Missionary, ");
+            szBuffer.append(szTempBuffer);
+        }
+		if (kPlayer.AI_isDoStrategy(AI_STRATEGY_BIG_ESPIONAGE))
+        {
+            szTempBuffer.Format(L"BigEspionage, ");
             szBuffer.append(szTempBuffer);
         }
 
@@ -3725,40 +3750,29 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 		float fOverallWarPercentage = 0;
 		bool bAggressive = GC.getGameINLINE().isOption(GAMEOPTION_AGGRESSIVE_AI);
 		
-		// team power (if agressive, we use higher value)
-		int iTeamPower = kTeam.getPower(true);
-		if (bAggressive)
-		{
-			iTeamPower *= 4;
-			iTeamPower /= 3;
-		}
-		
 		bool bIsAnyCapitalAreaAlone = kTeam.AI_isAnyCapitalAreaAlone();
 
 		int iI;
 		int iFinancialTroubleCount = 0;
 		int iDaggerCount = 0;
 		int iGetBetterUnitsCount = 0;
-		bool bFinalWar = false;
 		for (iI = 0; iI < MAX_PLAYERS; iI++)
 		{
 			if (GET_PLAYER((PlayerTypes)iI).isAlive())
 			{
 				if (GET_PLAYER((PlayerTypes)iI).getTeam() == eTeam)
 				{
-					if (GET_PLAYER((PlayerTypes)iI).AI_isDoStrategy(AI_STRATEGY_DAGGER))
+					if ( GET_PLAYER((PlayerTypes)iI).AI_isDoStrategy(AI_STRATEGY_DAGGER)
+						|| GET_PLAYER((PlayerTypes)iI).AI_isDoVictoryStrategy(AI_VICTORY_CONQUEST3)
+						|| GET_PLAYER((PlayerTypes)iI).AI_isDoVictoryStrategy(AI_VICTORY_DOMINATION4) )
 					{
 						iDaggerCount++;
 						bAggressive = true;
 					}
+
 					if (GET_PLAYER((PlayerTypes)iI).AI_isDoStrategy(AI_STRATEGY_GET_BETTER_UNITS))
 					{
 						iGetBetterUnitsCount++;
-					}
-					
-					if (GET_PLAYER((PlayerTypes)iI).AI_isDoStrategy(AI_STRATEGY_FINAL_WAR))
-					{
-						bFinalWar = true;
 					}
 					
 					if (GET_PLAYER((PlayerTypes)iI).AI_isFinancialTrouble())
@@ -3771,50 +3785,19 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 		// calculate unit spending for use in iTotalWarRandThreshold
 		int iNumMembers = kTeam.getNumMembers();
-		int iHighUnitSpendingPercent = 0;
-
-		for (iI = 0; iI < MAX_PLAYERS; iI++)
-		{
-			CvPlayerAI& kPlayer = GET_PLAYER((PlayerTypes) iI);
-			if (kPlayer.isAlive())
-			{
-				if (kPlayer.getTeam() == eTeam)
-				{
-					int iUnitSpendingPercent = (kPlayer.calculateUnitCost() * 100) / std::max(1, kPlayer.calculatePreInflatedCosts());
-					iHighUnitSpendingPercent += (std::max(0, iUnitSpendingPercent - 7) / 2);
-				}			
-			}
-		}
-
-		iHighUnitSpendingPercent /= iNumMembers;
 
 		// if random in this range is 0, we go to war of this type (so lower numbers are higher probablity)
 		// average of everyone on our team
-		int iMaxWarRand = kTeam.AI_maxWarRand();
-	    int iLimitedWarRand = kTeam.AI_limitedWarRand();
-	    int iDogpileWarRand = kTeam.AI_dogpileWarRand();
+		int iTotalWarRand;
+	    int iLimitedWarRand;
+	    int iDogpileWarRand;
+		kTeam.AI_getWarRands( iTotalWarRand, iLimitedWarRand, iDogpileWarRand );
 
-		int iNumVassals = kTeam.getVassalCount();
-	    
-	    iMaxWarRand *= iNumMembers;
-	    iMaxWarRand /= (iNumMembers + iNumVassals);
-	    
-	    if (bFinalWar)
-	    {
-	    	iMaxWarRand /= 4;
-	    }
+		int iTotalWarThreshold;
+		int iLimitedWarThreshold;
+		int iDogpileWarThreshold;
+		kTeam.AI_getWarThresholds( iTotalWarThreshold, iLimitedWarThreshold, iDogpileWarThreshold );
 
-	    iLimitedWarRand *= iNumMembers;
-	    iLimitedWarRand /= (iNumMembers + iNumVassals);
-	    
-	    iDogpileWarRand *= iNumMembers;
-	    iDogpileWarRand /= (iNumMembers + iNumVassals);
-	    
-		// calculate war threshold
-	    int iTotalWarRandThreshold = iHighUnitSpendingPercent * (bAggressive ? 4 : 2);
-	    iTotalWarRandThreshold /= 3;
-	    iTotalWarRandThreshold += bAggressive ? 1 : 0;
-		
 		// we oppose war if half the non-dagger teammates in financial trouble
 		bool bFinancesOpposeWar = false;
 		if ((iFinancialTroubleCount - iDaggerCount) >= std::max(1, kTeam.getNumMembers() / 2 ))
@@ -3824,15 +3807,15 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 		}
 
 		// if agressive, we may start a war to get money
-		bool bFinancesProMaxWar = false;
+		bool bFinancesProTotalWar = false;
 		bool bFinancesProLimitedWar = false;
 		bool bFinancesProDogpileWar = false;
 		if (iFinancialTroubleCount > 0)
 		{
 			// do we like all out wars?
-			if (iDaggerCount > 0 || iMaxWarRand < 100)
+			if (iDaggerCount > 0 || iTotalWarRand < 100)
 			{
-				bFinancesProMaxWar = true;
+				bFinancesProTotalWar = true;
 			}
 
 			// do we like limited wars?
@@ -3847,7 +3830,7 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 				bFinancesProDogpileWar = true;
 			}
 		}
-		bool bFinancialProWar = (bFinancesProMaxWar || bFinancesProLimitedWar || bFinancesProDogpileWar);
+		bool bFinancialProWar = (bFinancesProTotalWar || bFinancesProLimitedWar || bFinancesProDogpileWar);
 		
 		// overall war check (quite frequently true)
 		if (iGetBetterUnitsCount * 3 < iNumMembers * 2)
@@ -3855,13 +3838,15 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 			if (bFinancialProWar || !bFinancesOpposeWar)
 			{
 				fOverallWarPercentage = (float)std::min(100, GC.getHandicapInfo(GC.getGameINLINE().getHandicapType()).getAIDeclareWarProb());
-				
-				if (!(bAggressive || bFinancialProWar))
-				{
-					fOverallWarPercentage *= 3;
-					fOverallWarPercentage /= 4;
-				}
 			}
+		}
+
+		// team power (if agressive, we use higher value)
+		int iTeamPower = kTeam.getPower(true);
+		if (bAggressive)
+		{
+			iTeamPower *= 4;
+			iTeamPower /= 3;
 		}
 		
 		// we will put the values into an array, then sort it for display
@@ -3913,9 +3898,9 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 						// total war
 						aStartWarInfo[iTeamIndex].iPossibleMaxWarPass = MAX_INT;
-						if (iNoWarAttitudeProb < 100 && (bFinancesProMaxWar || !bFinancesOpposeWar))
+						if (iNoWarAttitudeProb < 100 && (bFinancesProTotalWar || !bFinancesOpposeWar))
 						{
-							int iNoWarChance = std::max(0, iNoWarAttitudeProb - (bAggressive ? 10 : 0) - (bFinancesProMaxWar ? 10 : 0));
+							int iNoWarChance = std::max(0, iNoWarAttitudeProb - (bAggressive ? 10 : 0) - (bFinancesProTotalWar ? 10 : 0));
 							if (iNoWarChance < 100)
 							{
 								bool bIsMaxWarNearbyPowerRatio = (iLoopTeamPower < ((iTeamPower * kTeam.AI_maxWarNearbyPowerRatio()) / 100));
@@ -3945,7 +3930,6 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 								{
 									iPossibleMaxWarPass = 1;
 								}
-
 								else if (bIsMaxWarDistantPowerRatio)
 								{
 									iPossibleMaxWarPass = 2;
@@ -4058,14 +4042,14 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 						if (bFirst)
 						{
-							float fMaxWarPercentage = (fOverallWarPercentage * (iTotalWarRandThreshold + 1)) / iMaxWarRand;
-							szBuffer.append(CvWString::format(SETCOLR L"%.2f%% [%d/%d] Total War:\n" ENDCOLR, TEXT_COLOR("COLOR_UNIT_TEXT"), fMaxWarPercentage, (iTotalWarRandThreshold + 1), iMaxWarRand));
+							float fMaxWarPercentage = ((fOverallWarPercentage * (iTotalWarThreshold + 1)) / iTotalWarRand);
+							szBuffer.append(CvWString::format(SETCOLR L"%.2f%% [%d/%d] Total War:\n" ENDCOLR, TEXT_COLOR("COLOR_UNIT_TEXT"), fMaxWarPercentage, (iTotalWarThreshold + 1), iTotalWarRand));
 							bFirst = false;
 						}
 
 						bHadAny = true;
 						
-						int iNoWarChance = std::max(0, aStartWarInfo[iTeamIndex].iNoWarAttitudeProb - (bAggressive ? 10 : 0) - (bFinancesProMaxWar ? 10 : 0));
+						int iNoWarChance = std::max(0, aStartWarInfo[iTeamIndex].iNoWarAttitudeProb - (bAggressive ? 10 : 0) - (bFinancesProTotalWar ? 10 : 0));
 						int iTeamWarPercentage = (100 - iNoWarChance);
 						
 						if (aStartWarInfo[iTeamIndex].iPossibleMaxWarPass <= iBestPossibleMaxWarPass)
@@ -4130,7 +4114,7 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 					{
 						if (bFirst)
 						{
-							float fLimitedWarPercentage = fOverallWarPercentage / iLimitedWarRand;
+							float fLimitedWarPercentage = (fOverallWarPercentage * (iLimitedWarThreshold + 1)) / iLimitedWarRand;
 							szBuffer.append(CvWString::format(SETCOLR L"%.2f%% Limited War:\n" ENDCOLR, TEXT_COLOR("COLOR_UNIT_TEXT"), fLimitedWarPercentage));
 							bFirst = false;
 						}
@@ -4189,7 +4173,7 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 					{
 						if (bFirst)
 						{
-							float fDogpileWarPercentage = fOverallWarPercentage / iDogpileWarRand;
+							float fDogpileWarPercentage = (fOverallWarPercentage * (iDogpileWarThreshold + 1)) / iDogpileWarRand;
 							szBuffer.append(CvWString::format(SETCOLR L"%.2f%% Dogpile War:\n" ENDCOLR, TEXT_COLOR("COLOR_UNIT_TEXT"), fDogpileWarPercentage));
 							bFirst = false;
 						}
@@ -4684,18 +4668,18 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 /*                                                                                              */
 /*                                                                                              */
 /************************************************************************************************/
-	szTempBuffer.Format(L"%S", "Unofficial Patch 1.50");
+	szTempBuffer.Format(L"%S", "Unofficial Patch 1.50 pre-release");
 	szBuffer.append(szTempBuffer);
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                       END                                                   */
 /************************************************************************************************/
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/02/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      03/21/10                                jdog5000      */
 /*                                                                                              */
 /*                                                                                              */
 /************************************************************************************************/
 	// Add string showing version number
-	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 0.90f");
+	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 0.90n");
 	szBuffer.append(szTempBuffer);
 #ifdef LOG_AI
 	szTempBuffer.Format(NEWLINE L"%c", gDLL->getSymbolID(BULLET_CHAR));

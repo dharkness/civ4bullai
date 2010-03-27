@@ -34,14 +34,14 @@ LINK = "$(TOOLKIT)/bin/link.exe"
 #   _MOD_SENTRY			New Sentry Actions Mod
 #   _MOD_GOVWORKERS		Governours can build Workers Mod
 #   _MOD_GWARM			Global Warming Mod
-#   _MOD_SHAM_SPOILER	enables AG modifiers in mod
+#   _MOD_SHAM_SPOILER	always show all hidden attitude modifiers. Leave this off
 
 MODFLAGS = /DLOG_AI /D_MOD_FRACTRADE /D_MOD_SENTRY /D_MOD_GOVWORKERS
 
 # /EHsc		catch C++ exceptions only; assume that extern C functions never throw a C++ exception
 # /Gd		Use the __cdecl calling convention (x86 only). 
 # /GR		enable run-time type information (RTTI)
-# /G7		optimazation for CPUs. G5: Pentium, G6: Pentium Pro/II/III, G7: Pentium 4 and above
+# /G7		optimize for Pentium 4 and above
 # /MD		multithreaded normal DLL with MSVCRT.dll
 # /MDd		multithreaded debug DLL with MSVCRTD.dll
 # /O2		optimize for speed (equal to /Og /Oi /Ot /Oy /Ob2 /Gs /GF /Gy)

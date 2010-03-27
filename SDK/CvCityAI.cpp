@@ -543,7 +543,12 @@ int CvCityAI::AI_specialistValue(SpecialistTypes eSpecialist, bool bAvoidGrowth,
 		int iCurrentEra = GET_PLAYER(getOwnerINLINE()).getCurrentEra();
 		int iTotalEras = GC.getNumEraInfos();
 		
-		if (GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CULTURE2))
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/08/10                                jdog5000      */
+/*                                                                                              */
+/* Victory Strategy AI                                                                          */
+/************************************************************************************************/
+		if (GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2))
 		{
 			int iUnitClass = GC.getSpecialistInfo(eSpecialist).getGreatPeopleUnitClass();
 			FAssert(iUnitClass != NO_UNITCLASS);
@@ -554,10 +559,13 @@ int CvCityAI::AI_specialistValue(SpecialistTypes eSpecialist, bool bAvoidGrowth,
 				CvUnitInfo& kUnitInfo = GC.getUnitInfo(eGreatPeopleUnit);
 				if (kUnitInfo.getGreatWorkCulture() > 0)
 				{
-					iTempValue += kUnitInfo.getGreatWorkCulture() / ((GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CULTURE3)) ? 200 : 350);
+					iTempValue += kUnitInfo.getGreatWorkCulture() / ((GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3)) ? 200 : 350);
 				}
 			}
 		}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
         if (!isHuman() && (iCurrentEra <= ((iTotalEras * 2) / 3)))
         {
@@ -786,11 +794,12 @@ void CvCityAI::AI_chooseProduction()
     int iCulturalVictoryNumCultureCities = GC.getGameINLINE().culturalVictoryNumCultureCities();
 
 	int iWarSuccessRatio = GET_TEAM(getTeam()).AI_getWarSuccessCapitulationRatio();
+	int iEnemyPowerPerc = GET_TEAM(getTeam()).AI_getEnemyPowerPercent(true);
 	int iWarTroubleThreshold = 0;
 
 	if( bLandWar && iWarSuccessRatio < 30 )
 	{
-		iWarTroubleThreshold = std::max(2,(-iWarSuccessRatio/10));
+		iWarTroubleThreshold = std::max(3,(-iWarSuccessRatio/8));
 	}
 
 	if( !bLandWar && !bAssault && GET_TEAM(getTeam()).isAVassal() )
@@ -814,7 +823,10 @@ void CvCityAI::AI_chooseProduction()
     
     int iExistingWorkers = kPlayer.AI_totalAreaUnitAIs(pArea, UNITAI_WORKER);
     int iNeededWorkers = kPlayer.AI_neededWorkers(pArea);
+	// Sea worker need independent of whether water area is militarily relevant
 	int iNeededSeaWorkers = (bMaybeWaterArea) ? AI_neededSeaWorkers() : 0;
+	int iExistingSeaWorkers = (waterArea(true) != NULL) ? kPlayer.AI_totalWaterAreaUnitAIs(waterArea(true), UNITAI_WORKER_SEA) : 0;
+
 
     int iTargetCulturePerTurn = AI_calculateTargetCulturePerTurn();
     
@@ -875,8 +887,8 @@ void CvCityAI::AI_chooseProduction()
 	}
 
 	if (iNumCitiesInArea > 2)
-	{	
-		if (kPlayer.AI_isDoStrategy(AI_STRATEGY_CULTURE2))
+	{
+		if (kPlayer.AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2))
 		{
 			if (iCultureRateRank <= iCulturalVictoryNumCultureCities + 1)
 			{
@@ -1007,7 +1019,7 @@ void CvCityAI::AI_chooseProduction()
 		{
 			if (GC.getGameINLINE().getSorenRandNum(3, "AI Coast Raiders!") == 0)
 			{
-				if (kPlayer.AI_getNumAIUnits(UNITAI_ASSAULT_SEA) <= (1 + kPlayer.getNumCities() / 2))
+				if (kPlayer.AI_totalUnitAIs(UNITAI_ASSAULT_SEA) <= (1 + kPlayer.getNumCities() / 2))
 				{
 					if (AI_chooseUnit(UNITAI_ASSAULT_SEA))
 					{
@@ -1018,7 +1030,7 @@ void CvCityAI::AI_chooseProduction()
 			}
 			if (GC.getGameINLINE().getSorenRandNum(110, "AI arrrr!") < (iWaterPercent + 10))
 			{
-				if (kPlayer.AI_getNumAIUnits(UNITAI_PIRATE_SEA) <= kPlayer.getNumCities())
+				if (kPlayer.AI_totalUnitAIs(UNITAI_PIRATE_SEA) <= kPlayer.getNumCities())
 				{
 					if (AI_chooseUnit(UNITAI_PIRATE_SEA))
 					{
@@ -1104,6 +1116,8 @@ void CvCityAI::AI_chooseProduction()
 
 	if (plot()->getNumDefenders(getOwnerINLINE()) == 0) // XXX check for other team's units?
 	{
+		if( gCityLogLevel >= 2 ) logBBAI("      City %S uses no defenders", getName().GetCString());
+
 		if (AI_chooseUnit(UNITAI_CITY_DEFENSE))
 		{
 			return;
@@ -1150,13 +1164,35 @@ void CvCityAI::AI_chooseProduction()
 		}
 	}
 
+	// So what's the right detection of defense which works in early game too?
 	int iPlotSettlerCount = (iNumSettlers == 0) ? 0 : plot()->plotCount(PUF_isUnitAIType, UNITAI_SETTLE, -1, getOwnerINLINE());
 	int iPlotCityDefenderCount = plot()->plotCount(PUF_isUnitAIType, UNITAI_CITY_DEFENSE, -1, getOwnerINLINE());
+	if( kPlayer.getCurrentEra() == 0 )
+	{
+		// Warriors are blocked from UNITAI_CITY_DEFENSE, in early game this confuses AI city building
+		if( kPlayer.AI_totalUnitAIs(UNITAI_CITY_DEFENSE) <= kPlayer.getNumCities() )
+		{
+			if( kPlayer.AI_bestCityUnitAIValue(UNITAI_CITY_DEFENSE, this) == 0 )
+			{
+				iPlotCityDefenderCount = plot()->plotCount(PUF_canDefend, -1, -1, getOwnerINLINE(), NO_TEAM, PUF_isDomainType, DOMAIN_LAND);
+			}
+		}
+	}
+
 	//minimal defense.
 	if (iPlotCityDefenderCount <= iPlotSettlerCount)
 	{
+		if( gCityLogLevel >= 2 ) logBBAI("      City %S needs escort for existing settler", getName().GetCString());
 		if (AI_chooseUnit(UNITAI_CITY_DEFENSE))
 		{
+			// BBAI TODO: Does this work right after settler is built???
+			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses escort existing settler 1 defense", getName().GetCString());
+			return;
+		}
+
+		if (AI_chooseUnit(UNITAI_ATTACK))
+		{
+			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses escort existing settler 1 attack", getName().GetCString());
 			return;
 		}
 	}
@@ -1176,13 +1212,17 @@ void CvCityAI::AI_chooseProduction()
 	if( isCapital() && (GC.getGame().getElapsedGameTurns() < ((30 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent()) / 100)))
 	{
 		if( !bDanger && !(kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE)) )
-		{
-			if (!bWaterDanger && (iNeededSeaWorkers > 0) && (getPopulation() < 3))
+		{	
+			if (!bWaterDanger && (getPopulation() < 3) && (iNeededSeaWorkers > 0))
 			{
-				if (AI_chooseUnit(UNITAI_WORKER_SEA))
+				if (iExistingSeaWorkers == 0)
 				{
-					if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker sea 1a", getName().GetCString());
-					return;
+					// Build workboat first since it doesn't stop growth
+					if (AI_chooseUnit(UNITAI_WORKER_SEA))
+					{
+						if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker sea 1a", getName().GetCString());
+						return;
+					}
 				}
 			}
 
@@ -1202,8 +1242,6 @@ void CvCityAI::AI_chooseProduction()
 	{
 		if ((iExistingWorkers == 0))
 		{
-			// BBAI TODO: Really want to know if we can improve them ...
-			//int iLandBonuses = AI_countNumBonuses(NO_BONUS, /*bIncludeOurs*/ true, /*bIncludeNeutral*/ true, -1, /*bLand*/ true, /*bWater*/ false);
 			int iLandBonuses = AI_countNumImprovableBonuses(true, kPlayer.getCurrentResearch());
 			if ((iLandBonuses > 1) || (getPopulation() > 3 && iNeededWorkers > 0))
 			{
@@ -1215,7 +1253,7 @@ void CvCityAI::AI_chooseProduction()
 				bChooseWorker = true;
 			}
 
-			if (!bWaterDanger && (iNeededSeaWorkers > 0) && (getPopulation() < 3))
+			if (!bWaterDanger && (iNeededSeaWorkers > iExistingSeaWorkers) && (getPopulation() < 3))
 			{
 				if (AI_chooseUnit(UNITAI_WORKER_SEA))
 				{
@@ -1235,23 +1273,12 @@ void CvCityAI::AI_chooseProduction()
     		}
 		}
 	}
-	
-	int iPercentOfDomination = 0;
-	int iOurPopPercent = 100 * GET_TEAM(getTeam()).getTotalPopulation() / std::max(1, GC.getGameINLINE().getTotalPopulation());
-	
-	for (int iI = 0; iI < GC.getNumVictoryInfos(); iI++)
-	{
-		if (GC.getVictoryInfo((VictoryTypes)iI).getPopulationPercentLead() > 0)
-		{
-			iPercentOfDomination = 100 * iOurPopPercent / std::max(1, GC.getGameINLINE().getAdjustedPopulationPercent((VictoryTypes)iI));
-		}
-	}
 
-	if (iPercentOfDomination >= 90)
+	if ( kPlayer.AI_isDoVictoryStrategy(AI_VICTORY_DOMINATION3) )
 	{
         if ((goodHealth() - badHealth(true, 0)) < 1)
 		{
-			if (AI_chooseBuilding(BUILDINGFOCUS_HEALTHY))
+			if ( AI_chooseBuilding(BUILDINGFOCUS_HEALTHY, 20, 0, (kPlayer.AI_isDoVictoryStrategy(AI_VICTORY_DOMINATION4) ? 50 : 20)) )
 			{
 				return;
 			}
@@ -1264,7 +1291,7 @@ void CvCityAI::AI_chooseProduction()
 		{
 			if ((goodHealth() - badHealth(true, 0)) < 1)
 			{
-				if (AI_chooseBuilding(BUILDINGFOCUS_HEALTHY, MAX_INT, 0, 50))
+				if (AI_chooseBuilding(BUILDINGFOCUS_HEALTHY, 30, 0, 3*getPopulation()))
 				{
 					return;
 				}
@@ -1272,7 +1299,7 @@ void CvCityAI::AI_chooseProduction()
 
 			if ((getPopulation() > 3) && (getCommerceRate(COMMERCE_CULTURE) < 5))
 			{
-				if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE, 30, 0 + 3*iWarTroubleThreshold, 50))
+				if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE, 30, 0 + 3*iWarTroubleThreshold, 3*getPopulation()))
 				{
 					return;
 				}
@@ -1340,6 +1367,8 @@ void CvCityAI::AI_chooseProduction()
 						}
 					}
 
+					// BBAI TODO: Really only want to do this if no good area city sites ... 13% chance on water heavy maps
+					// of slow start, little benefit
 					if (kPlayer.AI_totalWaterAreaUnitAIs(pWaterArea, UNITAI_SETTLER_SEA) == 0)
 					{
 						if (AI_chooseUnit(UNITAI_SETTLER_SEA, iOdds))
@@ -1356,7 +1385,7 @@ void CvCityAI::AI_chooseProduction()
 	// -------------------- BBAI Notes -------------------------
 	// Top normal priorities
 	
-	if (!bPrimaryArea)
+	if (!bPrimaryArea && !bLandWar)
 	{
 		if (AI_chooseBuilding(BUILDINGFOCUS_FOOD, 60, 10 + 2*iWarTroubleThreshold, 50))
 		{
@@ -1411,22 +1440,32 @@ void CvCityAI::AI_chooseProduction()
 	}
 
 	// If losing badly in war, need to build up defenses and counter attack force
-	if( bLandWar && iWarSuccessRatio < -30 )
+	if( bLandWar && (iWarSuccessRatio < -30 || iEnemyPowerPerc > 150) )
 	{
 		UnitTypeWeightArray defensiveTypes;
 		defensiveTypes.push_back(std::make_pair(UNITAI_COUNTER, 100));
 		defensiveTypes.push_back(std::make_pair(UNITAI_ATTACK, 100));
 		defensiveTypes.push_back(std::make_pair(UNITAI_RESERVE, 60));
 		defensiveTypes.push_back(std::make_pair(UNITAI_COLLATERAL, 60));
-		if (iTotalFloatingDefenders < (5*iNeededFloatingDefenders)/(bGetBetterUnits ? 6 : 4))
+		if ( bDanger || (iTotalFloatingDefenders < (5*iNeededFloatingDefenders)/(bGetBetterUnits ? 6 : 4)))
 		{
 			defensiveTypes.push_back(std::make_pair(UNITAI_CITY_DEFENSE, 200));
 			defensiveTypes.push_back(std::make_pair(UNITAI_CITY_COUNTER, 50));
 		}
 
-		if (AI_chooseLeastRepresentedUnit(defensiveTypes, abs((iWarSuccessRatio*2)/3)))
+		int iOdds = iBuildUnitProb;
+		if( iWarSuccessRatio < -50 )
 		{
-			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose losing extra defense", getName().GetCString());
+			iOdds += abs(iWarSuccessRatio/3);
+		}
+		if( bDanger )
+		{
+			iOdds += 10;
+		}
+
+		if (AI_chooseLeastRepresentedUnit(defensiveTypes, iOdds))
+		{
+			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose losing extra defense with odds %d", getName().GetCString(), iOdds);
 			return;
 		}
 	}
@@ -1452,9 +1491,9 @@ void CvCityAI::AI_chooseProduction()
 	
 	//do a check for one tile island type thing?
     //this can be overridden by "wait and grow more"
-    if (bDanger && (iExistingWorkers == 0) && (isCapital() || (iNeededWorkers > 0) || (iNeededSeaWorkers > 0)))
+    if (bDanger && (iExistingWorkers == 0) && (isCapital() || (iNeededWorkers > 0) || (iNeededSeaWorkers > iExistingSeaWorkers)))
     {
-		if( !(bDefenseWar && iWarSuccessRatio < -50) && !(kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE)) )
+		if( !(bDefenseWar && iWarSuccessRatio < -30) && !(kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE)) )
 		{
 			if ((AI_countNumBonuses(NO_BONUS, /*bIncludeOurs*/ true, /*bIncludeNeutral*/ true, -1, /*bLand*/ true, /*bWater*/ false) > 0) || 
 				(isCapital() && (getPopulation() > 3) && iNumCitiesInArea > 1))
@@ -1466,7 +1505,8 @@ void CvCityAI::AI_chooseProduction()
 				}
 				bChooseWorker = true;
     		}
-			if (iNeededSeaWorkers > 0)
+
+			if (iNeededSeaWorkers > iExistingSeaWorkers)
 			{
 				if (AI_chooseUnit(UNITAI_WORKER_SEA))
 				{
@@ -1479,21 +1519,12 @@ void CvCityAI::AI_chooseProduction()
 
 	if( !(bDefenseWar && iWarSuccessRatio < -30) )
 	{
-		if (!bWaterDanger && iNeededSeaWorkers > 0)
+		if (!bWaterDanger && iNeededSeaWorkers > iExistingSeaWorkers)
 		{
-			// pWaterArea is only != NULL if water area is militarily relevant
-			// Need for workboats is independent of military relevance
-			CvArea* pWorkerWaterArea = waterArea(true);
-			if( pWorkerWaterArea != NULL )
+			if (AI_chooseUnit(UNITAI_WORKER_SEA))
 			{
-				if (kPlayer.AI_totalWaterAreaUnitAIs(pWorkerWaterArea, UNITAI_WORKER_SEA) < iNeededSeaWorkers)
-				{
-					if (AI_chooseUnit(UNITAI_WORKER_SEA))
-					{
-						if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker sea 3", getName().GetCString());
-						return;
-					}
-				}
+				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker sea 3", getName().GetCString());
+				return;
 			}
 		}
 	}
@@ -1661,10 +1692,17 @@ void CvCityAI::AI_chooseProduction()
 	}
 	
 	//minimal defense.
-	if (plot()->plotCount(PUF_isUnitAIType, UNITAI_CITY_DEFENSE, -1, getOwnerINLINE()) < (AI_minDefenders() + iPlotSettlerCount))
+	if (iPlotCityDefenderCount < (AI_minDefenders() + iPlotSettlerCount))
 	{
 		if (AI_chooseUnit(UNITAI_CITY_DEFENSE))
 		{
+			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose min defender", getName().GetCString());
+			return;
+		}
+
+		if (AI_chooseUnit(UNITAI_ATTACK))
+		{
+			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose min defender (attack ai)", getName().GetCString());
 			return;
 		}
 	}
@@ -1699,6 +1737,7 @@ void CvCityAI::AI_chooseProduction()
 				{
 					if (AI_chooseUnit(UNITAI_SETTLER_SEA))
 					{
+						if( gCityLogLevel >= 2 ) logBBAI("      City %S uses main settler sea", getName().GetCString());
 						return;
 					}
 				}
@@ -1708,16 +1747,19 @@ void CvCityAI::AI_chooseProduction()
 			{
 				if ((iNumSettlers < iMaxSettlers))
 				{
-					if (iPlotCityDefenderCount == 1)
-					{
-						if (AI_chooseUnit(UNITAI_CITY_DEFENSE))
-						{
-							return;
-						}
-					}
-					else if (AI_chooseUnit(UNITAI_SETTLE, bLandWar ? 50 : -1))
+					if (AI_chooseUnit(UNITAI_SETTLE, bLandWar ? 50 : -1))
 					{
 						if( gCityLogLevel >= 2 ) logBBAI("      City %S uses build settler 1", getName().GetCString());
+
+						if (kPlayer.getNumMilitaryUnits() <= kPlayer.getNumCities() + 1)
+						{
+							if (AI_chooseUnit(UNITAI_CITY_DEFENSE))
+							{
+								if( gCityLogLevel >= 2 ) logBBAI("      City %S uses build settler 1 extra quick defense", getName().GetCString());
+								return;
+							}
+						}
+						
 						return;
 					}
 				}
@@ -1861,6 +1903,20 @@ void CvCityAI::AI_chooseProduction()
 	}
 	
 	int iMaxUnitSpending = (bAggressiveAI ? 6 : 3) + iBuildUnitProb / 3;
+
+	if( kPlayer.AI_isDoVictoryStrategy(AI_VICTORY_CONQUEST4) )
+	{
+		iMaxUnitSpending += 7;
+	}
+	else if( kPlayer.AI_isDoVictoryStrategy(AI_VICTORY_CONQUEST3) || kPlayer.AI_isDoVictoryStrategy(AI_VICTORY_DOMINATION3) )
+	{
+		iMaxUnitSpending += 3;
+	}
+	else if( kPlayer.AI_isDoVictoryStrategy(AI_VICTORY_CONQUEST1) )
+	{
+		iMaxUnitSpending += 1;
+	}
+
     if (bAlwaysPeace)
 	{
 		iMaxUnitSpending = -10;
@@ -1999,7 +2055,7 @@ void CvCityAI::AI_chooseProduction()
 				{
 					if (AI_chooseUnit(UNITAI_ESCORT_SEA, (iEscorts < iDesiredEscorts/3) ? -1 : 50))
 					{
-						AI_chooseBuilding(BUILDINGFOCUS_DOMAINSEA);
+						AI_chooseBuilding(BUILDINGFOCUS_DOMAINSEA, 12);
 						return;
 					}
 				}
@@ -2021,26 +2077,26 @@ void CvCityAI::AI_chooseProduction()
 					{
 						if (AI_chooseUnit(UNITAI_ATTACK_SEA, bFinancialTrouble ? 20 : 50))
 						{
-							AI_chooseBuilding(BUILDINGFOCUS_DOMAINSEA);
+							AI_chooseBuilding(BUILDINGFOCUS_DOMAINSEA, 12);
 							return;
 						}
 					}
 				}
 				
-				if (iUnitsToTransport > (iTransportCapacity))
+				if (iUnitsToTransport > iTransportCapacity)
 				{
-					if (iUnitCostPercentage < (iMaxUnitSpending) || iUnitsToTransport > (2*iTransportCapacity))
+					if ((iUnitCostPercentage < iMaxUnitSpending + 5) || (2*iUnitsToTransport > 3*iTransportCapacity))
 					{
 						if (AI_chooseUnit(UNITAI_ASSAULT_SEA))
 						{
-							AI_chooseBuilding(BUILDINGFOCUS_DOMAINSEA);
+							AI_chooseBuilding(BUILDINGFOCUS_DOMAINSEA, 8);
 							return;
 						}
 					}
 				}
 			}
 
-			if (iUnitCostPercentage < (iMaxUnitSpending))
+			if (iUnitCostPercentage < iMaxUnitSpending)
 			{
 				if (NULL != pAssaultWaterArea)
 				{
@@ -2049,7 +2105,7 @@ void CvCityAI::AI_chooseProduction()
 						// Reduce chances of starting if city has low production
 						if (AI_chooseUnit(UNITAI_CARRIER_SEA, (iProductionRank <= ((kPlayer.getNumCities() / 3) + 1)) ? -1 : 30))
 						{
-							AI_chooseBuilding(BUILDINGFOCUS_DOMAINSEA);
+							AI_chooseBuilding(BUILDINGFOCUS_DOMAINSEA, 16);
 							return;
 						}
 					}
@@ -2149,7 +2205,7 @@ void CvCityAI::AI_chooseProduction()
 			int iBestMissileValue = kPlayer.AI_bestCityUnitAIValue(UNITAI_MISSILE_AIR, this, &eBestMissile);
 			if ((iBestAirValue + iBestMissileValue) > 0)
 			{
-				iAircraftHave = kPlayer.AI_getNumAIUnits(UNITAI_ATTACK_AIR) + kPlayer.AI_getNumAIUnits(UNITAI_DEFENSE_AIR) + kPlayer.AI_getNumAIUnits(UNITAI_MISSILE_AIR);
+				iAircraftHave = kPlayer.AI_totalUnitAIs(UNITAI_ATTACK_AIR) + kPlayer.AI_totalUnitAIs(UNITAI_DEFENSE_AIR) + kPlayer.AI_totalUnitAIs(UNITAI_MISSILE_AIR);
 				if (NO_UNIT != eBestAttackAircraft)
 				{
 					iAircraftNeed = (2 + kPlayer.getNumCities() * (3 * GC.getUnitInfo(eBestAttackAircraft).getAirCombat())) / (2 * std::max(1, GC.getGame().getBestLandUnitCombat()));
@@ -2195,9 +2251,9 @@ void CvCityAI::AI_chooseProduction()
 					}
 				}
 				// Additional check for air defenses
-				int iFightersHave = kPlayer.AI_getNumAIUnits(UNITAI_DEFENSE_AIR);
+				int iFightersHave = kPlayer.AI_totalUnitAIs(UNITAI_DEFENSE_AIR);
 
-				if( 4*iFightersHave < iAircraftNeed )
+				if( 3*iFightersHave < iAircraftNeed )
 				{
 					if (AI_chooseUnit(UNITAI_DEFENSE_AIR))
 					{
@@ -2308,7 +2364,7 @@ void CvCityAI::AI_chooseProduction()
 		if( !bFinancialTrouble )
 		{
 			// Force civs with foreign colonies to build a few assault transports to defend the colonies
-			if( kPlayer.AI_getNumAIUnits(UNITAI_ASSAULT_SEA) < (kPlayer.getNumCities() - iNumCapitalAreaCities)/3 )
+			if( kPlayer.AI_totalUnitAIs(UNITAI_ASSAULT_SEA) < (kPlayer.getNumCities() - iNumCapitalAreaCities)/3 )
 			{
 				if (AI_chooseUnit(UNITAI_ASSAULT_SEA))
 				{
@@ -2319,7 +2375,7 @@ void CvCityAI::AI_chooseProduction()
 			if (kPlayer.AI_calculateUnitAIViability(UNITAI_SETTLER_SEA, DOMAIN_SEA) < 61)
 			{
 				// Force civs to build escorts for settler_sea units
-				if( kPlayer.AI_getNumAIUnits(UNITAI_SETTLER_SEA) > kPlayer.AI_getNumAIUnits(UNITAI_RESERVE_SEA) )
+				if( kPlayer.AI_totalUnitAIs(UNITAI_SETTLER_SEA) > kPlayer.AI_getNumAIUnits(UNITAI_RESERVE_SEA) )
 				{
 					if (AI_chooseUnit(UNITAI_RESERVE_SEA))
 					{
@@ -2491,7 +2547,7 @@ void CvCityAI::AI_chooseProduction()
 
 	if (!bLandWar)
 	{		
-		if ((iCulturePressure > 90) || kPlayer.AI_isDoStrategy(AI_STRATEGY_CULTURE2))
+		if ((iCulturePressure > 90) || kPlayer.AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2))
 		{
 			if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE, 20))
 			{
@@ -2541,8 +2597,7 @@ void CvCityAI::AI_chooseProduction()
 		
 		if (bDanger)
 	    {
-			// BBAI TODO: Really?  Must have done a unit check above, building won't help anytime soon
-            if (AI_chooseBuilding(BUILDINGFOCUS_EXPERIENCE, 20))
+            if (AI_chooseBuilding(BUILDINGFOCUS_EXPERIENCE, 20, 0, 2*getPopulation()))
             {
                 return;
             }
@@ -2575,7 +2630,7 @@ void CvCityAI::AI_chooseProduction()
 		{
 			if (AI_chooseBuilding(BUILDINGFOCUS_CULTURE, 60))
 			{
-				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose culturel pressure 2", getName().GetCString());
+				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose cultural pressure 2", getName().GetCString());
 				return;
 			}
 		}
@@ -3475,10 +3530,18 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 
 	bool bFinancialTrouble = GET_PLAYER(getOwnerINLINE()).AI_isFinancialTrouble();
 
-	bool bCulturalVictory1 = GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CULTURE1);
-	bool bCulturalVictory2 = GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CULTURE2);
-	bool bCulturalVictory3 = GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CULTURE3);
-	
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/08/10                                jdog5000      */
+/*                                                                                              */
+/* Victory Strategy AI                                                                          */
+/************************************************************************************************/
+	bool bCulturalVictory1 = GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE1);
+	bool bCulturalVictory2 = GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2);
+	bool bCulturalVictory3 = GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3);
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/		
+
 	bool bCanPopRush = GET_PLAYER(getOwnerINLINE()).canPopRush();
 
 	bool bForeignTrade = false;
@@ -4456,7 +4519,7 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 /* 	Alternative Building Evaluation				18/01/10		Fuyu		    */
 /********************************************************************************/
 /* original code
-					iTempValue += ((getPowerYieldRateModifier(YIELD_PRODUCTION) * getBaseYieldRate(YIELD_PRODUCTION)) / 12);
+						iTempValue += ((getPowerYieldRateModifier(YIELD_PRODUCTION) * getBaseYieldRate(YIELD_PRODUCTION)) / 12);
 
 */
 						//Fuyu "/ 12" is too much. -> "/ 20"
@@ -4515,7 +4578,7 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 /********************************************************************************/
 /* 	Alternative Building Evaluation				24.03.2010		Fuyu		    */
 /********************************************************************************/
-					iTempValue += (getBuildingCommerceChange(eBuildingClass, (CommerceTypes)iI) * 4);
+					iTempValue += (getBuildingCommerceChange(eBuildingClass, (CommerceTypes)iI) * 3);
 /********************************************************************************/
 /* ABE END																	    */
 /********************************************************************************/
@@ -5231,7 +5294,7 @@ int CvCityAI::AI_processValue(ProcessTypes eProcess, CommerceTypes eCommerceType
 /*                                                                                              */
 /* Cultural Victory AI                                                                          */
 /************************************************************************************************/
-	if ( GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CULTURE3) )
+	if ( GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3) )
 	{
 		// Final city for cultural victory will build culture to speed up victory
 		if( findCommerceRateRank(COMMERCE_CULTURE) == GC.getGameINLINE().culturalVictoryNumCultureCities() )
@@ -5398,6 +5461,11 @@ bool CvCityAI::AI_isAirDefended(bool bCountLand, int iExtra)
 /********************************************************************************/
 
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/08/10                                jdog5000      */
+/*                                                                                              */
+/* War strategy AI, Barbarian AI                                                                */
+/************************************************************************************************/
 int CvCityAI::AI_neededDefenders()
 {
 	PROFILE_FUNC();
@@ -5405,32 +5473,28 @@ int CvCityAI::AI_neededDefenders()
 	bool bOffenseWar = ((area()->getAreaAIType(getTeam()) == AREAAI_OFFENSIVE) || (area()->getAreaAIType(getTeam()) == AREAAI_MASSING));
 	bool bDefenseWar = ((area()->getAreaAIType(getTeam()) == AREAAI_DEFENSIVE));
 	
-
 	if (!(GET_TEAM(getTeam()).AI_isWarPossible()))
 	{
 		return 1;
 	}
 
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      07/17/09                                jdog5000      */
-/*                                                                                              */
-/* Barbarian AI                                                                                 */
-/************************************************************************************************/
 	if (isBarbarian())
 	{
 		iDefenders = GC.getHandicapInfo(GC.getGameINLINE().getHandicapType()).getBarbarianInitialDefenders();
 		iDefenders += ((getPopulation() + 2) / 7);
 		return iDefenders;
 	}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/	
 
 	iDefenders = 1;
 	
-	if (hasActiveWorldWonder() || isCapital())
+	if (hasActiveWorldWonder() || isCapital() || isHolyCity())
 	{
 		iDefenders++;
+
+		if( GET_PLAYER(getOwner()).AI_isDoStrategy(AI_STRATEGY_ALERT1) || GET_PLAYER(getOwner()).AI_isDoStrategy(AI_STRATEGY_TURTLE) )
+		{
+			iDefenders++;
+		}
 	}
 	
 	if (!GET_PLAYER(getOwner()).AI_isDoStrategy(AI_STRATEGY_CRUSH))
@@ -5442,8 +5506,7 @@ int CvCityAI::AI_neededDefenders()
 		iDefenders += (AI_neededFloatingDefenders() + 2) / 4;
 	}
 	
-	
-	if (bDefenseWar)
+	if (bDefenseWar || GET_PLAYER(getOwner()).AI_isDoStrategy(AI_STRATEGY_ALERT2))
 	{
 		if (!(plot()->isHills()))
 		{
@@ -5508,16 +5571,11 @@ int CvCityAI::AI_neededDefenders()
 	{
 		iDefenders += 10;
 	}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      07/17/09                                jdog5000      */
-/*                                                                                              */
-/* War strategy AI                                                                              */
-/************************************************************************************************/
-	else if( GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CULTURE4) )
+	else if( GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3) )
 	{
 		if( findCommerceRateRank(COMMERCE_CULTURE) <= GC.getGameINLINE().culturalVictoryNumCultureCities() )
 		{
-			iDefenders += 3;
+			iDefenders += 4;
 
 			if( bDefenseWar )
 			{
@@ -5525,11 +5583,12 @@ int CvCityAI::AI_neededDefenders()
 			}
 		}
 	}
+	// BBAI TODO: This should be space victory strategy >= 3
 	else if( GET_TEAM(getTeam()).hasLaunched() )
 	{
 		if( isCapital() )
 		{
-			iDefenders += 4;
+			iDefenders += 6;
 
 			if( bDefenseWar )
 			{
@@ -5540,7 +5599,6 @@ int CvCityAI::AI_neededDefenders()
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
-
 	
 	iDefenders = std::max(iDefenders, AI_minDefenders());
 
@@ -7484,6 +7542,14 @@ void CvCityAI::AI_updateBestBuild()
 
 			if (NULL != pLoopPlot && pLoopPlot->getWorkingCity() == this)
 			{
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/16/10                                jdog5000      */
+/*                                                                                              */
+/* City AI, Worker AI                                                                           */
+/************************************************************************************************/
+				int iLastBestBuildValue = m_aiBestBuildValue[iI];
+				BuildTypes eLastBestBuildType = m_aeBestBuild[iI];
+
 				AI_bestPlotBuild(pLoopPlot, &(m_aiBestBuildValue[iI]), &(m_aeBestBuild[iI]), iFoodMultiplier, iProductionMultiplier, iCommerceMultiplier, bChop, iHappyAdjust, iHealthAdjust, iDesiredFoodChange);
 				m_aiBestBuildValue[iI] *= 4;
 				m_aiBestBuildValue[iI] += 3 + iWorkerCount;  // to round up
@@ -7497,6 +7563,25 @@ void CvCityAI::AI_updateBestBuild()
 				{
 					FAssert(m_aiBestBuildValue[iI] > 0);
 				}
+
+				if( eLastBestBuildType != NO_BUILD )
+				{
+					if( eLastBestBuildType != m_aeBestBuild[iI] )
+					{
+						if( iWorkerCount > 0 )
+						{
+							// BBAI TODO: Check workers are building the new thing
+
+							if( gCityLogLevel >= 2 )
+							{
+								logBBAI( "      City %S switches best build on plot %d, %d from %S (%d) to %S (%d) with worker count %d",getName().GetCString(),pLoopPlot->getX(),pLoopPlot->getY(),GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eLastBestBuildType).getImprovement()).getDescription(),iLastBestBuildValue,GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(m_aeBestBuild[iI]).getImprovement()).getDescription(),m_aiBestBuildValue[iI],iWorkerCount);
+							}
+						}
+					}
+				}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 			}
 		}
 	}
@@ -8372,7 +8457,15 @@ void CvCityAI::AI_doEmphasize()
 
 	bool bFirstTech;
 	bool bEmphasize;
-	bool bCultureVictory = GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CULTURE2);
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/08/10                                jdog5000      */
+/*                                                                                              */
+/* Victory Strategy AI                                                                          */
+/************************************************************************************************/
+	bool bCultureVictory = GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2);
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	//Note from Blake:
 	//Emphasis proved to be too clumsy to manage AI economies,
@@ -8600,7 +8693,15 @@ bool CvCityAI::AI_bestSpreadUnit(bool bMissionary, bool bExecutive, int iBaseCha
 					iRoll *= (kPlayer.getStateReligion() == eReligion) ? 170 : 65;
 					iRoll /= 100;
 				}
-				if (kPlayer.AI_isDoStrategy(AI_STRATEGY_CULTURE2))
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/08/10                                jdog5000      */
+/*                                                                                              */
+/* Victory Strategy AI                                                                          */
+/************************************************************************************************/
+				if (kPlayer.AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2))
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 				{
 					iRoll += 25;
 				}
@@ -10952,8 +11053,18 @@ int CvCityAI::AI_calculateCulturePressure(bool bGreatWork)
                     {
                         iTempValue += (GET_PLAYER(getOwnerINLINE()).AI_bonusVal(eNonObsoleteBonus) * ((GET_PLAYER(getOwnerINLINE()).getNumTradeableBonuses(eNonObsoleteBonus) == 0) ? 4 : 2));
                     }
-
-                    if ((iTempValue > 80) && (pLoopPlot->getOwnerINLINE() == getOwnerINLINE())) //UP
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       03/20/10                          denev & jdog5000    */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
+					if ((iTempValue > 80) && (pLoopPlot->getOwnerINLINE() == getID()))
+*/
+					if ((iTempValue > 80) && (pLoopPlot->getOwnerINLINE() == getOwnerINLINE()))
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
                     {
                         //captured territory special case
                         iTempValue *= (100 - iTempValue);
@@ -11388,7 +11499,15 @@ int CvCityAI::AI_countGoodSpecialists(bool bHealthy)
 int CvCityAI::AI_getCityImportance(bool bEconomy, bool bMilitary)
 {
     int iValue = 0;
-    if (GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CULTURE2))
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/08/10                                jdog5000      */
+/*                                                                                              */
+/* Victory Strategy AI                                                                          */
+/************************************************************************************************/
+	if (GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2))
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
     {
         int iCultureRateRank = findCommerceRateRank(COMMERCE_CULTURE);
         int iCulturalVictoryNumCultureCities = GC.getGameINLINE().culturalVictoryNumCultureCities();
@@ -11752,8 +11871,19 @@ int CvCityAI::AI_countNumImprovableBonuses( bool bIncludeNeutral, TechTypes eExt
 int CvCityAI::AI_playerCloseness(PlayerTypes eIndex, int iMaxDistance)
 {
 	FAssert(GET_PLAYER(eIndex).isAlive());
-	FAssert(eIndex != getOwnerINLINE()); //UP
-	
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       03/20/10                          denev & jdog5000    */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
+	FAssert(eIndex != getID());
+*/
+	FAssert(eIndex != getOwnerINLINE());
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
+
 	if ((m_iCachePlayerClosenessTurn != GC.getGame().getGameTurn())
 		|| (m_iCachePlayerClosenessDistance != iMaxDistance))
 	{
@@ -11773,11 +11903,11 @@ void CvCityAI::AI_cachePlayerCloseness(int iMaxDistance)
 	int iTempValue;
 	int iBestValue;
 
-	/********************************************************************************/
-	/* 	BETTER_BTS_AI_MOD						6/17/08				jdog5000	*/
-	/* 																			*/
-	/* 	General AI, closeness changes											*/
-	/********************************************************************************/	
+/********************************************************************************/
+/* 	BETTER_BTS_AI_MOD						6/17/08				jdog5000		*/
+/* 																				*/
+/* 	General AI, closeness changes												*/
+/********************************************************************************/	
 	for (iI = 0; iI < MAX_PLAYERS; iI++)
 	{
 		if (GET_PLAYER((PlayerTypes)iI).isAlive() && 
@@ -11836,9 +11966,9 @@ void CvCityAI::AI_cachePlayerCloseness(int iMaxDistance)
 			m_aiPlayerCloseness[iI] = (iBestValue + iValue / 4);
 		}
 	}
-	/********************************************************************************/
-	/* 	BETTER_BTS_AI_MOD						END								*/
-	/********************************************************************************/
+/********************************************************************************/
+/* 	BETTER_BTS_AI_MOD						END							        */
+/********************************************************************************/
 	
 	m_iCachePlayerClosenessTurn = GC.getGame().getGameTurn();	
 	m_iCachePlayerClosenessDistance = iMaxDistance;
@@ -11846,9 +11976,15 @@ void CvCityAI::AI_cachePlayerCloseness(int iMaxDistance)
 
 int CvCityAI::AI_cityThreat(bool bDangerPercent)
 {
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/04/10                                jdog5000      */
+/*                                                                                              */
+/* War tactics AI                                                                               */
+/************************************************************************************************/
 	PROFILE_FUNC();
 	int iValue = 0;
 	bool bCrushStrategy = GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CRUSH);
+
 	for (int iI = 0; iI < MAX_PLAYERS; iI++)
 	{
 		if ((iI != getOwner()) && GET_PLAYER((PlayerTypes)iI).isAlive())
@@ -11864,11 +12000,6 @@ int CvCityAI::AI_cityThreat(bool bDangerPercent)
 				{
 					iTempValue *= 300;
 				}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/04/10                                jdog5000      */
-/*                                                                                              */
-/* War tactics AI                                                                               */
-/************************************************************************************************/
 				// Beef up border security before starting war, but not too much
 				else if ( GET_TEAM(getTeam()).AI_getWarPlan(GET_PLAYER((PlayerTypes)iI).getTeam()) != NO_WARPLAN )
 				{
@@ -11880,9 +12011,6 @@ int CvCityAI::AI_cityThreat(bool bDangerPercent)
 				{
 					iTempValue *= 30;
 				}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 				else
 				{
 					switch (GET_PLAYER(getOwnerINLINE()).AI_getAttitude((PlayerTypes)iI))
@@ -11911,20 +12039,13 @@ int CvCityAI::AI_cityThreat(bool bDangerPercent)
 						FAssert(false);
 						break;
 					}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/04/10                                jdog5000      */
-/*                                                                                              */
-/* War tactics AI                                                                               */
-/************************************************************************************************/
+
 					// Beef up border security next to powerful rival
 					if( GET_PLAYER((PlayerTypes)iI).getPower() > GET_PLAYER(getOwnerINLINE()).getPower() )
 					{
-						iTempValue *= std::min( 400, (100 * GET_PLAYER((PlayerTypes)iI).getPower())/(GET_PLAYER(getOwnerINLINE()).getPower()) );
+						iTempValue *= std::min( 400, (100 * GET_PLAYER((PlayerTypes)iI).getPower())/std::max(1, GET_PLAYER(getOwnerINLINE()).getPower()) );
 						iTempValue /= 100;
 					}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                       01/04/09                                jdog5000      */
@@ -11957,11 +12078,12 @@ int CvCityAI::AI_cityThreat(bool bDangerPercent)
 		iValue += std::max(0, ((10 * iCurrentEra) / 3) - 6); //there are better ways to do this
 	}
 	
-	iValue += getNumWorldWonders() * 5;
-	
-	if (GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CULTURE3))
+	iValue += getNumActiveWorldWonders() * 5;
+
+	// BBAI TODO: It's ratios of threat that matter, so giving boosts to all cities doesn't make sense
+	if (GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3))
 	{
-		iValue += 10;
+		iValue += 5;
 		iValue += getCommerceRateModifier(COMMERCE_CULTURE) / 20;
 		if (getCultureLevel() >= (GC.getNumCultureLevelInfos() - 2))
 		{
@@ -11976,6 +12098,9 @@ int CvCityAI::AI_cityThreat(bool bDangerPercent)
 	iValue += 2 * GET_PLAYER(getOwnerINLINE()).AI_getPlotDanger(plot(), 3, false);
 	
 	return iValue;
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 }
 
 //Workers have/needed is not intended to be a strict

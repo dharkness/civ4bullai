@@ -7861,19 +7861,28 @@ int CvPlayer::getResearchTurnsLeftTimes100(TechTypes eTech, bool bOverflow) cons
 		}
 	}
 
-	if (iResearchRate == 0)
-	{
-		return MAX_INT;
-	}
-	
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/18/10                                jdog5000      */
+/*                                                                                              */
+/* Tech AI                                                                                      */
+/************************************************************************************************/
+	// Mainly just so debug display shows sensible value
 	iResearchLeft = GET_TEAM(getTeam()).getResearchLeft(eTech);
-
+	
 	if (bOverflow)
 	{
 		iResearchLeft -= iOverflow;
 	}
 	
 	iResearchLeft *= 100;
+
+	if (iResearchRate == 0)
+	{
+		return iResearchLeft;
+	}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	iTurnsLeft = (iResearchLeft / iResearchRate);
 
