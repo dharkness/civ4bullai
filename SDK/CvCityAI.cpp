@@ -1226,7 +1226,8 @@ void CvCityAI::AI_chooseProduction()
 				}
 			}
 
-			if( iExistingWorkers == 0 && AI_totalBestBuildValue(area()) > 10 )
+			//Fuyu: anything bigger than 0 is ok
+			if( iExistingWorkers == 0 && AI_totalBestBuildValue(area()) > 0 )
 			{
 				if (!bChooseWorker && AI_chooseUnit(UNITAI_WORKER))
 				{
@@ -1704,6 +1705,26 @@ void CvCityAI::AI_chooseProduction()
 		{
 			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose min defender (attack ai)", getName().GetCString());
 			return;
+		}
+	}
+
+	//Fuyu: build more workers
+	if( !(bLandWar && iWarSuccessRatio < -30) && !bDanger )
+	{
+		if ((iExistingWorkers < ((3*iNeededWorkers) + 2)/4)	|| ((bFinancialTrouble || ((happyLevel() - unhappyLevel() + getEspionageHappinessCounter()) == 0) && foodDifference(false) > 0) && (iExistingWorkers < iNeededWorkers)))
+		{
+			if ((AI_getWorkersNeeded() > 0) && (AI_getWorkersHave() == 0))
+			{
+				if( getPopulation() > 1 || (GC.getGameINLINE().getGameTurn() - getGameTurnAcquired() > (15 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent())/100) )
+				{
+					if (!bChooseWorker && AI_chooseUnit(UNITAI_WORKER))
+					{
+						if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker 6a", getName().GetCString());
+						return;
+					}
+					bChooseWorker = true;
+				}
+			}
 		}
 	}
 	
