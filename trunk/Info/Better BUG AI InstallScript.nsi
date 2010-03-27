@@ -13,14 +13,14 @@
 ;These are the variables you need to define for your mod
 
 !define NAME "Better BUG AI" ;Full Name of Mod
-!define VERSION "2010-03-09" ;Mod Version Number
-!define VERSION_VERBOSE "* Better BTS AI 0.90f r533$\n* BULL 1.1+ r159$\n* BUG 4.3 r2170"
+!define VERSION "0.90n (2010-03-28)" ;Mod Version Number - reflecting Better BTS AI Version
+!define VERSION_VERBOSE "* Better BTS AI 0.90n r543$\n* BULL 1.1+ r164$\n* BUG 4.3 r2198"
 
 !define MOD_LOC "Better BUG AI" ;Name of Mod Folder
 !define SHORT_NAME "Better BUG AI" ;Shorthand/nick of your mod
 
 #!define MYBTSDIR "T:\CIV4\Civilization 4\Beyond the Sword" ;Path where your Beyond the Sword .exe is
-!define MYCLSDIR "T:\CIV4\Civilization 4\Beyond the Sword\oldmods\${MOD_LOC}" ;Path where your mod is (Leave ${MOD_LOC} on the end of the path).  You can remove the above constant (MYBTSDIR) if you aren't compiling the mod from it's normal location
+!define MYCLSDIR "T:\CIV4\Civilization 4\Beyond the Sword\oldmods\Better BUG AI\${MOD_LOC}" ;Path where your mod is (Leave ${MOD_LOC} on the end of the path).  You can remove the above constant (MYBTSDIR) if you aren't compiling the mod from it's normal location
 
 !define RAW_ICON "Info\oxygen_bugbuster.ico"	;place your icon in your mod folder change che_guevara to the icon's name
   
@@ -38,8 +38,8 @@
 
 #!define MYFILESDIR "C:\Documents and Settings\P\My Documents\My Games\Beyond the Sword" ;Root Location where non main mod folders are found
 ;Notice that the constants below all reference MYFILESDIR.  This is not necessary, you can put your maps and add ons wherever you want, I just do this to keep things organized
-!define SETTINGS_LOC "${MYCLSDIR}\${SETTINGS_FOLDER}" ;Location of the UserSettings folder for you mod
-!define MAPS_LOC "${MYCLSDIR}\${PUBLIC_MAPS}" ;Location of the PublicMaps
+!define SETTINGS_LOC "T:\CIV4\Civilization 4\Beyond the Sword\oldmods\Better BUG AI\${SETTINGS_FOLDER}" ;Location of the UserSettings folder for you mod
+!define MAPS_LOC "T:\CIV4\Civilization 4\Beyond the Sword\oldmods\Better BUG AI\${PUBLIC_MAPS}" ;Location of the PublicMaps
 #!define ADDITION1_LOC "${MYCLSDIR}\AddOns\${MOD_ADDITION1}" ;Location of Add On 1
 #!define ADDITION2_LOC "${MYFILESDIR}\AddOns\${MOD_ADDITION2}" ;Uncomment if you are adding a second add on
  
@@ -79,7 +79,7 @@ Name "${NAME}"
 !ifdef ICON
 Icon "${ICON}"
 !endif
-OutFile "${NAME} (${VERSION}) Setup.exe" 
+OutFile "${NAME} ${VERSION} Setup.exe" 
 
 ;Default installation folder
 InstallDir ""
@@ -474,6 +474,10 @@ Function .onInit
 		ReadRegStr $R0 ${MACHINE_REG_ROOT} \
 		"Software\Microsoft\Windows\CurrentVersion\Uninstall\${MOD_LOC}" \
 		"UninstallString"
+		
+		#Just overwrite if the mod is already installed
+		Goto done
+		
 		StrCmp $R0 "" done
 
 		MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
@@ -585,8 +589,12 @@ Section /o "${MOD_LOC}" Section1
 	WriteUninstaller "$INSTDIR1\Mods\${MOD_LOC}\Uninstall.exe"
 
 	; Install UserSettings folder outside Program Files directory
-	SetOutPath "$CivRootDir\${MOD_LOC}"
-	File /r "${SETTINGS_LOC}"
+	${If} ${FileExists} "$CivRootDir\${MOD_LOC}\${SETTINGS_FOLDER}"
+		# don't overwrite if userSettings already exist
+	${Else}
+		SetOutPath "$CivRootDir\${MOD_LOC}"
+		File /r "${SETTINGS_LOC}"
+	${EndIf}
 	WriteRegStr ${USER_REG_ROOT} "Software\Microsoft\Windows\CurrentVersion\Uninstall\${SHORT_NAME}UserSettings" "UserSettings" "$CivRootDir\${MOD_LOC}"
 
 	; Install Public Maps

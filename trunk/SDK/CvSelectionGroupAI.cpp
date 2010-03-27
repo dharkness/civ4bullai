@@ -434,21 +434,21 @@ CvUnit* CvSelectionGroupAI::AI_getBestGroupAttacker(const CvPlot* pPlot, bool bP
 						else 
 						{
 							iOdds = pLoopUnit->AI_attackOdds(pPlot, bPotentialEnemy);
-						
+							
 							iValue = iOdds;
 							FAssertMsg(iValue > 0, "iValue is expected to be greater than 0");
-
+	
 							if (pLoopUnit->collateralDamage() > 0)
 							{
 								iPossibleTargets = std::min((pPlot->getNumVisibleEnemyDefenders(pLoopUnit) - 1), pLoopUnit->collateralDamageMaxUnits());
-
+	
 								if (iPossibleTargets > 0)
 								{
 									iValue *= (100 + ((pLoopUnit->collateralDamage() * iPossibleTargets) / 5));
 									iValue /= 100;
 								}
 							}
-
+	
 							// if non-human, prefer the last unit that has the best value (so as to avoid splitting the group)
 							if (iValue > iBestValue || (!bIsHuman && iValue > 0 && iValue == iBestValue))
 							{
@@ -551,7 +551,19 @@ int CvSelectionGroupAI::AI_compareStacks(const CvPlot* pPlot, bool bPotentialEne
 	}
 	FAssert(eOwner != NO_PLAYER);
 	
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       03/04/10                                jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
 	int defenderSum = pPlot->AI_sumStrength(NO_PLAYER, getOwnerINLINE(), eDomainType, true, !bPotentialEnemy, bPotentialEnemy);
+*/
+	// Clearly meant to use eOwner here ...
+	int defenderSum = pPlot->AI_sumStrength(NO_PLAYER, eOwner, eDomainType, true, !bPotentialEnemy, bPotentialEnemy);
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 	compareRatio /= std::max(1, defenderSum);
 
 	return compareRatio;

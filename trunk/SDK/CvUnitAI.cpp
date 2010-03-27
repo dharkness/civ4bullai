@@ -1415,7 +1415,7 @@ void CvUnitAI::AI_settleMove()
 			return;
 		}
 
-		// BBAI TODO: Go to a good city (like one with a transport ...
+		// BBAI TODO: Go to a good city (like one with a transport) ...
 	}
 
 	if (AI_retreatToCity())
@@ -1953,6 +1953,14 @@ void CvUnitAI::AI_attackMove()
 		{
 			if( plot()->isCity() && plot()->getOwnerINLINE() == getOwnerINLINE() )
 			{
+				// Shouldn't have groups of > 2 attack units
+				if( getGroup()->countNumUnitAIType(UNITAI_ATTACK) > 2 )
+				{
+					getGroup()->AI_separate(); // will change group
+
+					FAssert( eGroupAI == getGroup()->getHeadUnitAI() );
+				}
+
 				// Should never have attack city group lead by attack unit
 				if( getGroup()->countNumUnitAIType(UNITAI_ATTACK_CITY) > 0 )
 				{
@@ -1962,14 +1970,6 @@ void CvUnitAI::AI_attackMove()
 					// take a break to let ATTACK_CITY group move and avoid hang
 					getGroup()->pushMission(MISSION_SKIP);
 					return;
-				}
-
-				// Shouldn't have groups of > 2 attack units
-				if( getGroup()->countNumUnitAIType(UNITAI_ATTACK) > 2 )
-				{
-					getGroup()->AI_separate(); // will change group
-
-					FAssert( eGroupAI == getGroup()->getHeadUnitAI() );
 				}
 			}
 		}
@@ -2130,14 +2130,15 @@ void CvUnitAI::AI_attackMove()
 			}
 		}
 
+		// BBAI TODO: Not sure about this ... UNITAI_ATTACK groups with many UNITAI_ATTACK members???
 		if( getGroup()->getNumUnits() < 3 )
 		{
 			if( plot()->isOwned() && plot()->getOwnerINLINE() != getOwnerINLINE() )
 			{
-				if (AI_groupMergeRange(UNITAI_ATTACK, 1, true, true, true))
-				{
-					return;
-				}
+				//if (AI_groupMergeRange(UNITAI_ATTACK, 1, true, true, true))
+				//{
+				//	return;
+				//}
 			}
 		}
 
@@ -2206,7 +2207,18 @@ void CvUnitAI::AI_attackMove()
 
 		if ((GET_PLAYER(getOwnerINLINE()).AI_getNumAIUnits(UNITAI_CITY_DEFENSE) > 0) || (GET_TEAM(getTeam()).getAtWarCount(true) > 0))
 		{
-			if (AI_group(UNITAI_ATTACK_CITY, /*iMaxGroup*/ 1, /*iMaxOwnUnitAI*/ 1, -1, true, true, true, /*iMaxPath*/ 5))
+			// BBAI TODO: If we're fast, maybe shadow an attack city stack and pillage off of it
+
+			bool bIgnoreFaster = false;
+			if (GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_LAND_BLITZ))
+			{
+				if (area()->getAreaAIType(getTeam()) != AREAAI_ASSAULT)
+				{
+					bIgnoreFaster = true;
+				}
+			}
+
+			if (AI_group(UNITAI_ATTACK_CITY, /*iMaxGroup*/ 1, /*iMaxOwnUnitAI*/ 1, -1, bIgnoreFaster, true, true, /*iMaxPath*/ 5))
 			{
 				return;
 			}
@@ -2216,13 +2228,14 @@ void CvUnitAI::AI_attackMove()
 				return;
 			}
 			
-			if ((getMoves() > 1) && GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_FASTMOVERS))
-			{
-				if (AI_group(UNITAI_ATTACK, /*iMaxGroup*/ 4, /*iMaxOwnUnitAI*/ 1, -1, true, false, false, /*iMaxPath*/ 3))
-				{
-					return;
-				}
-			}
+			// BBAI TODO: Need group to be fast, need to ignore slower groups
+			//if (GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_FASTMOVERS))
+			//{
+			//	if (AI_group(UNITAI_ATTACK, /*iMaxGroup*/ 4, /*iMaxOwnUnitAI*/ 1, -1, true, false, false, /*iMaxPath*/ 3))
+			//	{
+			//		return;
+			//	}
+			//}
 		}
 
 		if (area()->getAreaAIType(getTeam()) == AREAAI_OFFENSIVE)
@@ -2494,7 +2507,7 @@ void CvUnitAI::AI_paratrooperMove()
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      10/28/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      03/17/10                                jdog5000      */
 /*                                                                                              */
 /* War tactics AI, Barbarian AI                                                                 */
 /************************************************************************************************/
@@ -2502,29 +2515,36 @@ void CvUnitAI::AI_attackCityMove()
 {
 	PROFILE_FUNC();
 
+	AreaAITypes eAreaAIType = area()->getAreaAIType(getTeam());
+    bool bLandWar = !isBarbarian() && ((eAreaAIType == AREAAI_OFFENSIVE) || (eAreaAIType == AREAAI_DEFENSIVE) || (eAreaAIType == AREAAI_MASSING));
+	bool bAssault = !isBarbarian() && ((eAreaAIType == AREAAI_ASSAULT) || (eAreaAIType == AREAAI_ASSAULT_ASSIST) || (eAreaAIType == AREAAI_ASSAULT_MASSING));
+
+	bool bTurtle = GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_TURTLE);
+	bool bAlert1 = GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_ALERT1);
 	bool bIgnoreFaster = false;
-	if (GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_FASTMOVERS))
+	if (GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_LAND_BLITZ))
 	{
-		if (area()->getAreaAIType(getTeam()) != AREAAI_ASSAULT)
+		if (!bAssault && area()->getCitiesPerPlayer(getOwnerINLINE()) > 0)
 		{
 			bIgnoreFaster = true;
 		}
 	}
 
-	// force heal if we in our own city and damaged
-	// can we remove this or call AI_heal here?
-	if ((getGroup()->getNumUnits() == 1) && (getDamage() > 0) &&
-        plot()->getOwnerINLINE() == getOwnerINLINE() && plot()->isCity())
-    {
-        getGroup()->pushMission(MISSION_HEAL);
-		return;
-    }
-
-    AreaAITypes eAreaAIType = area()->getAreaAIType(getTeam());
-    bool bLandWar = !isBarbarian() && ((eAreaAIType == AREAAI_OFFENSIVE) || (eAreaAIType == AREAAI_DEFENSIVE) || (eAreaAIType == AREAAI_MASSING));
-
-	if (plot()->isCity())
+	if( plot()->getOwnerINLINE() == getOwnerINLINE() && plot()->isCity() )
 	{
+		// force heal if we in our own city and damaged
+		// can we remove this or call AI_heal here?
+		if ((getGroup()->getNumUnits() == 1) && (getDamage() > 0))
+		{
+			getGroup()->pushMission(MISSION_HEAL);
+			return;
+		}
+
+		if( bIgnoreFaster )
+		{
+			// BBAI TODO: split out slow units ... will need to test to make sure this doesn't cause loops
+		}
+
 		if ((GC.getGame().getGameTurn() - plot()->getPlotCity()->getGameTurnAcquired()) <= 1)
 		{
 			CvSelectionGroup* pOldGroup = getGroup();
@@ -2537,19 +2557,16 @@ void CvUnitAI::AI_attackCityMove()
 			}
 		}
 
-		if (plot()->getOwnerINLINE() == getOwnerINLINE())
+		if ((eAreaAIType == AREAAI_ASSAULT) || (eAreaAIType == AREAAI_ASSAULT_ASSIST))
 		{
-		    if ((eAreaAIType == AREAAI_ASSAULT) || (eAreaAIType == AREAAI_ASSAULT_ASSIST))
+		    if (AI_offensiveAirlift())
 		    {
-		        if (AI_offensiveAirlift())
-		        {
-		            return;
-		        }
+		        return;
 		    }
 		}
 	}
 
-	if (AI_guardCity(false, false, 1))
+	if (AI_guardCity(false, false))
 	{
 		return;
 	}
@@ -2569,21 +2586,12 @@ void CvUnitAI::AI_attackCityMove()
 		}
 
 		// BBAI TODO: Find some way of reliably targetting nearby cities with little defense ...
-		//This is completely redundant with following code for now
-/*		if (getGroup()->getNumUnits() > 1)
-		{
-			if (AI_stackAttackCity(1, 250, true))
-			{
-				return;
-			}
-		}
-*/
 
 		//stack attack
 		if (getGroup()->getNumUnits() > 1)
 		{ 
 			// BBAI TODO: What value here avoids suicides?
-			int iRatio = GC.getDefineINT("BBAI_ATTACK_CITY_STACK_RATIO");
+			int iRatio = std::max(100, GC.getBBAI_ATTACK_CITY_STACK_RATIO());
 			if (AI_stackAttackCity(1, iRatio, true))
 			{
 				return;
@@ -2606,14 +2614,18 @@ void CvUnitAI::AI_attackCityMove()
 	if (area()->getCitiesPerPlayer(BARBARIAN_PLAYER) > 0 && !isBarbarian())
 	{
 		// BBAI TODO: if massing, only if not losing
-		if ((eAreaAIType != AREAAI_OFFENSIVE) && (eAreaAIType != AREAAI_DEFENSIVE))
+		if ((eAreaAIType != AREAAI_OFFENSIVE) && (eAreaAIType != AREAAI_DEFENSIVE) && !bAlert1 && !bTurtle)
 		{
 			bHuntBarbs = true;
 		}
 	}
 
 	// BBAI TODO: If losing badly, play more defense?
-	bool bReadyToAttack = ((getGroup()->getNumUnits() >= ((bHuntBarbs) ? 3 : AI_stackOfDoomExtra())));
+	bool bReadyToAttack = false;
+	if( !bTurtle )
+	{
+		bReadyToAttack = ((getGroup()->getNumUnits() >= ((bHuntBarbs) ? 3 : AI_stackOfDoomExtra())));
+	}
 
 	if( isBarbarian() )
 	{
@@ -2646,6 +2658,7 @@ void CvUnitAI::AI_attackCityMove()
 
 	if (bAtWar && (getGroup()->getNumUnits() <= 2))
 	{
+		// BBAI TODO: Pillage around enemy city if not strong enough to attack alone
 		if (AI_pillageRange(3, 11))
 		{
 			return;
@@ -2685,6 +2698,14 @@ void CvUnitAI::AI_attackCityMove()
 			{
 				// Use smaller attack city stacks on defense
 				if (AI_guardCity(false, true, 3))
+				{
+					return;
+				}
+			}
+
+			if( bTurtle )
+			{
+				if (AI_guardCity(false, true, 7))
 				{
 					return;
 				}
@@ -3026,6 +3047,11 @@ void CvUnitAI::AI_collateralMove()
 
 void CvUnitAI::AI_pillageMove()
 {
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/05/10                                jdog5000      */
+/*                                                                                              */
+/* Unit AI                                                                                      */
+/************************************************************************************************/
 	PROFILE_FUNC();
 
 	if (AI_guardCity(false, true, 1))
@@ -3038,8 +3064,10 @@ void CvUnitAI::AI_pillageMove()
 		return;
 	}
 
+	// BBAI TODO: Shadow ATTACK_CITY stacks and pillage
+
 	//join any city attacks in progress
-	if (plot()->getOwnerINLINE() != getOwnerINLINE())
+	if (plot()->isOwned() && plot()->getOwnerINLINE() != getOwnerINLINE())
 	{
 		if (AI_groupMergeRange(UNITAI_ATTACK_CITY, 1, true, true))
 		{
@@ -3134,19 +3162,11 @@ void CvUnitAI::AI_pillageMove()
 		return;
 	}
 
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      12/03/08                                jdog5000      */
-/*                                                                                              */
-/* Unit AI                                                                                      */
-/************************************************************************************************/
 	if( !isHuman() && plot()->isCoastalLand() && GET_PLAYER(getOwnerINLINE()).AI_unitTargetMissionAIs(this, MISSIONAI_PICKUP) > 0 )
 	{
 		getGroup()->pushMission(MISSION_SKIP);
 		return;
 	}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 
 	if (AI_patrol())
 	{
@@ -3165,6 +3185,9 @@ void CvUnitAI::AI_pillageMove()
 
 	getGroup()->pushMission(MISSION_SKIP);
 	return;
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 }
 
 
@@ -3471,7 +3494,16 @@ void CvUnitAI::AI_counterMove()
 		}
 	}
 	
-	if (AI_group(UNITAI_ATTACK_CITY, /*iMaxGroup*/ -1, 2, -1, false, /*bIgnoreOwnUnitType*/ true, /*bStackOfDoom*/ true, /*iMaxPath*/ 6))
+	bool bIgnoreFasterStacks = false;
+	if (GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_LAND_BLITZ))
+	{
+		if (area()->getAreaAIType(getTeam()) != AREAAI_ASSAULT)
+		{
+			bIgnoreFasterStacks = true;
+		}
+	}
+
+	if (AI_group(UNITAI_ATTACK_CITY, /*iMaxGroup*/ -1, 2, -1, bIgnoreFasterStacks, /*bIgnoreOwnUnitType*/ true, /*bStackOfDoom*/ true, /*iMaxPath*/ 6))
 	{
 		return;
 	}
@@ -3667,37 +3699,39 @@ void CvUnitAI::AI_cityDefenseMove()
 	{
 		return;
 	}
-	if (!isBarbarian() && ((area()->getAreaAIType(getTeam()) == AREAAI_OFFENSIVE) || (area()->getAreaAIType(getTeam()) == AREAAI_MASSING)))
-	{
-			if (AI_group(UNITAI_ATTACK_CITY, -1, 2, 4, /*bIgnoreFaster*/ true))
-			{
-				return;
-			}
-		}
-	
-	if (area()->getAreaAIType(getTeam()) == AREAAI_ASSAULT)
-	{
+
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      12/07/08                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      03/04/10                                jdog5000      */
 /*                                                                                              */
 /* Unit AI                                                                                      */
 /************************************************************************************************/
-/* original bts code
-		if (AI_load(UNITAI_ASSAULT_SEA, MISSIONAI_LOAD_ASSAULT, UNITAI_ATTACK_CITY, 1, 2, -1, 1, MOVE_SAFE_TERRITORY))
+	if (!isBarbarian() && ((area()->getAreaAIType(getTeam()) == AREAAI_OFFENSIVE) || (area()->getAreaAIType(getTeam()) == AREAAI_MASSING)))
+	{
+		bool bIgnoreFaster = false;
+		if (GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_LAND_BLITZ))
 		{
-			// does this ever occur? the previous settler check is less strict, this one should never be true (I think)
-			FAssertMsg(false, "unexpected settler load (non-fatal)");
+			if (area()->getAreaAIType(getTeam()) != AREAAI_ASSAULT)
+			{
+				bIgnoreFaster = true;
+			}
+		}
+
+		if (AI_group(UNITAI_ATTACK_CITY, -1, 2, 4, bIgnoreFaster))
+		{
 			return;
 		}
-*/
+	}
+	
+	if (area()->getAreaAIType(getTeam()) == AREAAI_ASSAULT)
+	{
 		if (AI_load(UNITAI_ASSAULT_SEA, MISSIONAI_LOAD_ASSAULT, UNITAI_ATTACK_CITY, 2, -1, -1, 1, MOVE_SAFE_TERRITORY))
 		{
 			return;
 		}
+	}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
-	}
 
 	if (AI_retreatToCity())
 	{
@@ -9655,7 +9689,7 @@ bool CvUnitAI::AI_groupMergeRange(UnitAITypes eUnitAI, int iMaxRange, bool bBigg
 		return false;
 	}
 
-	if (!bAllowRegrouping)
+    if (!bAllowRegrouping)
 	{
 		if (getGroup()->getNumUnits() > 1)
 		{
@@ -11330,8 +11364,15 @@ bool CvUnitAI::AI_spreadReligion()
 	int iLoop;
 	int iI;
 
-
-    bool bCultureVictory = GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CULTURE2);
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/08/10                                jdog5000      */
+/*                                                                                              */
+/* Victory Strategy AI                                                                          */
+/************************************************************************************************/
+	bool bCultureVictory = GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2);
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	eReligion = NO_RELIGION;
 
 	// BBAI TODO: Unnecessary with changes below ...
@@ -15019,9 +15060,7 @@ bool CvUnitAI::AI_pillage(int iBonusValueThreshold)
 /*                                                                                              */
 /* Unit AI, Efficiency                                                                          */
 /************************************************************************************************/
-/* original code
-			if (potentialWarAction(pLoopPlot))
-*/
+			//if (potentialWarAction(pLoopPlot))
 			if( pLoopPlot->isOwned() && isEnemy(pLoopPlot->getTeam(),pLoopPlot) )
 			{
 			    CvCity * pWorkingCity = pLoopPlot->getWorkingCity();
@@ -22028,6 +22067,19 @@ bool CvUnitAI::AI_stackAttackCity(int iRange, int iPowerThreshold, bool bFollow)
 
 	if (pBestPlot != NULL)
 	{
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/05/10                                jdog5000      */
+/*                                                                                              */
+/* AI logging                                                                                   */
+/************************************************************************************************/
+		if( gUnitLogLevel >= 1 && pBestPlot->getPlotCity() != NULL )
+		{
+			logBBAI("    Stack for player %d (%S) decides to attack city %S with stack ratio %d", getOwner(), GET_PLAYER(getOwner()).getCivilizationDescription(0), pBestPlot->getPlotCity()->getName(0).GetCString(), iBestValue );
+		}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+
 		FAssert(!atPlot(pBestPlot));
 		getGroup()->pushMission(MISSION_MOVE_TO, pBestPlot->getX_INLINE(), pBestPlot->getY_INLINE(), ((bFollow) ? MOVE_DIRECT_ATTACK : 0));
 		return true;
@@ -22110,17 +22162,25 @@ bool CvUnitAI::AI_artistCultureVictoryMove()
     bool bGreatWork = false;
     bool bJoin = true;
 
-    if (!GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CULTURE1))
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/08/10                                jdog5000      */
+/*                                                                                              */
+/* Victory Strategy AI                                                                          */
+/************************************************************************************************/
+    if (!(GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE1)))
     {
         return false;        
     }
     
-    if (GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_CULTURE3))
+    if (GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3))
     {
         //Great Work
         bGreatWork = true;
     }
-    
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+
 	int iCultureCitiesNeeded = GC.getGameINLINE().culturalVictoryNumCultureCities();
 	FAssertMsg(iCultureCitiesNeeded > 0, "CultureVictory Strategy should not be true");
 

@@ -22,6 +22,13 @@
 			<iTechTradeKnownPercent>0</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>0</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>0</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>0</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>0</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>0</iConquestVictoryWeight>
+			<iDominationVictoryWeight>0</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>0</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>0</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>0</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>0</iMaxWarDistantPowerRatio>
@@ -216,6 +223,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>25</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>25</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>35</iConquestVictoryWeight>
+			<iDominationVictoryWeight>65</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>0</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>50</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>70</iMaxWarDistantPowerRatio>
@@ -758,6 +772,13 @@
 			<iTechTradeKnownPercent>20</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>15</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>60</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>25</iConquestVictoryWeight>
+			<iDominationVictoryWeight>30</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>20</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>60</iMaxWarDistantPowerRatio>
@@ -1311,6 +1332,13 @@
 			<iTechTradeKnownPercent>40</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>55</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>20</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>20</iConquestVictoryWeight>
+			<iDominationVictoryWeight>50</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>5</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -1857,6 +1885,13 @@
 			<iTechTradeKnownPercent>70</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>20</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>25</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>25</iConquestVictoryWeight>
+			<iDominationVictoryWeight>55</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -2404,6 +2439,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>30</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>5</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>55</iConquestVictoryWeight>
+			<iDominationVictoryWeight>35</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>50</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>110</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>80</iMaxWarDistantPowerRatio>
@@ -2955,6 +2997,13 @@
 			<iTechTradeKnownPercent>40</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>0</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>30</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>30</iConquestVictoryWeight>
+			<iDominationVictoryWeight>35</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>55</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -3510,6 +3559,13 @@
 			<iTechTradeKnownPercent>20</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>30</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>25</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>55</iConquestVictoryWeight>
+			<iDominationVictoryWeight>30</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>10</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>40</iMaxWarDistantPowerRatio>
@@ -4052,6 +4108,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>45</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>15</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>20</iConquestVictoryWeight>
+			<iDominationVictoryWeight>45</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>30</iMaxWarDistantPowerRatio>
@@ -4598,6 +4661,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>35</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>45</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>0</iConquestVictoryWeight>
+			<iDominationVictoryWeight>35</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>35</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>60</iMaxWarDistantPowerRatio>
@@ -5153,6 +5223,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>65</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>0</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>30</iConquestVictoryWeight>
+			<iDominationVictoryWeight>30</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>60</iMaxWarDistantPowerRatio>
@@ -5711,6 +5788,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>30</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>55</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>25</iConquestVictoryWeight>
+			<iDominationVictoryWeight>10</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>30</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>60</iMaxWarDistantPowerRatio>
@@ -6265,6 +6349,13 @@
 			<iTechTradeKnownPercent>40</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>15</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>35</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>35</iConquestVictoryWeight>
+			<iDominationVictoryWeight>10</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>55</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>80</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -6816,6 +6907,13 @@
 			<iTechTradeKnownPercent>40</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>30</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>10</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>45</iConquestVictoryWeight>
+			<iDominationVictoryWeight>10</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>55</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>300</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>80</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>40</iMaxWarDistantPowerRatio>
@@ -7371,6 +7469,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>25</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>65</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>10</iConquestVictoryWeight>
+			<iDominationVictoryWeight>25</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -7920,6 +8025,13 @@
 			<iTechTradeKnownPercent>20</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>45</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>30</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>0</iConquestVictoryWeight>
+			<iDominationVictoryWeight>5</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>70</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>400</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>60</iMaxWarDistantPowerRatio>
@@ -8437,6 +8549,13 @@
 			<iTechTradeKnownPercent>40</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>5</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>25</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>65</iConquestVictoryWeight>
+			<iDominationVictoryWeight>30</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>50</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>120</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>90</iMaxWarDistantPowerRatio>
@@ -8984,6 +9103,13 @@
 			<iTechTradeKnownPercent>20</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>55</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>25</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>40</iConquestVictoryWeight>
+			<iDominationVictoryWeight>25</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>5</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>120</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>30</iMaxWarDistantPowerRatio>
@@ -9530,6 +9656,13 @@
 			<iTechTradeKnownPercent>40</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>50</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>30</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>35</iConquestVictoryWeight>
+			<iDominationVictoryWeight>5</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>30</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>110</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>60</iMaxWarDistantPowerRatio>
@@ -10081,6 +10214,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>10</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>55</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>30</iConquestVictoryWeight>
+			<iDominationVictoryWeight>30</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>80</iMaxWarDistantPowerRatio>
@@ -10638,6 +10778,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>70</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>25</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>25</iConquestVictoryWeight>
+			<iDominationVictoryWeight>5</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -11186,6 +11333,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>30</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>25</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>50</iConquestVictoryWeight>
+			<iDominationVictoryWeight>30</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>15</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>60</iMaxWarDistantPowerRatio>
@@ -11739,6 +11893,13 @@
 			<iTechTradeKnownPercent>60</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>30</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>5</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>30</iConquestVictoryWeight>
+			<iDominationVictoryWeight>25</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>60</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>130</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>100</iMaxWarDistantPowerRatio>
@@ -12297,6 +12458,13 @@
 			<iTechTradeKnownPercent>40</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>5</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>50</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>20</iConquestVictoryWeight>
+			<iDominationVictoryWeight>50</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>110</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>90</iMaxWarDistantPowerRatio>
@@ -12852,6 +13020,13 @@
 			<iTechTradeKnownPercent>40</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>25</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>30</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>50</iConquestVictoryWeight>
+			<iDominationVictoryWeight>35</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>10</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>110</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>80</iMaxWarDistantPowerRatio>
@@ -13398,6 +13573,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>30</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>25</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>10</iConquestVictoryWeight>
+			<iDominationVictoryWeight>35</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>50</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>110</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>70</iMaxWarDistantPowerRatio>
@@ -13944,6 +14126,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>50</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>5</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>20</iConquestVictoryWeight>
+			<iDominationVictoryWeight>50</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -14495,6 +14684,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>15</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>10</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>35</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>35</iConquestVictoryWeight>
+			<iDominationVictoryWeight>15</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>45</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>300</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -15050,6 +15246,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>20</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>60</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>20</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>15</iConquestVictoryWeight>
+			<iDominationVictoryWeight>15</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>40</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>110</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>70</iMaxWarDistantPowerRatio>
@@ -15592,6 +15795,13 @@
 			<iTechTradeKnownPercent>0</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>20</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>45</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>30</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>25</iConquestVictoryWeight>
+			<iDominationVictoryWeight>0</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>50</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>400</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -16147,6 +16357,13 @@
 			<iTechTradeKnownPercent>50</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>0</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>50</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>50</iConquestVictoryWeight>
+			<iDominationVictoryWeight>35</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>15</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>110</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>60</iMaxWarDistantPowerRatio>
@@ -16698,6 +16915,13 @@
 			<iTechTradeKnownPercent>40</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>25</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>15</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>25</iConquestVictoryWeight>
+			<iDominationVictoryWeight>55</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>30</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -17255,6 +17479,13 @@
 			<iTechTradeKnownPercent>50</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>25</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>0</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>70</iConquestVictoryWeight>
+			<iDominationVictoryWeight>30</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>50</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>130</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>80</iMaxWarDistantPowerRatio>
@@ -17804,6 +18035,13 @@
 			<iTechTradeKnownPercent>60</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>25</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>25</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>35</iConquestVictoryWeight>
+			<iDominationVictoryWeight>60</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>5</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>120</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>100</iMaxWarDistantPowerRatio>
@@ -18359,6 +18597,13 @@
 			<iTechTradeKnownPercent>50</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>15</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>15</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>45</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>30</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>5</iConquestVictoryWeight>
+			<iDominationVictoryWeight>30</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>40</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>300</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -18914,6 +19159,13 @@
 			<iTechTradeKnownPercent>10</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>35</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>45</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>15</iConquestVictoryWeight>
+			<iDominationVictoryWeight>30</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>250</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>70</iMaxWarDistantPowerRatio>
@@ -19469,6 +19721,13 @@
 			<iTechTradeKnownPercent>10</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>5</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>50</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>30</iConquestVictoryWeight>
+			<iDominationVictoryWeight>25</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>40</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>120</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>60</iMaxWarDistantPowerRatio>
@@ -20031,6 +20290,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>40</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>10</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>40</iConquestVictoryWeight>
+			<iDominationVictoryWeight>15</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>45</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>300</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>120</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>40</iMaxWarDistantPowerRatio>
@@ -20573,6 +20839,13 @@
 			<iTechTradeKnownPercent>60</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>15</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>25</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>15</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>55</iConquestVictoryWeight>
+			<iDominationVictoryWeight>35</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>20</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -21126,6 +21399,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>10</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>25</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>50</iConquestVictoryWeight>
+			<iDominationVictoryWeight>40</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>50</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>110</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>90</iMaxWarDistantPowerRatio>
@@ -21671,6 +21951,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>25</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>45</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>5</iConquestVictoryWeight>
+			<iDominationVictoryWeight>25</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>50</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>300</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>80</iMaxWarDistantPowerRatio>
@@ -22217,6 +22504,13 @@
 			<iTechTradeKnownPercent>40</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>10</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>35</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>55</iConquestVictoryWeight>
+			<iDominationVictoryWeight>25</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>110</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>80</iMaxWarDistantPowerRatio>
@@ -22770,6 +23064,13 @@
 			<iTechTradeKnownPercent>50</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>25</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>15</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>60</iConquestVictoryWeight>
+			<iDominationVictoryWeight>35</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>15</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>50</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -23315,6 +23616,13 @@
 			<iTechTradeKnownPercent>80</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>25</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>25</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>25</iConquestVictoryWeight>
+			<iDominationVictoryWeight>10</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>65</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>130</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>0</iMaxWarDistantPowerRatio>
@@ -23861,6 +24169,13 @@
 			<iTechTradeKnownPercent>80</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>10</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>70</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>20</iConquestVictoryWeight>
+			<iDominationVictoryWeight>40</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>10</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>110</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>80</iMaxWarDistantPowerRatio>
@@ -24423,6 +24738,13 @@
 			<iTechTradeKnownPercent>40</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>55</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>10</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>20</iConquestVictoryWeight>
+			<iDominationVictoryWeight>45</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>20</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -24996,6 +25318,13 @@
 			<iTechTradeKnownPercent>50</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>15</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>30</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>25</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>10</iConquestVictoryWeight>
+			<iDominationVictoryWeight>35</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>50</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>110</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>60</iMaxWarDistantPowerRatio>
@@ -25558,6 +25887,13 @@
 			<iTechTradeKnownPercent>100</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>25</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>40</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>40</iConquestVictoryWeight>
+			<iDominationVictoryWeight>45</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>0</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>30</iMaxWarDistantPowerRatio>
@@ -26122,6 +26458,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>35</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>30</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>5</iConquestVictoryWeight>
+			<iDominationVictoryWeight>70</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>10</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>60</iMaxWarDistantPowerRatio>
@@ -26685,6 +27028,13 @@
 			<iTechTradeKnownPercent>20</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>15</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>30</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>55</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>10</iConquestVictoryWeight>
+			<iDominationVictoryWeight>20</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>35</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>
@@ -27254,6 +27604,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>5</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>40</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>10</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>45</iConquestVictoryWeight>
+			<iDominationVictoryWeight>30</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>25</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>90</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>80</iMaxWarDistantPowerRatio>
@@ -27832,6 +28189,13 @@
 			<iTechTradeKnownPercent>15</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>30</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>50</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>35</iConquestVictoryWeight>
+			<iDominationVictoryWeight>0</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>35</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>100</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>60</iMaxWarDistantPowerRatio>
@@ -28403,6 +28767,13 @@
 			<iTechTradeKnownPercent>30</iTechTradeKnownPercent>
 			<iMaxGoldTradePercent>10</iMaxGoldTradePercent>
 			<iMaxGoldPerTurnTradePercent>10</iMaxGoldPerTurnTradePercent>
+			<!-- BBAI Victory Strategy -->
+			<iCultureVictoryWeight>50</iCultureVictoryWeight>
+			<iSpaceVictoryWeight>35</iSpaceVictoryWeight>
+			<iConquestVictoryWeight>15</iConquestVictoryWeight>
+			<iDominationVictoryWeight>15</iDominationVictoryWeight>
+			<iDiplomacyVictoryWeight>35</iDiplomacyVictoryWeight>
+			<!-- BBAI Victory Strategy -->
 			<iMaxWarRand>200</iMaxWarRand>
 			<iMaxWarNearbyPowerRatio>100</iMaxWarNearbyPowerRatio>
 			<iMaxWarDistantPowerRatio>50</iMaxWarDistantPowerRatio>

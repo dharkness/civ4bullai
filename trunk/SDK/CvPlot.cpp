@@ -6227,7 +6227,7 @@ int CvPlot::calculateImprovementYieldChange(ImprovementTypes eImprovement, Yield
 	}
 	else
 	{
-		RouteTypes eRoute = getRouteType();;
+		RouteTypes eRoute = getRouteType();
 
 		if( bBestRoute && ePlayer != NO_PLAYER )
 		{

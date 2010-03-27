@@ -75,19 +75,51 @@ The full change log from plain BTS is in changelog.txt, only the most recent cha
 
 New in Better BTS AI 0.90
 
+Merged in Unoffical Patch 1.50
 Added the Lead From Behind mod by UncutDragon (improves selection of order for attack for both human and AI stacks, preserving GG, medics, experienced units)
+Added CIV4LeaderHeadInfos.xml and CIV4CivilizationsSchema.xml to mod files for new victory strategy system
 
 Bugfix
 - Fixed divide by 0 issue with debug text which could cause crashes in debug logging when loading world builder scenarios using a non-Final_Release DLL
+- Fixed bug (introduced) where giving pillage orders to a stack or multi-move unit would pillage multiple times
+- Fixed bug (introduced) allowing ships to move diagonally over isthmuses under some circumstances
+- Fixed bug (introduced) slowing AI expansion, especially on Archipelago maps
+
+Victory Strategy AI
+- Switched all cultural victory logic to new victory strategy framework
+- AIs gunning for cultural victory now much less likely to declare war the closer they get, biggest reduction for TOTAL war, smaller reduction for DOGPILE
+- AIs in late stages of cultural victory more willing to agree to peace
+- Updated close to cultural victory detection so that AIs who haven't been trying but get reasonably close will pursue it, and so that they can detect when human player is pursuing this strategy
+- First complete implementation of AI victory strategy framework for Conquest, Domination, Space, and Diplomacy
+- Levels 3 & 4 of each victory strategy are now based on observables, not hidden AI leader tendencies.  So, other AIs can now understand when other AIs are going for a particular victory, and it also serves as an estimate of what the human player is doing.
+- AIs going for CONQUEST and DOMINATION victories willing to spend more gold on units
+- Improved existing system for AI going for DOMINATION to build health buildings to help boost pop
 
 War strategy AI
+- AI now detects when other players are close to victory and greatly boosts start war value against them (still plays within leader's attitude no war probabilities, so won't declare on friendly)
+- If enemy is (still) running higher levels of CULTURE or SPACE victory, AI will not accept capitulation until it ruins the enemies chance of winning
+- AIs running highest levels of CONQUEST and DOMINATION strategies may ignore leader's attitude no war probabilities and attack highest value target
 - AI calculations of the state of their wars now work better with minor civs (for mods)
-- AI valuation of how much bombard strength it needs to build for its attack stacks now scales with map size, unit bombard power (AI previously aimed to have 100 bombard strength total)
+- Smoothed AI valuation of how much bombard strength it needs to build for its attack stacks, upped desired bombard strength in era of walls and castles.  AI should now produce considerably more siege, especially the bigger AIs.
 - Reduced AI valuation of interception probability as criteria for UNITAI_COUNTER units, to reduce drive to switch infantry to SAM
+- AI now won't start air blitz build logic until it can build bombers (previously started with fighters)
+- Added AI_STRATEGY_ALERT1 and AI_STRATEGY_ALERT2, AI will now analyze if it might be attacked in the near future and take pre-emptive action
+- AI now generates extra defence in its high culture cities a bit earlier when going for cultural victory
+- Removed some of the reductions to defender builds when AI is running AI_STRATEGY_GET_BETTER_UNITS (should help AI defend itself early in game)
+- Added AI_STRATEGY_TURTLE implementation, if AI is badly outgunned and either recently attacked or losing badly, it will use any offensive stacks it has for defense and go into a defensive survival shell
+- AI now plans ahead to counter units of enemies it is preparing for war against based on what it can see
+- Added function so AI can calculate the air power of its rivals
+- Corrected AI valuation on interception abilities for UNITAI_COUNTER units so that it doesn't switch Infantry to SAM until rivals have air units
+- Adjusted Dagger and Crush strategy thresholds so if AI has started them it is more likely to keep them up
 
 War tactics AI
 - Reworked AI logic for when to raze cities it conquers
 - AI carriers will now move to support/air defend ground troops, support invasions
+- AI now values active wonders a little more in deciding cities to target
+- Fixed bug where AI would over value holy cities of religions other than its state religion
+- Upped threat cities feel when they are next to much more powerful rivals
+- The strategy FAST_MOVERS no longer limits the AI from forming main stacks of mixed fast and slow units, but it will still form small fast attack groups
+- Augmented the strategy LAND_BLITZ, a more restrictive case of FAST_MOVERS, so that main stacks will be made of multi-move units when possible in the modern era
 
 Naval AI
 - Assault transports no longer set off to join transport groups already mounting assaults
@@ -112,12 +144,33 @@ City AI
 - Reworked AI valuation of buildings with happiness effects so all effects are considered
 - Buildings with negative happiness effects are now strongly avoided if city has happiness problems
 - AI now values buildings which reduce war weariness, previously only avoided buildings which increased it
+- AI now values religious buildings for AP religion more than other relgious buildings based on boosted yield
+- AI now values religious buildings for state religion more than other religious buildings based on yield boosts from wonders
+- Tweaks to help AI build mobile defense/counter attack force when outgunned
+- Lowered max build turn limit for high priority production buildings when AI is in a tough war
+- AI will now probably only build one workboat using very early capital logic as originally intended (speeds expansion in water resource heavy starts)
+- Resolved issues where AI early game build logic would get confused because Warriors cannot be built as UNITAI_CITY_DEFENSE
+
+Tech AI
+- Separated out building and unit valuation into own function for debugging and future efforts
+- Adjusted valuation of tech based on units enabled, boost to defensive units under ALERT and TURTLE and offensive when going for conquest victory
+- AIs going for DOMINATION victory will aim for Galleons earlier
+
+Civic AI
+- If AI is leader of AP, it now values state religion civics more
+- AI now values benefits it receives from wonders for state religion buildings when computing value for state religion civics
 
 Diplomacy AI
-- All AIs will check more frequently for tech trades when behind in tech race, biggest benefit for those who typically wait longest
+- All AIs will check more frequently for tech trades when well behind in tech race, biggest benefit for those who typically wait longest
 
 Gold AI
 - Improved AI budgeting for unit upgrades in scenarios, advanced start
+
+Missionary AI
+- Fixed issues and improved logic in AI usage of MISSIONARY strategy (religious full-court press)
+
+General AI
+- Changed player consistent random method for picking strategies from being based on capital city location to a stored rand, so AI player tendencies will be consistent even if capital moves
 
 Efficiency
 - Several efficiency improvements were added with Lead From Behind
@@ -126,3 +179,12 @@ Efficiency
 Customization
 - Split GlobalDefinesAlt.xml into a few separate files by type
 - Improved handling of default values for new BBAI variables in case xml files are accidentally missing or something
+- Added BBAI_TURTLE_ENEMY_POWER_RATIO to BBAI_AI_Variables
+- Added BBAI_VICTORY_STRATEGY_CONQUEST, etc to BBAI_Game_Options so that you can turn off any parts of the new AI playing to win logic that you wish.  The code already checks for whether the victories are enabled or blocked by other things like the always peace option, so this is really just for if you don't like how it plays for some reason.
+
+CvUnitInfos.xml
+- Returned UNITAI_CITY_DEFENSE to Roman Praetorians
+- Returned work boats to original tags of military support (exploit) and military production (faster with drydock) (thanks Fuyu)
+
+CIV4LeaderHeadInfos.xml
+- Added new AI weights for five victory strategies

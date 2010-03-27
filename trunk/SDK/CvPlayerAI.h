@@ -109,13 +109,13 @@ public:
 
 	TechTypes AI_bestTech(int iMaxPathLength = 1, bool bIgnoreCost = false, bool bAsync = false, TechTypes eIgnoreTech = NO_TECH, AdvisorTypes eIgnoreAdvisor = NO_ADVISOR) const;
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      09/28/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      03/18/10                                jdog5000      */
 /*                                                                                              */
 /* Tech AI                                                                                      */
 /************************************************************************************************/
 	int AI_techValue( TechTypes eTech, int iPathLength, bool bIgnoreCost, bool bAsync, int* paiBonusClassRevealed, int* paiBonusClassUnrevealed, int* paiBonusClassHave ) const;
-	int AI_techBuildingValue( TechTypes eTech );
-	int AI_techUnitValue( TechTypes eTech );
+	int AI_techBuildingValue( TechTypes eTech, int iPathLength, bool &bEnablesWonder ) const;
+	int AI_techUnitValue( TechTypes eTech, int iPathLength, bool &bEnablesUnitWonder ) const;
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
@@ -317,7 +317,7 @@ public:
 
 	int AI_getCultureVictoryStage() const;
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      06/25/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      03/17/10                                jdog5000      */
 /*                                                                                              */
 /* Victory Strategy AI                                                                          */
 /************************************************************************************************/
@@ -326,8 +326,11 @@ public:
 	int AI_getDominationVictoryStage() const;
 	int AI_getDiplomacyVictoryStage() const;
 	bool AI_isDoVictoryStrategy(int iVictoryStrategy) const;
+	bool AI_isDoVictoryStrategyLevel4() const;
+	bool AI_isDoVictoryStrategyLevel3() const;
 	void AI_forceUpdateVictoryStrategies();
 	int AI_getVictoryStrategyHash() const;
+	int AI_getStrategyRand() const;
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/		
@@ -442,10 +445,11 @@ protected:
 	mutable int m_iStrategyHash;
 	mutable int m_iStrategyHashCacheTurn;
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      07/19/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      03/18/10                                jdog5000      */
 /*                                                                                              */
 /* Victory Strategy AI                                                                          */
 /************************************************************************************************/
+	mutable int m_iStrategyRand;
 	mutable int m_iVictoryStrategyHash;
 	mutable int m_iVictoryStrategyHashCacheTurn;
 /************************************************************************************************/

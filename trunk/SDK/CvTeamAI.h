@@ -99,14 +99,29 @@ public:
 	DenialTypes AI_surrenderTrade(TeamTypes eTeam, int iPowerMultiplier = 100) const;
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      07/20/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      03/20/10                                jdog5000      */
+/*                                                                                              */
+/* Victory Strategy AI                                                                          */
+/************************************************************************************************/
+	bool AI_isAnyMemberDoVictoryStrategy( int iVictoryStrategy ) const;
+	bool AI_isAnyMemberDoVictoryStrategyLevel4() const;
+	bool AI_isAnyMemberDoVictoryStrategyLevel3() const;
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/20/10                                jdog5000      */
 /*                                                                                              */
 /* War Strategy AI                                                                              */
 /************************************************************************************************/
 	int AI_getWarSuccessCapitulationRatio() const;
 	int AI_getEnemyPowerPercent( bool bConsiderOthers = false ) const;
+	int AI_getRivalAirPower( ) const;
 	bool AI_acceptSurrender( TeamTypes eSurrenderTeam );
 	bool AI_isOkayVassalTarget( TeamTypes eTeam );
+
+	void AI_getWarRands( int &iMaxWarRand, int &iLimitedWarRand, int &iDogpileWarRand ) const;
+	void AI_getWarThresholds( int &iMaxWarThreshold, int &iLimitedWarThreshold, int &iDogpileWarThreshold ) const;
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/

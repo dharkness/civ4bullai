@@ -1479,44 +1479,34 @@ void CvGameTextMgr::setPlotListHelp(CvWStringBuffer &szString, CvPlot* pPlot, bo
 								szTempBuffer.Format(L"Dagger, ");
 								szString.append(szTempBuffer);
 							}
-							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_CULTURE1))
-							{
-								szTempBuffer.Format(L"Culture1, ");
-								szString.append(szTempBuffer);
-							}
-							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_CULTURE2))
-							{
-								szTempBuffer.Format(L"Culture2, ");
-								szString.append(szTempBuffer);
-							}
-							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_CULTURE3))
-							{
-								szTempBuffer.Format(L"Culture3, ");
-								szString.append(szTempBuffer);
-							}
-							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_CULTURE4))
-							{
-								szTempBuffer.Format(L"Culture4, ");
-								szString.append(szTempBuffer);
-							}
-							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_MISSIONARY))
-							{
-								szTempBuffer.Format(L"Missionary, ");
-								szString.append(szTempBuffer);
-							}
 							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_CRUSH))
 							{
 								szTempBuffer.Format(L"Crush, ");
 								szString.append(szTempBuffer);
 							}
-							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_PRODUCTION))
+							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_ALERT1))
 							{
-								szTempBuffer.Format(L"Production, ");
+								szTempBuffer.Format(L"Alert1, ");
 								szString.append(szTempBuffer);
 							}
-							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_PEACE))
+							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_ALERT2))
 							{
-								szTempBuffer.Format(L"Peace, ");
+								szTempBuffer.Format(L"Alert2, ");
+								szString.append(szTempBuffer);
+							}
+							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_TURTLE))
+							{
+								szTempBuffer.Format(L"Turtle, ");
+								szString.append(szTempBuffer);
+							}
+							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_LAST_STAND))
+							{
+								szTempBuffer.Format(L"Last Stand, ");
+								szString.append(szTempBuffer);
+							}
+							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_FINAL_WAR))
+							{
+								szTempBuffer.Format(L"FinalWar, ");
 								szString.append(szTempBuffer);
 							}
 							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_GET_BETTER_UNITS))
@@ -1544,32 +1534,21 @@ void CvGameTextMgr::setPlotListHelp(CvWStringBuffer &szString, CvPlot* pPlot, bo
 								szTempBuffer.Format(L"OWABWNW, ");
 								szString.append(szTempBuffer);
 							}
-
-							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_FINAL_WAR))
+							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_PRODUCTION))
 							{
-								szTempBuffer.Format(L"FinalWar, ");
+								szTempBuffer.Format(L"Production, ");
 								szString.append(szTempBuffer);
 							}
-
+							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_MISSIONARY))
+							{
+								szTempBuffer.Format(L"Missionary, ");
+								szString.append(szTempBuffer);
+							}
 							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_BIG_ESPIONAGE))
 							{
 								szTempBuffer.Format(L"BigEspionage, ");
 								szString.append(szTempBuffer);
-							}
-
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      06/25/09                                jdog5000      */
-/*                                                                                              */
-/*                                                                                              */
-/************************************************************************************************/
-							if (GET_PLAYER(pHeadGroup->getOwner()).AI_isDoStrategy(AI_STRATEGY_LAST_STAND))
-							{
-								szTempBuffer.Format(L"Last Stand, ");
-								szString.append(szTempBuffer);
-							}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/	
+							}	
 
 							//Area battle plans.
 							if (pPlot->area()->getAreaAIType(pHeadGroup->getTeam()) == AREAAI_OFFENSIVE)
@@ -4181,11 +4160,17 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
 					}
 				}
 
+				int iPathLength;
+				bool bDummy;
 				for (int iI = 0; iI < GC.getNumTechInfos(); iI++)
 				{
-					if( GET_PLAYER(pPlot->getOwner()).canResearch((TechTypes)iI) )
+					iPathLength = GET_PLAYER(pPlot->getOwner()).findPathLength(((TechTypes)iI), false);
+
+					if( iPathLength <= 3 && !GET_TEAM(pPlot->getTeam()).isHasTech((TechTypes)iI) )
 					{
-						szString.append(CvWString::format(L"\n %s = %d", GC.getTechInfo((TechTypes)iI).getDescription(), GET_PLAYER(pPlot->getOwner()).AI_techValue((TechTypes)iI, 1, false, false, paiBonusClassRevealed, paiBonusClassUnrevealed, paiBonusClassHave)));
+						szString.append(CvWString::format(L"\n%s(%d)=%7d", GC.getTechInfo((TechTypes)iI).getDescription(), iPathLength, GET_PLAYER(pPlot->getOwner()).AI_techValue((TechTypes)iI, 1, false, false, paiBonusClassRevealed, paiBonusClassUnrevealed, paiBonusClassHave)));
+						szString.append(CvWString::format(L" (bld:%5d, ", GET_PLAYER(pPlot->getOwner()).AI_techBuildingValue((TechTypes)iI, 1, bDummy)));
+						szString.append(CvWString::format(L"unt:%5d)", GET_PLAYER(pPlot->getOwner()).AI_techUnitValue((TechTypes)iI, 1, bDummy)));
 					}
 				}
 			}
@@ -4530,36 +4515,15 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
 				szString.append(CvWString::format(L"Culture:%d", pCity->findCommerceRateRank(COMMERCE_CULTURE)));
 			}
             szString.append(NEWLINE);
-            
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                         06/11/08                             jdog5000      */
+/*                                                                                              */
+/* Debug                                                                                        */
+/************************************************************************************************/           
             //AI strategies
             if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_DAGGER))
             {
                 szTempBuffer.Format(L"Dagger, ");
-                szString.append(szTempBuffer);
-            }
-            if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_CULTURE1))
-            {
-                szTempBuffer.Format(L"Culture1, ");
-                szString.append(szTempBuffer);
-            }
-            if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_CULTURE2))
-            {
-                szTempBuffer.Format(L"Culture2, ");
-                szString.append(szTempBuffer);
-            }
-            if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_CULTURE3))
-            {
-                szTempBuffer.Format(L"Culture3, ");
-                szString.append(szTempBuffer);
-            }
-			if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_CULTURE4))
-            {
-                szTempBuffer.Format(L"Culture4, ");
-                szString.append(szTempBuffer);
-            }
-            if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_MISSIONARY))
-            {
-                szTempBuffer.Format(L"Missionary, ");
                 szString.append(szTempBuffer);
             }
 			if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_CRUSH))
@@ -4567,14 +4531,29 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
                 szTempBuffer.Format(L"Crush, ");
                 szString.append(szTempBuffer);
 			}
-            if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_PRODUCTION))
+			if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_ALERT1))
             {
-                szTempBuffer.Format(L"Production, ");
+                szTempBuffer.Format(L"Alert1, ");
                 szString.append(szTempBuffer);
-            }
-			if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_PEACE))
+			}
+			if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_ALERT2))
             {
-                szTempBuffer.Format(L"Peace, ");
+                szTempBuffer.Format(L"Alert2, ");
+                szString.append(szTempBuffer);
+			}
+			if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_TURTLE))
+            {
+                szTempBuffer.Format(L"Turtle, ");
+                szString.append(szTempBuffer);
+			}
+			if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_LAST_STAND))
+            {
+                szTempBuffer.Format(L"LastStand, ");
+                szString.append(szTempBuffer);
+			}
+			if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_FINAL_WAR))
+            {
+                szTempBuffer.Format(L"FinalWar, ");
                 szString.append(szTempBuffer);
             }
             if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_GET_BETTER_UNITS))
@@ -4602,13 +4581,16 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
                 szTempBuffer.Format(L"OWABWNW, ");
                 szString.append(szTempBuffer);
             }
-            
-			if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_FINAL_WAR))
+			if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_PRODUCTION))
             {
-                szTempBuffer.Format(L"FinalWar, ");
+                szTempBuffer.Format(L"Production, ");
                 szString.append(szTempBuffer);
             }
-            
+            if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_MISSIONARY))
+            {
+                szTempBuffer.Format(L"Missionary, ");
+                szString.append(szTempBuffer);
+            }
             if (GET_PLAYER(pPlot->getOwner()).AI_isDoStrategy(AI_STRATEGY_BIG_ESPIONAGE))
             {
                 szTempBuffer.Format(L"BigEspionage, ");
@@ -4642,11 +4624,6 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
             }
             
 			szString.append(szTempBuffer);
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                         06/11/08                                jdog5000      */
-/*                                                                                              */
-/* Debug                                                                                        */
-/************************************************************************************************/
 			szString.append(CvWString::format(L"\n\nNum Wars: %d + %d minor", GET_TEAM(pPlot->getTeam()).getAtWarCount(true), GET_TEAM(pPlot->getTeam()).getAtWarCount(false) - GET_TEAM(pPlot->getTeam()).getAtWarCount(true)));
 			szString.append(CvWString::format(L"\nWarplans:"));
 			for (int iK = 0; iK < MAX_TEAMS; ++iK)
@@ -17899,7 +17876,7 @@ void CvGameTextMgr::setEspionageCostHelp(CvWStringBuffer &szBuffer, EspionageMis
 
 					if (kPlayer.hasHolyCity(eReligion))
 					{
-						iTempModifier += GC.getDefineINT("ESPIONAGE_CITY_HOLY_CITY_MOD");;
+						iTempModifier += GC.getDefineINT("ESPIONAGE_CITY_HOLY_CITY_MOD");
 					}
 				}
 
