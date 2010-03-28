@@ -1711,7 +1711,10 @@ void CvCityAI::AI_chooseProduction()
 	//Fuyu: build more workers
 	if( !(bLandWar && iWarSuccessRatio < -30) && !bDanger )
 	{
-		if ((iExistingWorkers < ((3*iNeededWorkers) + 2)/4)	|| ((bFinancialTrouble || ((happyLevel() - unhappyLevel() + getEspionageHappinessCounter()) == 0) && foodDifference(false) > 0) && (iExistingWorkers < iNeededWorkers)))
+		/* financial trouble: 4/5; will grow above happy cap: 3/4; else 2/3 */
+		if ( (bFinancialTrouble && (iExistingWorkers < (((8*iNeededWorkers) + 5)/10)))
+			|| (iExistingWorkers < ((4*iNeededWorkers) + 3)/6)
+			|| ((iExistingWorkers < ((3*iNeededWorkers) + 2)/4) && (((happyLevel() - unhappyLevel() + getEspionageHappinessCounter()) == 0) && (foodDifference(false) > 0))))
 		{
 			if ((AI_getWorkersNeeded() > 0) && (AI_getWorkersHave() == 0))
 			{
