@@ -1711,10 +1711,8 @@ void CvCityAI::AI_chooseProduction()
 	//Fuyu: build more workers
 	if( !(bLandWar && iWarSuccessRatio < -30) && !bDanger )
 	{
-		/* financial trouble: 4/5; will grow above happy cap: 3/4; else 2/3 */
-		if ( (bFinancialTrouble && (iExistingWorkers < (((8*iNeededWorkers) + 5)/10)))
-			|| (iExistingWorkers < ((4*iNeededWorkers) + 3)/6)
-			|| ((iExistingWorkers < ((3*iNeededWorkers) + 2)/4) && (((happyLevel() - unhappyLevel() + getEspionageHappinessCounter()) == 0) && (foodDifference(false) > 0))))
+		/* financial trouble: 3/4; */
+		if (bFinancialTrouble && (iExistingWorkers < ((3*iNeededWorkers) + 2)/4))
 		{
 			if ((AI_getWorkersNeeded() > 0) && (AI_getWorkersHave() == 0))
 			{
@@ -1790,6 +1788,30 @@ void CvCityAI::AI_chooseProduction()
 			}
 		}
 	}
+
+	//Fuyu: build more workers, #2
+	if( !(bLandWar && iWarSuccessRatio < -30) && !bDanger )
+	{
+		/* financial trouble: 4/5; will grow above happy cap: 3/4; else 2/3 */
+		if ( (bFinancialTrouble && (iExistingWorkers < (((8*iNeededWorkers) + 5)/10)))
+			|| (iExistingWorkers < ((4*iNeededWorkers) + 3)/6)
+			|| ((iExistingWorkers < ((3*iNeededWorkers) + 2)/4) && (((happyLevel() - unhappyLevel() + getEspionageHappinessCounter()) == 0) && (foodDifference(false) > 0))))
+		{
+			if ((AI_getWorkersNeeded() > 0) && (AI_getWorkersHave() == 0))
+			{
+				if( getPopulation() > 1 || (GC.getGameINLINE().getGameTurn() - getGameTurnAcquired() > (15 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent())/100) )
+				{
+					if (!bChooseWorker && AI_chooseUnit(UNITAI_WORKER))
+					{
+						if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker 6b", getName().GetCString());
+						return;
+					}
+					bChooseWorker = true;
+				}
+			}
+		}
+	}
+
 
 	//this is needed to build the cathedrals quickly
 	//also very good for giving cultural cities first dibs on wonders
