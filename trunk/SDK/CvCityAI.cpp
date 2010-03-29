@@ -10412,29 +10412,37 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 				{
 					if (eNonObsoleteBonus != NO_BONUS)
 					{
-						if (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus))
+						if (!bHasBonusImprovement)
 						{
-							iValue += (GET_PLAYER(getOwnerINLINE()).AI_bonusVal(eNonObsoleteBonus) * 10);
-							iValue += 200;
-							if (eBestBuild != NO_BUILD)
+							if (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus))
 							{
-								if ((GC.getBuildInfo(eBestBuild).getImprovement() == NO_IMPROVEMENT) || (!GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus)))
+								iValue += (GET_PLAYER(getOwnerINLINE()).AI_bonusVal(eNonObsoleteBonus) * 10);
+								iValue += 200;
+								if (eBestBuild != NO_BUILD)
 								{
-									//Always prefer improvements which connect bonuses.
-									eBestBuild = NO_BUILD;
-									iBestValue = 0;
+									if ((GC.getBuildInfo(eBestBuild).getImprovement() == NO_IMPROVEMENT) || (!GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus)))
+									{
+										//Always prefer improvements which connect bonuses.
+										eBestBuild = NO_BUILD;
+										iBestValue = 0;
+									}
 								}
 							}
+							else
+							{
+								if (eBestBuild != NO_BUILD)
+								{
+									if ((GC.getBuildInfo(eBestBuild).getImprovement() != NO_IMPROVEMENT) && (GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus)))
+									{
+										iValue -= 1000;
+									}
+								}
+							}
+
 						}
-						else
+						else if (!GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus))
 						{
-							if (eBestBuild != NO_BUILD)
-							{
-								if ((GC.getBuildInfo(eBestBuild).getImprovement() != NO_IMPROVEMENT) && (GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus)))
-								{
-									iValue -= 1000;
-								}
-							}
+							iValue -= 1000;
 						}
 					}
 				}
