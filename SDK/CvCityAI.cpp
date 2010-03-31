@@ -7776,40 +7776,61 @@ void CvCityAI::AI_doDraft(bool bForce)
 				return;
 			}
 
+			// Don't shrink cities too much
             int iConscriptPop = getConscriptPopulation();
-			// Large cities want a little spare happiness, 
-			int iHappyDiff = GC.getDefineINT("CONSCRIPT_POP_ANGER") - iConscriptPop + getPopulation()/12;
-
-            if (bLandWar && 0 == angryPopulation(iHappyDiff))
+			if ( !bDanger && (3 * (getPopulation() - iConscriptPop) < getHighestPopulation() * 2) )
             {
-                bool bWait = false;
+				return;
+            }
 
-                if (!bDanger)
-                {
-					if (3 * (getPopulation() - iConscriptPop) < getHighestPopulation() * 2)
-                    {
-                        bWait = true;
-						return;
-                    }
+			// Large cities want a little spare happiness
+			int iHappyDiff = GC.getDefineINT("CONSCRIPT_POP_ANGER") - iConscriptPop + getPopulation()/10;
 
-					if( GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_TURTLE) )
-					{
-						// Full out defensive
-						bWait = false;
-					}
-					else if( (GET_PLAYER(getOwnerINLINE()).calculateUnitCost() * 100) / std::max(1, GET_PLAYER(getOwnerINLINE()).calculatePreInflatedCosts()) > 50 )
-					{
-						bWait = true;
-					}
-					else if( AI_countWorkedPoorTiles() > 1 )
+            if (bLandWar && (0 == angryPopulation(iHappyDiff)))
+            {
+                bool bWait = true;
+
+				if( bWait && GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_TURTLE) )
+				{
+					// Full out defensive
+					if( bDanger || (getPopulation() >= std::max(5, getHighestPopulation() - 1)) )
 					{
 						bWait = false;
 					}
-                    else if (getConscriptAngerTimer() > 0)
-                    {
-                        bWait = true;
-                    }
-                }
+					else if( (AI_countWorkedPoorTiles() + std::max(0,(visiblePopulation() - AI_countGoodSpecialists(true)))) > 1 )
+					{
+						bWait = false;
+					}
+				}
+				
+				if( bWait && bDanger )
+				{
+					// If city might be captured, don't hold back
+					int iOurDefense = GET_TEAM(getTeam()).AI_getOurPlotStrength(plot(),0,true,false,true);
+					int iEnemyOffense = GET_PLAYER(getOwnerINLINE()).AI_getEnemyPlotStrength(plot(),2,false,false);
+
+					if( (iOurDefense == 0) || (3*iEnemyOffense > 2*iOurDefense) )
+					{
+						bWait = false;
+					}
+				}
+
+				if( bWait )
+				{
+					// Non-critical, only burn population if population is not worth much
+					if ((getConscriptAngerTimer() == 0) && ((AI_countWorkedPoorTiles() + std::max(0,(visiblePopulation() - AI_countGoodSpecialists(true)))) >= iConscriptPop))
+					{
+						if( (getPopulation() >= std::max(5, getHighestPopulation() - 1)) )
+						{
+							bWait = false;
+						}
+					}
+				}
+
+				if( !bWait && gCityLogLevel >= 2 )
+				{
+					logBBAI("      City %S (size %d, highest %d) chooses to conscript with danger: %d, land war: %d, poor tiles: %d, bad specialists: %d", getName().GetCString(), getPopulation(), getHighestPopulation(), bDanger, bLandWar, AI_countWorkedPoorTiles(), std::max(0,(visiblePopulation() - AI_countGoodSpecialists(true))) );
+				}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/

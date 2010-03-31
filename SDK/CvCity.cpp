@@ -3639,8 +3639,15 @@ void CvCity::conscript()
 		return;
 	}
 
-	changePopulation(-(getConscriptPopulation()));
-	changeConscriptAngerTimer(flatConscriptAngerLength());
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      10/02/09                                jdog5000      */
+/*                                                                                              */
+/* AI logging                                                                                   */
+/************************************************************************************************/
+	int iPopChange = -(getConscriptPopulation());
+	int iAngerLength = flatConscriptAngerLength();
+	changePopulation(iPopChange);
+	changeConscriptAngerTimer(iAngerLength);
 
 	setDrafted(true);
 
@@ -3655,6 +3662,13 @@ void CvCity::conscript()
 		{
 			gDLL->getInterfaceIFace()->selectUnit(pUnit, true, false, true);
 		}
+		if( gCityLogLevel >= 2 )
+		{
+			logBBAI("      City %S does conscript of a %S at cost of %d pop, %d anger", getName().GetCString(), pUnit->getName().GetCString(), iPopChange, iAngerLength );
+		}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	}
 }
 

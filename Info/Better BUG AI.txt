@@ -1,10 +1,10 @@
-Better BUG AI 0.90n (2010-03-29)
+Better BUG AI 0.90n (2010-03-31)
 --------------------------
 http://forums.civfanatics.com/showthread.php?t=354019
 
 
 Components:
-Better BTS AI 0.90n r543
+Better BTS AI 0.90n r544
 * AI Logging
 BULL 1.1+ r164
 * Fractional Trade Routes
