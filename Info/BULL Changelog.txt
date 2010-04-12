@@ -44,6 +44,13 @@ New Features:
 
 - Ignore Harmless Barbarians
 	No warnings for nearby barbarians that cannot enter your lands
+- Starting Experience
+	Added starting experience and number of promotions a unit will receive
+	Added list of the present and missing sources of experience and their amounts similar to resource modifiers for buildings
+- Draft Unit and Limit
+	Added full unit description: strength, moves, XP, promotions, abilities, etc.
+	Added number of units you can draft this turn
+	Added messages to Draft button hover when you have reached the player or city limits
 
 Improvements:
 
@@ -62,6 +69,8 @@ Bug Fixes:
 	Worst Enemies you haven't met are no longer shown
 - Show Hidden Attitudes
 	First Impression modifier resets to zero for each leader
+- Options
+	Starting a new game no longer breaks BULL's access to BUG's options
 
 Merged Mods:
 
@@ -69,6 +78,12 @@ Merged Mods:
 MODDING
 
 New Features:
+
+- API
+	Added calculateExperience() in CvGameCoreUtils
+	Added calculateLevel() in CvGameCoreUtils
+	Added CvGameTextMgr::setBasicUnitHelpWithCity()
+	Added CvGameTextMgr::setUnitExperienceHelp()
 
 Improvements:
 
@@ -83,6 +98,10 @@ Improvements:
 	Exposed CvCity::getAdditionalHealthByBuilding(BuildingTypes eBuilding) [four forms]
 
 Bug Fixes:
+
+- Initialization
+	You cannot call bugInit() or getOptionXXX() before BUG has initialized
+	TODO: Have BUG tell BULL when it is ready
 
 
 ____________________________________________________________________________________________________

@@ -394,4 +394,12 @@ int LFBgetCombatOdds(int iAttackerLowFS,	int iAttackerHighFS, int iDefenderLowFS
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
 
+// BUG - Unit Experience - start
+/*
+ * Calculates the experience needed to reach the next level after the given level.
+ */
+int calculateExperience(int iLevel, PlayerTypes ePlayer);
+int calculateLevel(int iExperience, PlayerTypes ePlayer);
+// BUG - Unit Experience - end
+
 #endif
