@@ -27,6 +27,16 @@
 #include "CvBugOptions.h"
 // BUG - end
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/30/10                                jdog5000      */
+/*                                                                                              */
+/* AI Logging                                                                                   */
+/************************************************************************************************/
+#include "BetterBTSAI.h"
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+
 // Public Functions...
 
 CvSelectionGroup::CvSelectionGroup()
@@ -1339,7 +1349,7 @@ void CvSelectionGroup::startMission()
 		}
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/02/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      03/30/10                                jdog5000      */
 /*                                                                                              */
 /* War tactics AI                                                                               */
 /************************************************************************************************/
@@ -1356,7 +1366,15 @@ void CvSelectionGroup::startMission()
 
 				if( pLoopUnit->canMove() && pLoopUnit->canPillage(plot()) )
 				{
-					iMaxMovesLeft = std::max( iMaxMovesLeft, pLoopUnit->movesLeft() );
+					int iMovesLeft = pLoopUnit->movesLeft();
+					if( pLoopUnit->bombardRate() > 0 )
+					{
+						iMovesLeft /= 2;
+					}
+					iMovesLeft *= pLoopUnit->currHitPoints();
+					iMovesLeft /= std::max(1, pLoopUnit->maxHitPoints());
+
+					iMaxMovesLeft = std::max( iMaxMovesLeft, iMovesLeft );
 				}
 			}
 
@@ -1373,17 +1391,28 @@ void CvSelectionGroup::startMission()
 
 					if( pLoopUnit->canMove() && pLoopUnit->canPillage(plot()) )
 					{
-						if( pLoopUnit->movesLeft() >= iMaxMovesLeft )
+						int iMovesLeft = pLoopUnit->movesLeft();
+						if( pLoopUnit->bombardRate() > 0 )
+						{
+							iMovesLeft /= 2;
+						}
+						iMovesLeft *= pLoopUnit->currHitPoints();
+						iMovesLeft /= std::max(1, pLoopUnit->maxHitPoints());
+
+						if( iMovesLeft >= iMaxMovesLeft )
 						{
 							if (pLoopUnit->pillage())
 							{
 								bAction = true;
-								bDidPillage = true;
-								break;
+								if( isHuman() || canAllMove() )
+								{
+									bDidPillage = true;
+									break;
+								}
 							}
 						}
 
-						iNextMaxMovesLeft = std::max( iNextMaxMovesLeft, pLoopUnit->movesLeft() );
+						iNextMaxMovesLeft = std::max( iNextMaxMovesLeft, iMovesLeft );
 					}
 				}
 
@@ -3098,7 +3127,7 @@ bool CvSelectionGroup::visibilityRange()
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      06/02/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      03/30/10                                jdog5000      */
 /*                                                                                              */
 /* General AI                                                                                   */
 /************************************************************************************************/
@@ -3109,9 +3138,10 @@ int CvSelectionGroup::getBombardTurns(CvCity* pCity)
 {
 	PROFILE_FUNC();
 
-	bool bHasBomber = (area()->getNumAIUnits(getOwner(),UNITAI_ATTACK_AIR) > 0);
+	bool bHasBomber = (getOwnerINLINE() != NO_PLAYER ? (GET_PLAYER(getOwnerINLINE()).AI_calculateTotalBombard(DOMAIN_AIR) > 0) : false);
 	bool bIgnoreBuildingDefense = bHasBomber;
 	int iTotalBombardRate = (bHasBomber ? 16 : 0);
+	int iUnitBombardRate = 0;
 
 	CLLNode<IDInfo>* pUnitNode = headUnitNode();
 	while (pUnitNode != NULL)
@@ -3121,18 +3151,39 @@ int CvSelectionGroup::getBombardTurns(CvCity* pCity)
 
 		if( pLoopUnit->bombardRate() > 0 )
 		{
-			iTotalBombardRate += pLoopUnit->bombardRate();
-			bIgnoreBuildingDefense = (bIgnoreBuildingDefense || pLoopUnit->ignoreBuildingDefense());
+			iUnitBombardRate = pLoopUnit->bombardRate();
+
+			if( pLoopUnit->ignoreBuildingDefense() )
+			{
+				bIgnoreBuildingDefense = true;
+			}
+			else
+			{
+				iUnitBombardRate *= std::max(25, (100 - pCity->getBuildingBombardDefense()));
+				iUnitBombardRate /= 100;
+			}
+
+			iTotalBombardRate += iUnitBombardRate;
 		}
 	}
 
-	int iBombardTurns = pCity->getDefenseModifier(bIgnoreBuildingDefense);
-	if( !bIgnoreBuildingDefense )
+
+	if( pCity->getTotalDefense(bIgnoreBuildingDefense) == 0 )
 	{
-		iBombardTurns *= 100;
-		iBombardTurns /= std::max(25, (100 - pCity->getBuildingBombardDefense()));
+		return 0;
 	}
-	iBombardTurns /= std::max(8, iTotalBombardRate);
+
+	int iBombardTurns = pCity->getTotalDefense(bIgnoreBuildingDefense);
+
+	if( iTotalBombardRate > 0 )
+	{
+		iBombardTurns = (GC.getMAX_CITY_DEFENSE_DAMAGE() - pCity->getDefenseDamage());
+		iBombardTurns *= pCity->getTotalDefense(false);
+		iBombardTurns += (GC.getMAX_CITY_DEFENSE_DAMAGE() * iTotalBombardRate) - 1;
+		iBombardTurns /= std::max(1, (GC.getMAX_CITY_DEFENSE_DAMAGE() * iTotalBombardRate));
+	}
+
+	if( gUnitLogLevel > 2 ) logBBAI("      Bombard of %S will take %d turns at rate %d and current damage %d with bombard def %d", pCity->getName().GetCString(), iBombardTurns, iTotalBombardRate, pCity->getDefenseDamage(), (bIgnoreBuildingDefense ? 0 : pCity->getBuildingBombardDefense()));
 
 	return iBombardTurns;
 }
@@ -4109,6 +4160,8 @@ void CvSelectionGroup::setTransportUnit(CvUnit* pTransportUnit)
 		// if there is space, but not enough to fit whole group, then split us, and set on the new group
 		if (iCargoSpaceAvailable < getNumUnits())
 		{
+			// BBAI TODO: Need to do something to get large groups to load into large waiting convoys of transports
+			// BBAI TODO: Also, don't want large group to shatter when loading a bunch of units if head AI changes
 			CvSelectionGroup* pSplitGroup = splitGroup(iCargoSpaceAvailable);
 			if (pSplitGroup != NULL)
 			{

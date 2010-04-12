@@ -5563,9 +5563,9 @@ int CvCityAI::AI_neededDefenders()
 	if ((GC.getGame().getGameTurn() - getGameTurnAcquired()) < 10)
 	{
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                       05/22/08                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      03/31/10                                jdog5000      */
 /*                                                                                              */
-/* Bugfix                                                                                       */
+/* War tactics AI                                                                               */
 /************************************************************************************************/
 /* original code
 		if (bOffenseWar)
@@ -5592,7 +5592,7 @@ int CvCityAI::AI_neededDefenders()
 */
 		iDefenders = std::max(2, iDefenders);
 
-		if (bOffenseWar)
+		if (bOffenseWar && getTotalDefense(true) > 0)
 		{
 			if (!hasActiveWorldWonder() && !isHolyCity())
 			{
@@ -5609,7 +5609,7 @@ int CvCityAI::AI_neededDefenders()
 			iDefenders++;
 		}
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                        END                                                  */
+/* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
 	}
 	
@@ -7797,7 +7797,7 @@ void CvCityAI::AI_doDraft(bool bForce)
 					{
 						bWait = false;
 					}
-					else if( (AI_countWorkedPoorTiles() + std::max(0,(visiblePopulation() - AI_countGoodSpecialists(true)))) > 1 )
+					else if( (AI_countWorkedPoorTiles() + std::max(0,(visiblePopulation() - AI_countGoodSpecialists(true)))) >= 1 )
 					{
 						bWait = false;
 					}
@@ -11947,16 +11947,16 @@ int CvCityAI::AI_playerCloseness(PlayerTypes eIndex, int iMaxDistance)
 {
 	FAssert(GET_PLAYER(eIndex).isAlive());
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                       03/20/10                          denev & jdog5000    */
+/* BETTER_BTS_AI_MOD                      03/31/10                              jdog5000        */
 /*                                                                                              */
-/* Bugfix                                                                                       */
+/* War tactics AI                                                                               */
 /************************************************************************************************/
 /* original bts code
 	FAssert(eIndex != getID());
 */
-	FAssert(eIndex != getOwnerINLINE());
+	FAssert((eIndex != getOwnerINLINE()) || (getGameTurnAcquired() == GC.getGameINLINE().getGameTurn()));
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                        END                                                  */
+/* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
 
 	if ((m_iCachePlayerClosenessTurn != GC.getGame().getGameTurn())

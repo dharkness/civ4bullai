@@ -8017,7 +8017,25 @@ int CvUnit::maxCombatStr(const CvPlot* pPlot, const CvUnit* pAttacker, CombatDet
 	{
 		if (!noDefensiveBonus())
 		{
-			iExtraModifier = pPlot->defenseModifier(getTeam(), (pAttacker != NULL) ? pAttacker->ignoreBuildingDefense() : true);
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      03/30/10                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
+			// When pAttacker is NULL but pPlot is not, this is a computation for this units defensive value
+			// against an unknown attacker.  Always ignoring building defense in this case is a conservative estimate,
+			// but causes AI to suicide against castle walls of low culture cities in early game.  Using this units
+			// ignoreBuildingDefense does a little better ... in early game it corrects undervalue of castles.  One
+			// downside is when medieval unit is defending a walled city against gunpowder.  Here, the over value
+			// makes attacker a little more cautious, but with their tech lead it shouldn't matter too much.  Also
+			// makes vulnerable units (ships, etc) feel safer in this case and potentially not leave, but ships
+			// leave when ratio is pretty low anyway.
+
+			//iExtraModifier = pPlot->defenseModifier(getTeam(), (pAttacker != NULL) ? pAttacker->ignoreBuildingDefense() : true);
+			iExtraModifier = pPlot->defenseModifier(getTeam(), (pAttacker != NULL) ? pAttacker->ignoreBuildingDefense() : ignoreBuildingDefense());
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 			iModifier += iExtraModifier;
 			if (pCombatDetails != NULL)
 			{

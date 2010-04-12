@@ -224,6 +224,7 @@ public:
 /*                                                                                              */
 /* General AI                                                                                   */
 /************************************************************************************************/
+	int AI_cityTargetUnitsByPath(CvCity* pCity, CvSelectionGroup* pSkipSelectionGroup, int iMaxPathTurns) const;
 	int AI_enemyTargetMissionAIs(TeamTypes eTargetTeam, MissionAITypes* aeMissionAI, int iMissionAICount, CvSelectionGroup* pSkipSelectionGroup = NULL) const;
 	int AI_unitTargetMissionAIs(CvUnit* pUnit, MissionAITypes* aeMissionAI, int iMissionAICount, CvSelectionGroup* pSkipSelectionGroup, int iMaxPathTurns) const;
 /************************************************************************************************/

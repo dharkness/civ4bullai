@@ -2800,6 +2800,38 @@ int CvTeam::countEnemyPowerByArea(CvArea* pArea) const
 	return iCount;
 }
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      04/01/10                                jdog5000      */
+/*                                                                                              */
+/* War strategy AI                                                                              */
+/************************************************************************************************/
+int CvTeam::countEnemyPopulationByArea(CvArea* pArea) const
+{
+	int iCount;
+	int iI;
+
+	iCount = 0;
+
+	for (iI = 0; iI < MAX_PLAYERS; iI++)
+	{
+		if (GET_PLAYER((PlayerTypes)iI).isAlive())
+		{
+			if (GET_PLAYER((PlayerTypes)iI).getTeam() != getID())
+			{
+				if( AI_getWarPlan(GET_PLAYER((PlayerTypes)iI).getTeam()) != NO_WARPLAN )
+				{
+					iCount += pArea->getPopulationPerPlayer((PlayerTypes)iI);
+				}
+			}
+		}
+	}
+
+	return iCount;
+}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+
 
 int CvTeam::countNumAIUnitsByArea(CvArea* pArea, UnitAITypes eUnitAI) const
 {

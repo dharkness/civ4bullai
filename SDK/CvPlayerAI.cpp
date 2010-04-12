@@ -3249,7 +3249,7 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 	}
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/04/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      04/03/10                                jdog5000      */
 /*                                                                                              */
 /* War strategy AI                                                                              */
 /************************************************************************************************/
@@ -3267,9 +3267,6 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 			}
 		}
 	}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 
 	if (pCity->isEverOwned(getID()))
 	{
@@ -3277,7 +3274,7 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 	}
 	if (!bIgnoreAttackers)
 	{
-		iValue += AI_adjacentPotentialAttackers(pCity->plot());
+		iValue += std::min( 8, (AI_adjacentPotentialAttackers(pCity->plot()) + 2)/3 );
 	}
 
 	for (iI = 0; iI < NUM_CITY_PLOTS; iI++)
@@ -3288,18 +3285,7 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 		{
 			if (pLoopPlot->getBonusType(getTeam()) != NO_BONUS)
 			{
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      07/11/08                                jdog5000      */
-/*                                                                                              */
-/* War strategy AI                                                                              */
-/************************************************************************************************/
-/* original code
-				iValue++;
-*/
 				iValue += std::min(4,std::max(1, AI_bonusVal(pLoopPlot->getBonusType(getTeam()))/10));
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 			}
 
 			if (pLoopPlot->getOwnerINLINE() == getID())
@@ -3313,6 +3299,9 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 			}
 		}
 	}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	pNearestCity = GC.getMapINLINE().findCity(pCity->getX_INLINE(), pCity->getY_INLINE(), getID());
 
@@ -10911,14 +10900,53 @@ int CvPlayerAI::AI_plotTargetMissionAIs(CvPlot* pPlot, MissionAITypes* aeMission
 	return iCount;
 }
 
-
-int CvPlayerAI::AI_unitTargetMissionAIs(CvUnit* pUnit, MissionAITypes eMissionAI, CvSelectionGroup* pSkipSelectionGroup) const
-{
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      01/11/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      04/03/10                                jdog5000      */
 /*                                                                                              */
 /* General AI                                                                                   */
 /************************************************************************************************/
+int CvPlayerAI::AI_cityTargetUnitsByPath(CvCity* pCity, CvSelectionGroup* pSkipSelectionGroup, int iMaxPathTurns) const
+{
+	PROFILE_FUNC();
+
+	int iCount = 0;
+
+	int iLoop;
+	int iPathTurns;
+	for(CvSelectionGroup* pLoopSelectionGroup = firstSelectionGroup(&iLoop); pLoopSelectionGroup; pLoopSelectionGroup = nextSelectionGroup(&iLoop))
+	{
+		if (pLoopSelectionGroup != pSkipSelectionGroup)
+		{
+			CvPlot* pMissionPlot = pLoopSelectionGroup->AI_getMissionAIPlot();
+
+			if (pMissionPlot != NULL )
+			{
+				int iDistance = stepDistance(pCity->getX_INLINE(), pCity->getY_INLINE(), pMissionPlot->getX_INLINE(), pMissionPlot->getY_INLINE());
+
+				if (iDistance <= 1)
+				{
+					if( pLoopSelectionGroup->generatePath(pLoopSelectionGroup->plot(), pMissionPlot, 0, true, &iPathTurns) )
+					{
+						if( !(pLoopSelectionGroup->canAllMove()) )
+						{
+							iPathTurns++;
+						}
+
+						if( iPathTurns <= iMaxPathTurns )
+						{
+							iCount += pLoopSelectionGroup->getNumUnits();
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return iCount;
+}
+
+int CvPlayerAI::AI_unitTargetMissionAIs(CvUnit* pUnit, MissionAITypes eMissionAI, CvSelectionGroup* pSkipSelectionGroup) const
+{
 	return AI_unitTargetMissionAIs(pUnit, &eMissionAI, 1, pSkipSelectionGroup, -1);
 }
 
@@ -17632,6 +17660,7 @@ int CvPlayerAI::AI_getStrategyHash() const
 		}
 	}
 	
+	if( m_iStrategyHash & !AI_STRATEGY_ALERT2 )
 	{//Crush
 		int iWarCount = 0;
 		int iCrushValue = 0;
@@ -18561,10 +18590,20 @@ int CvPlayerAI::AI_getTotalFloatingDefendersNeeded(CvArea* pArea) const
 	iDefenders += pArea->getPopulationPerPlayer(getID()) / 7;
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/08/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      04/01/10                                jdog5000      */
 /*                                                                                              */
 /* War strategy AI, Victory Strategy AI                                                         */
 /************************************************************************************************/
+	if( pArea->getAreaAIType(getTeam()) == AREAAI_DEFENSIVE || pArea->getAreaAIType(getTeam()) == AREAAI_OFFENSIVE || pArea->getAreaAIType(getTeam()) == AREAAI_MASSING )
+	{
+		if( iAreaCities <= std::min(4, pArea->getNumCities()/3) )
+		{
+			// Land war here, as floating defenders are based on cities/population need to make sure
+			// AI defends its footholds in new continents well.
+			iDefenders += GET_TEAM(getTeam()).countEnemyPopulationByArea(pArea) / 14;
+		}
+	}
+
 	if (pArea->getAreaAIType(getTeam()) == AREAAI_DEFENSIVE)
 	{
 		iDefenders *= 2;
