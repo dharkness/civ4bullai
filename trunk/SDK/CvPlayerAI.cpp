@@ -2486,6 +2486,7 @@ int CvPlayerAI::AI_foundValue(int iX, int iY, int iMinRivalRange, bool bStarting
     int iClaimThreshold = GC.getGameINLINE().getCultureThreshold((CultureLevelTypes)(std::min(2, (GC.getNumCultureLevelInfos() - 1))));
     iClaimThreshold = std::max(1, iClaimThreshold);
     iClaimThreshold *= (std::max(100, iGreed));
+	//iClaimThreshold /= 100;
     
     int iYieldLostHere = 0;
 
@@ -2524,8 +2525,8 @@ int CvPlayerAI::AI_foundValue(int iX, int iY, int iMinRivalRange, bool bStarting
             	bNeutralTerritory = false;
                 int iOurCulture = pLoopPlot->getCulture(getID());
                 int iOtherCulture = std::max(1, pLoopPlot->getCulture(pLoopPlot->getOwnerINLINE()));
-                iCultureMultiplier = 100 * (iOurCulture + iClaimThreshold);
-                iCultureMultiplier /= (iOtherCulture + iClaimThreshold);
+                iCultureMultiplier = (100 * iOurCulture) + iClaimThreshold;
+                iCultureMultiplier /= (((100 * iOtherCulture) + iClaimThreshold) / 100);
                 iCultureMultiplier = std::min(100, iCultureMultiplier);
                 //The multiplier is basically normalized...
                 //100% means we own (or rightfully own) the tile.
