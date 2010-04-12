@@ -3831,18 +3831,24 @@ It is fine for a human player mouse-over (which is what it is used for).
 /*                                                                                              */
 /* DEBUG                                                                                        */
 /************************************************************************************************/
+			szString.append(gDLL->getText("TXT_KEY_COLOR_REVERT"));
+
 /* original code
 			if ((gDLL->getChtLvl() > 0))
 */
 			// Only display this info in debug mode so game can be played with cheat code entered
 			if( GC.getGameINLINE().isDebugMode() )
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 			{
 				szTempBuffer.Format(L"\nStack Compare Value = %d",
 					gDLL->getInterfaceIFace()->getSelectionList()->AI_compareStacks(pPlot, false));
 				szString.append(szTempBuffer);
+
+				if( pPlot->getPlotCity() != NULL )
+				{
+					szTempBuffer.Format(L"\nBombard turns = %d",
+						gDLL->getInterfaceIFace()->getSelectionList()->getBombardTurns(pPlot->getPlotCity()));
+					szString.append(szTempBuffer);
+				}
 				
 				int iOurStrengthDefense = GET_PLAYER(GC.getGameINLINE().getActivePlayer()).AI_getOurPlotStrength(pPlot, 1, true, false);
 				int iOurStrengthOffense = GET_PLAYER(GC.getGameINLINE().getActivePlayer()).AI_getOurPlotStrength(pPlot, 1, false, false);
@@ -3853,8 +3859,9 @@ It is fine for a human player mouse-over (which is what it is used for).
 				szTempBuffer.Format(L"\nPlot Strength(Enemy)= d%d, o%d", iEnemyStrengthDefense, iEnemyStrengthOffense);
 				szString.append(szTempBuffer);
 			}
-
-			szString.append(gDLL->getText("TXT_KEY_COLOR_REVERT"));
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 			return true;
 		}
@@ -4213,7 +4220,7 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
 					szString.append(CvWString::format(L"\n %s = %d", GC.getCivicInfo((CivicTypes)iI).getDescription(), GET_PLAYER(pPlot->getOwner()).AI_civicValue((CivicTypes)iI)));			
 				}
 			}
-			else 
+			else if( pPlot->headUnitNode() == NULL )
 			{
 				std::vector<UnitAITypes> vecUnitAIs;
 
@@ -4232,20 +4239,25 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
 					vecUnitAIs.push_back(UNITAI_COUNTER);
 				}
 
-				for( uint iI = 0; iI < vecUnitAIs.size(); iI++ )
+				CvCity* pCloseCity = GC.getMapINLINE().findCity(pPlot->getX_INLINE(), pPlot->getY_INLINE(), pPlot->getOwner(), NO_TEAM, true);
+
+				if( pCloseCity != NULL )
 				{
-					CvWString szTempString;
-					getUnitAIString(szTempString, vecUnitAIs[iI]);
-					szString.append(CvWString::format(L"\n  %s  ", szTempString.GetCString()));
-					for( int iJ = 0; iJ < GC.getNumUnitClassInfos(); iJ++ )
+					for( uint iI = 0; iI < vecUnitAIs.size(); iI++ )
 					{
-						UnitTypes eUnit = (UnitTypes)GC.getCivilizationInfo(GET_PLAYER(pPlot->getOwner()).getCivilizationType()).getCivilizationUnits((UnitClassTypes)iJ);
-						if( eUnit != NO_UNIT && GET_PLAYER(pPlot->getOwner()).canTrain(eUnit) )
+						CvWString szTempString;
+						getUnitAIString(szTempString, vecUnitAIs[iI]);
+						szString.append(CvWString::format(L"\n  %s  ", szTempString.GetCString()));
+						for( int iJ = 0; iJ < GC.getNumUnitClassInfos(); iJ++ )
 						{
-							int iValue = GET_PLAYER(pPlot->getOwner()).AI_unitValue(eUnit, vecUnitAIs[iI], pPlot->area());
-							if( iValue > 0 )
+							UnitTypes eUnit = (UnitTypes)GC.getCivilizationInfo(GET_PLAYER(pPlot->getOwner()).getCivilizationType()).getCivilizationUnits((UnitClassTypes)iJ);
+							if( eUnit != NO_UNIT && pCloseCity->canTrain(eUnit) )
 							{
-								szString.append(CvWString::format(L"\n %s = %d", GC.getUnitInfo(eUnit).getDescription(), iValue));
+								int iValue = GET_PLAYER(pPlot->getOwner()).AI_unitValue(eUnit, vecUnitAIs[iI], pPlot->area());
+								if( iValue > 0 )
+								{
+									szString.append(CvWString::format(L"\n %s = %d", GC.getUnitInfo(eUnit).getDescription(), iValue));
+								}
 							}
 						}
 					}

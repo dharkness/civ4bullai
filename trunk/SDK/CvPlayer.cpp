@@ -11035,7 +11035,7 @@ void CvPlayer::setTurnActive(bool bNewValue, bool bDoTurn)
 
 				szBuffer.clear();
 
-				if( GET_TEAM(getTeam()).getAtWarCount(false) > 0 ) logBBAI("    Enemy power perc: %d", GET_TEAM(getTeam()).AI_getEnemyPowerPercent());
+				if( GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0 ) logBBAI("    Enemy power perc: %d (%d with others reduction)", GET_TEAM(getTeam()).AI_getEnemyPowerPercent(), GET_TEAM(getTeam()).AI_getEnemyPowerPercent(true));
 			}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */

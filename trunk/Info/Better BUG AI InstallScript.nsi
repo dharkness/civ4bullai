@@ -13,8 +13,8 @@
 ;These are the variables you need to define for your mod
 
 !define NAME "Better BUG AI" ;Full Name of Mod
-!define VERSION "0.90n (2010-03-31)" ;Mod Version Number - reflecting Better BTS AI Version
-!define VERSION_VERBOSE "* Better BTS AI 0.90n r544$\n* BULL 1.1+ r164$\n* BUG 4.3 r2200"
+!define VERSION "0.90n (2010-04-11)" ;Mod Version Number - reflecting Better BTS AI Version
+!define VERSION_VERBOSE "* Better BTS AI 0.90p r547$\n* BULL 1.1+ r164$\n* BUG 4.3 r2202"
 
 !define MOD_LOC "Better BUG AI" ;Name of Mod Folder
 !define SHORT_NAME "Better BUG AI" ;Shorthand/nick of your mod
@@ -585,7 +585,7 @@ Section /o "${MOD_LOC}" Section1
 	; write uninstall information to the registry
 	WriteRegStr ${MACHINE_REG_ROOT} "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MOD_LOC}" "DisplayName" "${NAME}"
 	WriteRegStr ${MACHINE_REG_ROOT} "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MOD_LOC}" "UninstallString" "$INSTDIR1\Mods\${MOD_LOC}\Uninstall.exe"
-	WriteRegStr ${MACHINE_REG_ROOT} "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MOD_LOC}" "ModInstDir" "$INSTDIR1\Mods\"
+	WriteRegStr ${MACHINE_REG_ROOT} "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MOD_LOC}" "ModInstDir" "$INSTDIR1\Mods\${MOD_LOC}"
 	WriteUninstaller "$INSTDIR1\Mods\${MOD_LOC}\Uninstall.exe"
 
 	; Install UserSettings folder outside Program Files directory
@@ -683,9 +683,9 @@ SectionEnd
 
 Section "un.Core" SecUnCore
 	;Delete everything in the Mod folder
-	RMDir /r "$0\${MOD_LOC}\*.*"
+	RMDir /r "$0\*.*"
 	;Remove the installation directory
-	RMDir "$0\${MOD_LOC}"
+	RMDir "$0"
 	;Delete Desktop Shortcut
 	Delete "$DESKTOP\${NAME}.lnk"
 	;Delete Quicklaunch Shortcut
@@ -703,7 +703,7 @@ SectionEnd
 
 ;Delete yourself Uninstaller
 Section "-un.Uninstaller" SecUnUninstaller
-	Delete "$0\${MOD_LOC}\Uninstall.exe"
+	Delete "$0\Uninstall.exe"
 SectionEnd
 
 

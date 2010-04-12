@@ -36,7 +36,7 @@ void bugInit()
 		logMsg("debug - checking for BUG");
 		if (gDLL->getPythonIFace()->callFunction(PYBugOptionsModule, "isBug", NULL, &lResult))
 		{
-			//logMsg("BULL - got value %ld", lResult);
+			logMsg("BULL - got value %ld", lResult);
 			g_bIsBug = lResult;
 			if (g_bIsBug)
 			{

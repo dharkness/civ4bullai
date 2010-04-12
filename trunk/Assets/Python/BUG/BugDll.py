@@ -48,6 +48,7 @@ VERSION = -1
 ## General and Versions
 
 def isBug():
+	BugUtil.debug("BUG Mod is present")
 	return True
 
 def isPresent():
