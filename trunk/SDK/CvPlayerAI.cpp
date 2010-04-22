@@ -9695,33 +9695,39 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI, CvArea* pArea
 				iValue += iCollateralValue;
 				
 				if (!AI_isDoStrategy(AI_STRATEGY_AIR_BLITZ) && GC.getUnitInfo(eUnit).getBombardRate() > 0)
-			{
+				{
 					/* original code
 					int iBombardValue = GC.getUnitInfo(eUnit).getBombardRate() * 4;
 					*/
-					int iBombardValue = GC.getUnitInfo(eUnit).getBombardRate() * 2 * ((GC.getUnitInfo(eUnit).isIgnoreBuildingDefense()) ? 3 : 2);
+					int iBombardValue = GC.getUnitInfo(eUnit).getBombardRate() * ((GC.getUnitInfo(eUnit).isIgnoreBuildingDefense()) ? 3 : 2);
 					//int iTotalBombardValue = 4 * iTotalBombard;
 					//int iNumBombardUnits = 2 * iTotalBombard / iBombardValue;
 					int iAIDesiredBombardFraction = std::max( 5, GC.getDefineINT("BBAI_BOMBARD_ATTACK_STACK_FRACTION")); /*default: 10*/
-					int iActualBombardFraction = (100 * 4 * iTotalBombard)/(iBombardValue * std::max(1, iNumOffensiveUnits));
+					int iActualBombardFraction = (100 * 2 * iTotalBombard)/(iBombardValue * std::max(1, iNumOffensiveUnits));
 					iActualBombardFraction = std::min(100, iActualBombardFraction);
 
-
+					int iGoalTotalBombard = 200;
 					int iTempBombardValue = 0;
-					if (iTotalBombard < 200) //still less than 200 bombard points
+					if (iTotalBombard < iGoalTotalBombard) //still less than 200 bombard points
 					{
-						iTempBombardValue = (iBombardValue * (300 - iTotalBombard));
-						iTempBombardValue /= 100;
-						//iTempBombardValue is at most (3 * iBombardValue)
+						iTempBombardValue = iBombardValue * (iGoalTotalBombard + 4 * (iGoalTotalBombard - iTotalBombard));
+						iTempBombardValue /= iGoalTotalBombard;
+						//iTempBombardValue is at most (5 * iBombardValue)
 					}
+					else
+					{
+						iTempBombardValue *= iGoalTotalBombard;
+						iTempBombardValue /= std::min(2*iGoalTotalBombard, 2*iTotalBombard - iGoalTotalBombard);
+					}
+
 					if (iActualBombardFraction < iAIDesiredBombardFraction)
-				{
+					{
 						iBombardValue *= (iAIDesiredBombardFraction + 4 * (iAIDesiredBombardFraction - iActualBombardFraction));
 						iBombardValue /= iAIDesiredBombardFraction;
 						//new iBombardValue is at most (5 * old iBombardValue)
-				}
-				else
-				{
+					}
+					else
+					{
 						iBombardValue *= iAIDesiredBombardFraction;
 						iBombardValue /= std::max(1, iActualBombardFraction);
 					}
