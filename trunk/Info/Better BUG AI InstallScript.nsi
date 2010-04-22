@@ -13,8 +13,8 @@
 ;These are the variables you need to define for your mod
 
 !define NAME "Better BUG AI" ;Full Name of Mod
-!define VERSION "0.90p (2010-04-12)" ;Mod Version Number - reflecting Better BTS AI Version
-!define VERSION_VERBOSE "* Better BTS AI 0.90p r547$\n* BULL 1.1+ r171$\n* BUG 4.3 r2204"
+!define VERSION "0.90r (2010-04-23)" ;Mod Version Number - reflecting Better BTS AI Version
+!define VERSION_VERBOSE "* Better BTS AI 0.90r r548$\n* BULL 1.1+ r174$\n* BUG 4.3 r2206"
 
 !define MOD_LOC "Better BUG AI" ;Name of Mod Folder
 !define SHORT_NAME "Better BUG AI" ;Shorthand/nick of your mod
@@ -27,9 +27,8 @@
 !define URL "http://forums.civfanatics.com/showthread.php?t=354019" ;Web address where you want internet link in the Start Menu shorcut folder to link to
 
 
-;User Settings and Public Maps are installed sperately. Remember to move these out of the main mod folder when compiling installer
+;User Settings are installed sperately. Remember to move these out of the main mod folder when compiling installer
 !define SETTINGS_FOLDER "UserSettings" ;Mod's user settings folder
-!define PUBLIC_MAPS "PublicMaps" ;public maps, will be installed into the custom maps folder
 
 #!define MOD_ADDITION1 "RevDCM Source" ;Name of Add On Folder
 #!define ADDON1_TEXT "Installs ${MOD_ADDITION1}.  For Modders interested in the Source Code." ;Text used to describe the add on, keep it short.
@@ -37,9 +36,8 @@
 #!define ADDON2_TEXT "Installs ${MOD_ADDITION2} as an optional add on."
 
 #!define MYFILESDIR "C:\Documents and Settings\P\My Documents\My Games\Beyond the Sword" ;Root Location where non main mod folders are found
-;Notice that the constants below all reference MYFILESDIR.  This is not necessary, you can put your maps and add ons wherever you want, I just do this to keep things organized
+;Notice that the constants below all reference MYFILESDIR.  This is not necessary, you can put your add ons wherever you want, I just do this to keep things organized
 !define SETTINGS_LOC "T:\CIV4\Civilization 4\Beyond the Sword\oldmods\Better BUG AI\${SETTINGS_FOLDER}" ;Location of the UserSettings folder for you mod
-!define MAPS_LOC "T:\CIV4\Civilization 4\Beyond the Sword\oldmods\Better BUG AI\${PUBLIC_MAPS}" ;Location of the PublicMaps
 #!define ADDITION1_LOC "${MYCLSDIR}\AddOns\${MOD_ADDITION1}" ;Location of Add On 1
 #!define ADDITION2_LOC "${MYFILESDIR}\AddOns\${MOD_ADDITION2}" ;Uncomment if you are adding a second add on
  
@@ -93,7 +91,6 @@ RequestExecutionLevel admin
 Var INSTDIR1 ;Install directory
 Var StartMenuFolder ;Needed for the StartMenuShortcut creation, also stores default location where start menu shortcut should be created (firaxis games/${MOD_LOC})
 Var CivRootDir ;Used for locating the My Documents path where Civ4 is, and the BtS ini file
-Var CivMapsDir ;Similar to above, but specifically stores where custom maps should be stored
 Var CurrentVersion ;used to verify the version of BtS is up to date (version 3.19)
 Var WelcomePageText ;Used to store the Welcome page text
 Var DirectoryPageText ;Used to store the directory page text
@@ -315,25 +312,7 @@ Function findCivRootDir
 	Pop $R0
 FunctionEnd
 
-
-;Look for valid BtS folder to install custom maps into
-Function findCivMapsDir
-	Call findINSTDIR1
-
-	Push $0
-	# locate the Civ4:BTS INI folder, if found use the PublicMaps folder there to install public maps into
-	StrCpy $0 "$DOCUMENTS\My Games\${BTS}"
-	${If} ${FileExists} "$0\${CIV_INI_FILE}"
-		StrCpy $CivMapsDir $0
-	;If no valid directory was found, Install into the main mod folder
-	${Else}
-		StrCpy $0 "$INSTDIR1\Mods\${MOD_LOC}"
-		StrCpy $CivMapsDir $0
-	${EndIf}
-
-	Pop $0
-FunctionEnd
-  
+ 
 ;Depending on Registry checks, set welcome text
 Function setWelcomePageText
 	Call findINSTDIR1
@@ -420,7 +399,6 @@ FunctionEnd
 Function .onInit
 	Call findINSTDIR1
 	Call findCivRootDir
-	Call findCivMapsDir
 	Call setDirectoryPageText
 	Call setWelcomePageText
 	Call preStartMenu
@@ -597,9 +575,6 @@ Section /o "${MOD_LOC}" Section1
 	${EndIf}
 	WriteRegStr ${USER_REG_ROOT} "Software\Microsoft\Windows\CurrentVersion\Uninstall\${SHORT_NAME}UserSettings" "UserSettings" "$CivRootDir"
 
-	; Install Public Maps
-	SetOutPath "$CivMapsDir"
-	File /r "${MAPS_LOC}"
 SectionEnd
 
 

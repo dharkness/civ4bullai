@@ -115,12 +115,12 @@ public:
 	bool groupPathTo(int iX, int iY, int iFlags);
 	bool groupRoadTo(int iX, int iY, int iFlags);
 	bool groupBuild(BuildTypes eBuild);
-	void setTransportUnit(CvUnit* pTransportUnit);
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      12/01/08                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      04/18/10                                jdog5000      */
 /*                                                                                              */
 /* General AI                                                                                   */
 /************************************************************************************************/
+	void setTransportUnit(CvUnit* pTransportUnit, CvSelectionGroup** pOtherGroup = NULL);
 	void setRemoteTransportUnit(CvUnit* pTransportUnit);
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
