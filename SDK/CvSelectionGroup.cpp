@@ -4141,7 +4141,12 @@ bool CvSelectionGroup::groupBuild(BuildTypes eBuild)
 	return bContinue;
 }
 
-void CvSelectionGroup::setTransportUnit(CvUnit* pTransportUnit)
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      04/18/10                                jdog5000      */
+/*                                                                                              */
+/* General AI                                                                                   */
+/************************************************************************************************/
+void CvSelectionGroup::setTransportUnit(CvUnit* pTransportUnit, CvSelectionGroup** pOtherGroup)
 {
 	// if we are loading
 	if (pTransportUnit != NULL)
@@ -4160,13 +4165,12 @@ void CvSelectionGroup::setTransportUnit(CvUnit* pTransportUnit)
 		// if there is space, but not enough to fit whole group, then split us, and set on the new group
 		if (iCargoSpaceAvailable < getNumUnits())
 		{
-			// BBAI TODO: Need to do something to get large groups to load into large waiting convoys of transports
-			// BBAI TODO: Also, don't want large group to shatter when loading a bunch of units if head AI changes
-			CvSelectionGroup* pSplitGroup = splitGroup(iCargoSpaceAvailable);
+			CvSelectionGroup* pSplitGroup = splitGroup(iCargoSpaceAvailable, NULL, pOtherGroup);
 			if (pSplitGroup != NULL)
 			{
 				pSplitGroup->setTransportUnit(pTransportUnit);
 			}
+
 			return;
 		}
 		
@@ -4221,12 +4225,9 @@ void CvSelectionGroup::setTransportUnit(CvUnit* pTransportUnit)
 	}
 }
 
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      08/08/09                                jdog5000      */
-/*                                                                                              */
-/* General AI                                                                                   */
-/************************************************************************************************/
-// Function for loading stranded units onto an offshore transport
+
+/// \brief Function for loading stranded units onto an offshore transport
+///
 void CvSelectionGroup::setRemoteTransportUnit(CvUnit* pTransportUnit)
 {
 	// if we are loading

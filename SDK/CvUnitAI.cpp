@@ -2927,7 +2927,7 @@ void CvUnitAI::AI_attackCityMove()
 		{
 			// BBAI TODO: Before heading out, check whether to wait to allow unit upgrades
 
-			if (AI_goToTargetCity(MOVE_AVOID_ENEMY_WEIGHT_2, 4, pTargetCity))
+			if (AI_goToTargetCity(MOVE_AVOID_ENEMY_WEIGHT_2, 5, pTargetCity))
 			{
 				return;
 			}
@@ -6206,13 +6206,18 @@ void CvUnitAI::AI_escortSeaMove()
 	}
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      01/12/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      04/18/10                                jdog5000      */
 /*                                                                                              */
 /* Naval AI                                                                                     */
 /************************************************************************************************/
 	// If nothing else useful to do, escort nearby large flotillas even if they're faster
 	// Gives Caravel escorts something to do during the Galleon/pre-Frigate era
 	if (AI_group(UNITAI_ASSAULT_SEA, -1, /*iMaxOwnUnitAI*/ 4, /*iMinUnitAI*/ 3, /*bIgnoreFaster*/ false, false, false, 4, false, true))
+	{
+		return;
+	}
+
+	if (AI_group(UNITAI_ASSAULT_SEA, -1, /*iMaxOwnUnitAI*/ 2, /*iMinUnitAI*/ -1, /*bIgnoreFaster*/ false, false, false, 1, false, true))
 	{
 		return;
 	}
@@ -6420,7 +6425,7 @@ void CvUnitAI::AI_exploreSeaMove()
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      02/07/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      04/18/10                                jdog5000      */
 /*                                                                                              */
 /* Naval AI                                                                                     */
 /************************************************************************************************/
@@ -6607,6 +6612,18 @@ void CvUnitAI::AI_assaultSeaMove()
 
 		if( (iCargo > 0) && (iEscorts == 0) )
 		{
+			if (AI_group(UNITAI_ASSAULT_SEA,-1,-1,-1,/*bIgnoreFaster*/true,false,false,/*iMaxPath*/1,false,/*bCargoOnly*/true,false,MISSIONAI_ASSAULT))
+			{
+				return;
+			}
+
+			if( plot()->plotCount(PUF_isUnitAIType, UNITAI_ESCORT_SEA, -1, getOwnerINLINE(), NO_TEAM, PUF_isGroupHead, -1, -1) > 0 )
+			{
+				// Loaded but with no escort, wait for escorts in plot to join us
+				getGroup()->pushMission(MISSION_SKIP);
+				return;
+			}
+
 			MissionAITypes eMissionAIType = MISSIONAI_GROUP;
 			if( (GET_PLAYER(getOwnerINLINE()).AI_unitTargetMissionAIs(this, &eMissionAIType, 1, getGroup(), 3) > 0) || (GET_PLAYER(getOwnerINLINE()).AI_getWaterDanger(plot(), 4, false) > 0) )
 			{
@@ -6618,12 +6635,15 @@ void CvUnitAI::AI_assaultSeaMove()
 
 		if (bLandWar)
 		{
-			if ( (iCargo > 0) && (eAreaAIType == AREAAI_DEFENSIVE || ((!bFull || iCargo < iTargetReinforcementSize) && getGroup()->isHasPathToAreaEnemyCity())) )
+			if ( iCargo > 0 )
 			{
-				// Unload cargo when on defense or if small load of troops and can reach enemy city over land (generally less risky)
-				getGroup()->unloadAll();
-				getGroup()->pushMission(MISSION_SKIP);
-				return;
+				if( (eAreaAIType == AREAAI_DEFENSIVE) || (pCity != NULL && pCity->AI_isDanger()))
+				{
+					// Unload cargo when on defense or if small load of troops and can reach enemy city over land (generally less risky)
+					getGroup()->unloadAll();
+					getGroup()->pushMission(MISSION_SKIP);
+					return;
+				}
 			}
 
 			if ((iCargo >= iTargetReinforcementSize))
@@ -9986,7 +10006,7 @@ bool CvUnitAI::AI_groupMergeRange(UnitAITypes eUnitAI, int iMaxRange, bool bBigg
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      04/01/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      04/18/10                                jdog5000      */
 /*                                                                                              */
 /* War tactics AI, Unit AI                                                                      */
 /************************************************************************************************/
@@ -10067,7 +10087,7 @@ bool CvUnitAI::AI_load(UnitAITypes eUnitAI, MissionAITypes eMissionAI, UnitAITyp
 														{
 															if (generatePath(pLoopUnit->plot(), iFlags, true, &iPathTurns))
 															{
-																if (iPathTurns <= iMaxPath)
+																if (iPathTurns <= iMaxPath || (iMaxPath == 0 && plot() == pLoopUnit->plot()))
 																{
 																	// prefer a transport that can hold as much of our group as possible 
 																	iValue = (std::max(0, iCurrentGroupSize - iCargoSpaceAvailable) * 5) + iPathTurns;
@@ -10161,11 +10181,30 @@ bool CvUnitAI::AI_load(UnitAITypes eUnitAI, MissionAITypes eMissionAI, UnitAITyp
 	{
 		if (atPlot(pBestUnit->plot()))
 		{
-			getGroup()->setTransportUnit(pBestUnit); // XXX is this dangerous (not pushing a mission...) XXX air units?
+			CvSelectionGroup* pOtherGroup = NULL;
+			getGroup()->setTransportUnit(pBestUnit, &pOtherGroup); // XXX is this dangerous (not pushing a mission...) XXX air units?
+
+			// If part of large group loaded, then try to keep loading the rest
+			if( eUnitAI == UNITAI_ASSAULT_SEA && eMissionAI == MISSIONAI_LOAD_ASSAULT )
+			{
+				if( pOtherGroup != NULL && pOtherGroup->getNumUnits() > 0 )
+				{
+					if( pOtherGroup->getHeadUnitAI() == AI_getUnitAIType() )
+					{
+						pOtherGroup->getHeadUnit()->AI_load( eUnitAI, eMissionAI, eTransportedUnitAI, iMinCargo, iMinCargoSpace, iMaxCargoSpace, iMaxCargoOurUnitAI, iFlags, 0, iMaxTransportPath );
+					}
+					else if( eTransportedUnitAI == NO_UNITAI && iMinCargo < 0 && iMinCargoSpace < 0 && iMaxCargoSpace < 0 && iMaxCargoOurUnitAI < 0 )
+					{
+						pOtherGroup->getHeadUnit()->AI_load( eUnitAI, eMissionAI, NO_UNITAI, -1, -1, -1, -1, iFlags, 0, iMaxTransportPath );
+					}
+				}
+			}
+
 			return true;
 		}
 		else
 		{
+			// BBAI TODO: To split or not to split?
 			int iCargoSpaceAvailable = pBestUnit->cargoSpaceAvailable(getSpecialUnitType(), getDomainType());
 			FAssertMsg(iCargoSpaceAvailable > 0, "best unit has no space");
 

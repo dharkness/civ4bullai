@@ -2674,19 +2674,19 @@ void CvTeamAI::AI_getWarRands( int &iMaxWarRand, int &iLimitedWarRand, int &iDog
 	int iNumMembers = getNumMembers();
 	int iNumVassals = getVassalCount();
 	
-	iMaxWarRand *= iNumMembers;
-	iMaxWarRand /= (iNumMembers + iNumVassals);
+	iMaxWarRand *= (2 + iNumMembers);
+	iMaxWarRand /= (2 + iNumMembers + iNumVassals);
 	
 	if (bFinalWar)
 	{
 	    iMaxWarRand /= 4;
 	}
 
-	iLimitedWarRand *= iNumMembers;
-	iLimitedWarRand /= (iNumMembers + iNumVassals);
+	iLimitedWarRand *= (2 + iNumMembers);
+	iLimitedWarRand /= (2 + iNumMembers + iNumVassals);
 	
-	iDogpileWarRand *= iNumMembers;
-	iDogpileWarRand /= (iNumMembers + iNumVassals);
+	iDogpileWarRand *= (2 + iNumMembers);
+	iDogpileWarRand /= (2 + iNumMembers + iNumVassals);
 }
 
 
@@ -2740,16 +2740,15 @@ void CvTeamAI::AI_getWarThresholds( int &iTotalWarThreshold, int &iLimitedWarThr
 	iTotalWarThreshold = iHighUnitSpendingPercent * (bAggressive ? 3 : 2);
 	if( bDom3 )
 	{
-		iTotalWarThreshold *= 2;
+		iTotalWarThreshold *= 3;
 
-		iDogpileWarThreshold += 2;
+		iDogpileWarThreshold += 5;
 	}
 	else if( bConq2 )
 	{
-		iTotalWarThreshold *= 3;
-		iTotalWarThreshold /= 2;
+		iTotalWarThreshold *= 2;
 
-		iDogpileWarThreshold += 1;
+		iDogpileWarThreshold += 2;
 	}
 	iTotalWarThreshold /= 3;
 	iTotalWarThreshold += bAggressive ? 1 : 0;
