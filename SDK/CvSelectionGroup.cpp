@@ -4564,6 +4564,15 @@ void CvSelectionGroup::setActivityType(ActivityTypes eNewValue)
 	CvPlot* pPlot;
 
 	FAssert(getOwnerINLINE() != NO_PLAYER);
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      04/28/10                                jdog5000      */
+/*                                                                                              */
+/* Unit AI                                                                                      */
+/************************************************************************************************/
+	FAssert(isHuman() || getHeadUnit()->isCargo() || eNewValue != ACTIVITY_SLEEP);
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	ActivityTypes eOldActivity = getActivityType();
 

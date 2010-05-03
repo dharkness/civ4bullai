@@ -1664,7 +1664,7 @@ void CvPlayerAI::AI_makeProductionDirty()
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/15/10                              jdog5000        */
+/* BETTER_BTS_AI_MOD                      04/19/10                              jdog5000        */
 /*                                                                                              */
 /* War tactics AI                                                                               */
 /************************************************************************************************/
@@ -1693,7 +1693,7 @@ void CvPlayerAI::AI_conquerCity(CvCity* pCity)
 				logBBAI("    Player %d (%S) decides not to raze %S because they have few cities", getID(), getCivilizationDescription(0), pCity->getName().GetCString() );
 			}
 		}
-		else if( AI_isDoVictoryStrategy(AI_VICTORY_DOMINATION3) )
+		else if( AI_isDoVictoryStrategy(AI_VICTORY_DOMINATION3) && GET_TEAM(getTeam()).AI_isPrimaryArea(pCity->area()) )
 		{
 			// Do not raze, going for domination
 			if( gPlayerLogLevel >= 1 )
@@ -2486,7 +2486,18 @@ int CvPlayerAI::AI_foundValue(int iX, int iY, int iMinRivalRange, bool bStarting
     int iClaimThreshold = GC.getGameINLINE().getCultureThreshold((CultureLevelTypes)(std::min(2, (GC.getNumCultureLevelInfos() - 1))));
     iClaimThreshold = std::max(1, iClaimThreshold);
     iClaimThreshold *= (std::max(100, iGreed));
-	//iClaimThreshold /= 100;
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       04/25/10                          denev & jdog5000    */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+	// Was missing this
+/* Fuyu: we can do this when we are actually using this variable
+	iClaimThreshold /= 100;
+*/
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
     
     int iYieldLostHere = 0;
 
@@ -2525,8 +2536,21 @@ int CvPlayerAI::AI_foundValue(int iX, int iY, int iMinRivalRange, bool bStarting
             	bNeutralTerritory = false;
                 int iOurCulture = pLoopPlot->getCulture(getID());
                 int iOtherCulture = std::max(1, pLoopPlot->getCulture(pLoopPlot->getOwnerINLINE()));
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       04/25/10                          denev & Fuyu	    */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/*original code
+                iCultureMultiplier = 100 * (iOurCulture + iClaimThreshold);
+                iCultureMultiplier /= (iOtherCulture + iClaimThreshold);
+
+*/
                 iCultureMultiplier = (100 * iOurCulture) + iClaimThreshold;
                 iCultureMultiplier /= (((100 * iOtherCulture) + iClaimThreshold) / 100);
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
                 iCultureMultiplier = std::min(100, iCultureMultiplier);
                 //The multiplier is basically normalized...
                 //100% means we own (or rightfully own) the tile.
@@ -4552,6 +4576,23 @@ int CvPlayerAI::AI_techValue( TechTypes eTech, int iPathLength, bool bIgnoreCost
 		{
 			iValue += 1000;
 
+			if( (VictoryTypes)GC.getProjectInfo((ProjectTypes)iJ).getVictoryPrereq() != NO_VICTORY )
+			{
+				if( !(GC.getProjectInfo((ProjectTypes)iJ).isSpaceship()) )
+				{
+					// Apollo
+					iValue += (AI_isDoVictoryStrategy(AI_VICTORY_SPACE2) ? 1000 : 100);
+				}
+				else
+				{
+					// Space ship parts
+					if( AI_isDoVictoryStrategy(AI_VICTORY_SPACE3) )
+					{
+						iValue += 1000;
+					}
+				}
+			}
+
 			if (iPathLength <= 1)
 			{
 				if (getTotalPopulation() > 5)
@@ -5061,6 +5102,8 @@ int CvPlayerAI::AI_techBuildingValue( TechTypes eTech, int iPathLength, bool &bE
 
 int CvPlayerAI::AI_techUnitValue( TechTypes eTech, int iPathLength, bool &bEnablesUnitWonder ) const
 {
+	// BBAI TODO: effectively war plan if total war odds high enough
+	//GET_TEAM(getTeam()).AI_getWarRands(iMaxWarRand, iLimitedWarRand, iDogpileWarRand);
 	bool bWarPlan = (GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0);
 	bool bCapitalAlone = (GC.getGameINLINE().getElapsedGameTurns() > 0) ? AI_isCapitalAreaAlone() : false;
 	int iHasMetCount = GET_TEAM(getTeam()).getHasMetCivCount(true);
@@ -6144,6 +6187,19 @@ int CvPlayerAI::AI_getCloseBordersAttitude(PlayerTypes ePlayer) const
 		{
 			iPercent += 40;
 		}
+
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      04/24/10                                jdog5000      */
+/*                                                                                              */
+/* Victory Strategy AI                                                                          */
+/************************************************************************************************/
+		if( AI_isDoStrategy(AI_VICTORY_CONQUEST3) )
+		{
+			iPercent = std::min( 120, (3 * iPercent)/2 );
+		}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 		m_aiCloseBordersAttitudeCache[ePlayer] = ((GC.getLeaderHeadInfo(getPersonalityType()).getCloseBordersAttitudeChange() * iPercent) / 100);
 	}
@@ -10922,7 +10978,7 @@ int CvPlayerAI::AI_cityTargetUnitsByPath(CvCity* pCity, CvSelectionGroup* pSkipS
 	int iPathTurns;
 	for(CvSelectionGroup* pLoopSelectionGroup = firstSelectionGroup(&iLoop); pLoopSelectionGroup; pLoopSelectionGroup = nextSelectionGroup(&iLoop))
 	{
-		if (pLoopSelectionGroup != pSkipSelectionGroup)
+		if (pLoopSelectionGroup != pSkipSelectionGroup && pLoopSelectionGroup->plot() != NULL && pLoopSelectionGroup->getNumUnits() > 0)
 		{
 			CvPlot* pMissionPlot = pLoopSelectionGroup->AI_getMissionAIPlot();
 
@@ -11210,6 +11266,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 
 	CvCivicInfo& kCivic = GC.getCivicInfo(eCivic);
 
+	// BBAI TODO: effectively war plan if total war odds high enough
 	bWarPlan = (GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0);
 
 	iConnectedForeignCities = countPotentialForeignTradeCitiesConnected();
@@ -14502,18 +14559,24 @@ void CvPlayerAI::AI_doDiplo()
 										if (AI_getContactTimer(((PlayerTypes)iI), CONTACT_TRADE_TECH) == 0)
 										{
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      02/12/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      04/24/10                                jdog5000      */
 /*                                                                                              */
 /* Diplomacy                                                                                    */
 /************************************************************************************************/
-											int iRand = GC.getLeaderHeadInfo(getPersonalityType()).getContactRand(CONTACT_ASK_FOR_HELP);
+											int iRand = GC.getLeaderHeadInfo(getPersonalityType()).getContactRand(CONTACT_TRADE_TECH);
 											int iTechPerc = GET_TEAM(getTeam()).getBestKnownTechScorePercent();
 											if( iTechPerc < 90 )
 											{
 												iRand *= std::max(1, iTechPerc - 60);
 												iRand /= 30;
 											}
+
+											if( AI_isDoVictoryStrategy(AI_VICTORY_SPACE1) )
+											{
+												iRand /= 2;
+											}
 						
+											iRand = std::max(1, iRand);
 											if (GC.getGameINLINE().getSorenRandNum(iRand, "AI Diplo Trade Tech") == 0)
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
@@ -16275,7 +16338,7 @@ int CvPlayerAI::AI_cultureVictoryTechValue(TechTypes eTech) const
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/17/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      04/25/10                                jdog5000      */
 /*                                                                                              */
 /* Victory Strategy AI                                                                          */
 /************************************************************************************************/
@@ -16331,7 +16394,10 @@ int CvPlayerAI::AI_getCultureVictoryStage() const
 		{
 			return 3;
 		}
+	}
 
+	if( isHuman() && !(GC.getGameINLINE().isDebugMode()) )
+	{
 		return 0;
 	}
 
@@ -16520,6 +16586,11 @@ int CvPlayerAI::AI_getSpaceVictoryStage() const
 		}
 	}
 
+	if( isHuman() && !(GC.getGameINLINE().isDebugMode()) )
+	{
+		return 0;
+	}
+
 	// If can't build Apollo yet, then consider making player push for this victory type
 	{
 		iValue = GC.getLeaderHeadInfo(getPersonalityType()).getSpaceVictoryWeight();
@@ -16645,6 +16716,11 @@ int CvPlayerAI::AI_getConquestVictoryStage() const
 		}
 	}
 
+	if( isHuman() && !(GC.getGameINLINE().isDebugMode()) )
+	{
+		return 0;
+	}
+
 	// Check for whether we are inclined to pursue a conquest strategy
 	{
 		iValue = GC.getLeaderHeadInfo(getPersonalityType()).getConquestVictoryWeight();
@@ -16727,6 +16803,10 @@ int CvPlayerAI::AI_getDominationVictoryStage() const
 		return 3;
 	}
 
+	if( isHuman() && !(GC.getGameINLINE().isDebugMode()) )
+	{
+		return 0;
+	}
 
 	// Check for whether we are inclined to pursue a domination strategy
 	{
@@ -16792,12 +16872,7 @@ int CvPlayerAI::AI_getDiplomacyVictoryStage() const
 		}
 	}
 
-	if( bVoteEligible )
-	{
-		// BBAI TODO: Level 4 - close to enough to win a vote?
-
-		return 3;
-	}
+	bool bDiploInclined = false;
 
 	// Check for whether we are inclined to pursue a diplomacy strategy
 	{
@@ -16817,8 +16892,25 @@ int CvPlayerAI::AI_getDiplomacyVictoryStage() const
 
 		if (iValue >= 100)
 		{
-			return 1;
+			bDiploInclined = true;
 		}
+	}
+
+	if( bVoteEligible && (bDiploInclined || isHuman()) )
+	{
+		// BBAI TODO: Level 4 - close to enough to win a vote?
+
+		return 3;
+	}
+
+	if( isHuman() && !(GC.getGameINLINE().isDebugMode()) )
+	{
+		return 0;
+	}
+
+	if( bDiploInclined )
+	{
+		return 1;
 	}
 
 	return 0;
@@ -16929,6 +17021,7 @@ int CvPlayerAI::AI_getVictoryStrategyHash() const
         return m_iVictoryStrategyHash;
     }
 
+	bool bStartedOtherLevel3 = false;
 	bool bStartedOtherLevel4 = false;
 
 	// Space victory
@@ -16942,6 +17035,7 @@ int CvPlayerAI::AI_getVictoryStrategyHash() const
 	        m_iVictoryStrategyHash |= AI_VICTORY_SPACE2;
             if (iVictoryStage > 2)
             {
+				bStartedOtherLevel3 = true;
                 m_iVictoryStrategyHash |= AI_VICTORY_SPACE3;
 
 				if (iVictoryStage > 3 && !bStartedOtherLevel4)
@@ -16964,6 +17058,7 @@ int CvPlayerAI::AI_getVictoryStrategyHash() const
 	        m_iVictoryStrategyHash |= AI_VICTORY_CONQUEST2;
             if (iVictoryStage > 2)
             {
+				bStartedOtherLevel3 = true;
                 m_iVictoryStrategyHash |= AI_VICTORY_CONQUEST3;
 
 				if (iVictoryStage > 3 && !bStartedOtherLevel4)
@@ -16986,6 +17081,7 @@ int CvPlayerAI::AI_getVictoryStrategyHash() const
 	        m_iVictoryStrategyHash |= AI_VICTORY_DOMINATION2;
             if (iVictoryStage > 2)
             {
+				bStartedOtherLevel3 = true;
                 m_iVictoryStrategyHash |= AI_VICTORY_DOMINATION3;
 
 				if (iVictoryStage > 3 && !bStartedOtherLevel4)
@@ -17008,6 +17104,7 @@ int CvPlayerAI::AI_getVictoryStrategyHash() const
 	        m_iVictoryStrategyHash |= AI_VICTORY_CULTURE2;
             if (iVictoryStage > 2)
             {
+				bStartedOtherLevel3 = true;
                 m_iVictoryStrategyHash |= AI_VICTORY_CULTURE3;
 
 				if (iVictoryStage > 3 && !bStartedOtherLevel4)
@@ -17028,8 +17125,9 @@ int CvPlayerAI::AI_getVictoryStrategyHash() const
 	    if (iVictoryStage > 1)
 	    {
 	        m_iVictoryStrategyHash |= AI_VICTORY_DIPLOMACY2;
-            if (iVictoryStage > 2)
+            if (iVictoryStage > 2 && !bStartedOtherLevel3)
             {
+				bStartedOtherLevel3 = true;
                 m_iVictoryStrategyHash |= AI_VICTORY_DIPLOMACY3;
 
 				if (iVictoryStage > 3 && !bStartedOtherLevel4)
@@ -19825,7 +19923,7 @@ int CvPlayerAI::AI_getMinFoundValue() const
 	int iNetExpenses = calculateInflatedCosts() + std::max(0, -getGoldPerTurn());
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */
-/************************************************************************************************/		
+/************************************************************************************************/
 	
 	iValue *= iNetCommerce;
 	iValue /= std::max(std::max(1, iNetCommerce / 4), iNetCommerce - iNetExpenses);

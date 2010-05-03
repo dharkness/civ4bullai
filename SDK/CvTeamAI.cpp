@@ -1153,9 +1153,9 @@ int CvTeamAI::AI_startWarVal(TeamTypes eTeam) const
 	
 	int iClosenessValue = AI_teamCloseness(eTeam);
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/21/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      04/24/10                                jdog5000      */
 /*                                                                                              */
-/* War Strategy AI                                                                              */
+/* War Strategy AI, Victory Strategy AI                                                         */
 /************************************************************************************************/
 /* original code
 	if (iClosenessValue == 0)
@@ -1176,17 +1176,52 @@ int CvTeamAI::AI_startWarVal(TeamTypes eTeam) const
 	iValue += AI_calculateBonusWarValue(eTeam);
 	
 	// Target other teams close to victory
-	if( GET_TEAM(eTeam).AI_isAnyMemberDoVictoryStrategyLevel4() )
+	if( GET_TEAM(eTeam).AI_isAnyMemberDoVictoryStrategyLevel3() )
 	{
 		iValue++;
-		iValue *= (GC.getGameINLINE().isOption(GAMEOPTION_AGGRESSIVE_AI) ? 8 : 4);
+
+		bool bAggressive = GC.getGameINLINE().isOption(GAMEOPTION_AGGRESSIVE_AI);
+		bool bConq4 = AI_isAnyMemberDoVictoryStrategy(AI_VICTORY_CONQUEST4);
+
+		// Prioritize targets closer to victory
+		if( bConq4 || bAggressive )
+		{
+			iValue *= 2;
+		}
+
+		if( GET_TEAM(eTeam).AI_isAnyMemberDoVictoryStrategyLevel4() )
+		{
+			iValue *= 2;
+
+			if( bConq4 || bAggressive || AI_isAnyMemberDoVictoryStrategyLevel3() )
+			{
+				iValue *= 2;
+			}
+		}	
 	}
 
-	// BBAI TODO: This legacy code just makes us more willing to enter a war in a trade deal 
-	// as boost applies to all rivals ... useful?
+	// This adapted legacy code just makes us more willing to enter a war in a trade deal 
+	// as boost applies to all rivals
 	if( AI_isAnyMemberDoVictoryStrategy(AI_VICTORY_DOMINATION3) )
 	{
-		iValue *= (GC.getGameINLINE().isOption(GAMEOPTION_AGGRESSIVE_AI) ? 6 : 4);
+		iValue *= (GC.getGameINLINE().isOption(GAMEOPTION_AGGRESSIVE_AI) ? 3 : 2);
+	}
+
+	// If early or not strong, have those inclined for conquest pick off weak opponents
+	if( AI_isAnyMemberDoVictoryStrategy(AI_VICTORY_CONQUEST2) && !(AI_isAnyMemberDoVictoryStrategy(AI_VICTORY_CONQUEST3)) )
+	{
+		if( 4*getPower(false) > 5*GET_TEAM(eTeam).getDefensivePower() )
+		{
+			iValue *= 2;
+		}
+	}
+
+	if( getAnyWarPlanCount(true) > 0 )
+	{
+		int iMultiplier = (70 * getPower(false))/std::max(1, GET_TEAM(eTeam).getDefensivePower());
+
+		iValue *= range(iMultiplier, 50, 400);
+		iValue /= 100;
 	}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
@@ -2753,6 +2788,8 @@ void CvTeamAI::AI_getWarThresholds( int &iTotalWarThreshold, int &iLimitedWarThr
 	iTotalWarThreshold /= 3;
 	iTotalWarThreshold += bAggressive ? 1 : 0;
 }
+
+// BBAI TODO: Total war odds function, so that can be checked elsewhere
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
@@ -4190,7 +4227,7 @@ bool CvTeamAI::AI_isOkayVassalTarget( TeamTypes eTeam )
 
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      10/26/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      04/25/10                                jdog5000      */
 /*                                                                                              */
 /* War Strategy, AI logging                                                                     */
 /************************************************************************************************/			
@@ -4462,7 +4499,7 @@ void CvTeamAI::AI_doWar()
 	}
 
 	// if no war plans, consider starting one!
-	if (getAnyWarPlanCount(true) == 0 || iEnemyPowerPercent < 40)
+	if (getAnyWarPlanCount(true) == 0 || iEnemyPowerPercent < 45)
 	{
 		bool bAggressive = GC.getGameINLINE().isOption(GAMEOPTION_AGGRESSIVE_AI);
 		
@@ -4560,11 +4597,14 @@ void CvTeamAI::AI_doWar()
 		{
 			iOurPower = getPower(true);
 
-			if (bAggressive)
+			if (bAggressive && (getAnyWarPlanCount(true) == 0))
 			{
 				iOurPower *= 4;
 				iOurPower /= 3;
 			}
+
+			iOurPower *= (100 - iEnemyPowerPercent);
+			iOurPower /= 100;
 
 			if ((bFinancesProTotalWar || !bFinancesOpposeWar) &&
 				(GC.getGameINLINE().getSorenRandNum(iTotalWarRand, "AI Maximum War") <= iTotalWarThreshold))

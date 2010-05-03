@@ -871,22 +871,31 @@ void CvTeam::shareCounters(TeamTypes eTeam)
 
 	for (iI = 0; iI < GC.getNumTechInfos(); iI++)
 	{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       04/29/10                                jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
 		if (GET_TEAM(eTeam).getResearchProgress((TechTypes)iI) > getResearchProgress((TechTypes)iI))
 		{
 			setResearchProgress(((TechTypes)iI), GET_TEAM(eTeam).getResearchProgress((TechTypes)iI), getLeaderID());
 		}
 
-/************************************************************************************************/
-/* UNOFFICIAL_PATCH                       07/06/09                                jdog5000      */
-/*                                                                                              */
-/* Bugfix                                                                                       */
-/************************************************************************************************/
-/* original bts code
 		if (GET_TEAM(eTeam).isNoTradeTech((TechTypes)iI))
 		{
 			setNoTradeTech(((TechTypes)iI), true);
 		}
 */
+		// Overflow from techs this team already has can cause bugged behavior
+		if( !isHasTech((TechTypes)iI) )
+		{
+			if (GET_TEAM(eTeam).getResearchProgress((TechTypes)iI) > getResearchProgress((TechTypes)iI))
+			{
+				setResearchProgress(((TechTypes)iI), GET_TEAM(eTeam).getResearchProgress((TechTypes)iI), getLeaderID());
+			}
+		}
+
 		// Clear no tech trade if it is false for other team
 		// Fixes bug where if, with no tech brokering, team A trades a tech to team B, then later joins B in
 		// a permanent alliance.  Previous code would block the AB alliance from "brokering" the tech, even
@@ -1632,7 +1641,7 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 		CvEventReporter::getInstance().changeWar(true, getID(), eTeam);
 
 
-		if( !GC.getBBAI_ALLIANCE_OPTION() )
+		if( GC.getBBAI_DEFENSIVE_PACT_BEHAVIOR() <= 1 )
 		{
 			cancelDefensivePacts();
 		}
@@ -1645,7 +1654,7 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 				{
 					GET_TEAM((TeamTypes)iI).declareWar(getID(), bNewDiplo, WARPLAN_DOGPILE);
 				}
-				else if( GET_TEAM((TeamTypes)iI).isDefensivePact(getID()))
+				else if( (GC.getBBAI_DEFENSIVE_PACT_BEHAVIOR() > 1) && GET_TEAM((TeamTypes)iI).isDefensivePact(getID()))
 				{
 					// For alliance option.  This teams pacts are canceled above if not using alliance option.
 					GET_TEAM((TeamTypes)iI).declareWar(eTeam, bNewDiplo, WARPLAN_DOGPILE);
@@ -1653,7 +1662,7 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 			}
 		}
 
-		if( !GC.getBBAI_ALLIANCE_OPTION() )
+		if( GC.getBBAI_DEFENSIVE_PACT_BEHAVIOR() == 0 )
 		{
 			GET_TEAM(eTeam).cancelDefensivePacts();
 		}

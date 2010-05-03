@@ -1372,6 +1372,14 @@ void CvGameTextMgr::setPlotListHelp(CvWStringBuffer &szString, CvPlot* pPlot, bo
 								}
 							}
 						}
+
+						// activity
+						ActivityTypes eActivityType = (ActivityTypes) pHeadGroup->getActivityType();
+						if (eActivityType != NO_ACTIVITY)
+						{
+							getActivityTypeString(szTempString, eActivityType);
+							szString.append(CvWString::format(SETCOLR L"\n%s" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"), szTempString.GetCString()));
+						}
 					}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */

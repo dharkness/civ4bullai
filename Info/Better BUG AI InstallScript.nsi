@@ -13,8 +13,8 @@
 ;These are the variables you need to define for your mod
 
 !define NAME "Better BUG AI" ;Full Name of Mod
-!define VERSION "0.90r (2010-04-23)" ;Mod Version Number - reflecting Better BTS AI Version
-!define VERSION_VERBOSE "* Better BTS AI 0.90r r548$\n* BULL 1.1+ r174$\n* BUG 4.3 r2206"
+!define VERSION "1.00a (2010-05-03)" ;Mod Version Number - reflecting Better BTS AI Version
+!define VERSION_VERBOSE "* Better BTS AI 1.00a r555$\n* BULL 1.1+ r174$\n* BUG 4.3 r2209"
 
 !define MOD_LOC "Better BUG AI" ;Name of Mod Folder
 !define SHORT_NAME "Better BUG AI" ;Shorthand/nick of your mod
