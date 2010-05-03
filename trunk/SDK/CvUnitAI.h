@@ -176,7 +176,7 @@ protected:
 /*                                                                                              */
 /* War tactics AI                                                                               */
 /************************************************************************************************/
-	CvCity* AI_pickTargetCity(int iFlags = 0, int iMaxPath = MAX_INT);
+	CvCity* AI_pickTargetCity(int iFlags = 0, int iMaxPath = MAX_INT, bool bHuntBarbs = false);
 	bool AI_goToTargetCity(int iFlags = 0, int iMaxPath = MAX_INT, CvCity* pTargetCity = NULL);
 	bool AI_goToTargetBarbCity(int iMaxPath = 10);
 	bool AI_pillageAroundCity(CvCity* pTargetCity, int iBonusValueThreshold = 0, int iMaxPathTurns = MAX_INT);

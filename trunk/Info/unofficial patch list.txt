@@ -7,7 +7,8 @@ Outstanding issues:
 -  Diplomacy text to clarify when AI declines trades because of relations with teammates, vassals
 -  Tech score is summed in team score though tech is shared, producing bias towards teams with more players
 -  Path planning issues for groups with some commandos
--  What else should scale by game speed?  Diplomacy has biggest effect, but may be too big ...
+-  What else should scale by game speed?  Diplomacy has biggest effect, but may be too big for here ...
+-  Air bombing unowned land: http://forums.civfanatics.com/showpost.php?p=8794715&postcount=11
 
 ------------------------------------------
 
@@ -16,8 +17,24 @@ Unofficial Patch Change List
 Version 1.50 changes:
 
 - CvUnitInfos.xml - Workboats no longer qualify for military production bonuses under Police State, do not count as military units for support either
-- CvCityAi::AI_buildingValueThreshold - Fixed bug causing AI cities to over value buildings which unlock specialists in many circumstances when picking what to build
-
+- CvCityAI::AI_buildingValueThreshold - Fixed bug causing AI cities to over value buildings which unlock specialists in many circumstances when picking what to build
+- CyInfoInterface2 - Fixed issue with "getHappiness" for improvements (thanks NotSoGood)
+- CvPlayer::canFound - Changed handling of founding on water tiles so that Python callback has final say if it is turned on
+- CvPlayer::removeBuildingClass - Fixed issue with removing buildings when building class was maxed out for some mods (thanks EF)
+- CvPlot::doImprovement - Minor efficiency improvement for existing game speed scaling fix
+- CvPlot::doImprovment & CvPlot::doFeature - Now scale accoding to getVictoryDelayPercent, which is more appropriate
+- CvUnitAI::AI_specialSeaTransportMissionary - Fixed minor bug in valuation for executives
+- CvPlayerAI::AI_targetGold - Fixed bug causing AI to not bother with budgeting for expenses for first 40 turns of scenarios and advanced start games
+- CvCity::init - Reverted to standard BTS code where floodplains are removed when a city is founded
+- CvCity::kill - Replace floodplain after city is destroyed
+- CvTeam::doTurn - Added barbarian passive tech fix from Mongoose SDK
+- CvPlayerAI::AI_changePeacetimeTradeValue and CvPlayerAI::AI_changePeacetimeGrantValue - AIs you haven't met yet will no longer get angry at you for trading with their worst enemy (thanks Sephi)
+- CvPlayerAI::AI_getStrategyHash - Fixed several bugs where player ID was used where team ID was intended
+- CvPlayerAI::AI_targetCityValue - Fixed issues with valuation of cities with inactive world wonders, multi-holy-cities
+- CvCity - Added function getNumActiveWorldWonders()
+- CvPlayerAI::AI_commerceWeight - Improved valuation of generating culture in human player cities when culture bar is > 50% (ie, player probably going for cultural victory)
+- CyInfoPythonInterface1 - Added missing CvUnitInfo::isOnlyDefensive (thanks Afforess)
+- CvCityAI::AI_calculateCulturePressure and CvCityAI::AI_playerCloseness - Fixed incorrect usage of getID() (thank denev)
 
 
 Version 1.40 changes:

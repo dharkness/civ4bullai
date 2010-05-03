@@ -3584,6 +3584,8 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 	bool bCulturalVictory1 = GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE1);
 	bool bCulturalVictory2 = GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2);
 	bool bCulturalVictory3 = GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3);
+
+	bool bSpaceVictory1 = GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_SPACE1);
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/		
@@ -4639,6 +4641,23 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 					    }
 					}
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      04/25/10                              jdog5000        */
+/*                                                                                              */
+/* Victory Strategy AI                                                                          */
+/************************************************************************************************/
+					if ((CommerceTypes)iI == COMMERCE_RESEARCH)
+					{
+					    if (bSpaceVictory1)
+					    {
+					        iTempValue *= 3;		
+							iTempValue /= 2;
+					    }
+					}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
+
 					if (kBuilding.getCommerceChangeDoubleTime(iI) > 0)
 					{
 						if ((kBuilding.getCommerceChange(iI) > 0) || (kBuilding.getObsoleteSafeCommerceChange(iI) > 0))
@@ -5508,7 +5527,7 @@ bool CvCityAI::AI_isAirDefended(bool bCountLand, int iExtra)
 
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/08/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      04/25/10                                jdog5000      */
 /*                                                                                              */
 /* War strategy AI, Barbarian AI                                                                */
 /************************************************************************************************/
@@ -5562,11 +5581,6 @@ int CvCityAI::AI_neededDefenders()
 	
 	if ((GC.getGame().getGameTurn() - getGameTurnAcquired()) < 10)
 	{
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/31/10                                jdog5000      */
-/*                                                                                              */
-/* War tactics AI                                                                               */
-/************************************************************************************************/
 /* original code
 		if (bOffenseWar)
 		{
@@ -5608,16 +5622,14 @@ int CvCityAI::AI_neededDefenders()
 		{
 			iDefenders++;
 		}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 	}
 	
 	if (GET_PLAYER(getOwnerINLINE()).AI_isDoStrategy(AI_STRATEGY_LAST_STAND))
 	{
 		iDefenders += 10;
 	}
-	else if( GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3) )
+
+	if( GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3) )
 	{
 		if( findCommerceRateRank(COMMERCE_CULTURE) <= GC.getGameINLINE().culturalVictoryNumCultureCities() )
 		{
@@ -5629,27 +5641,32 @@ int CvCityAI::AI_neededDefenders()
 			}
 		}
 	}
-	// BBAI TODO: This should be space victory strategy >= 3
-	else if( GET_TEAM(getTeam()).hasLaunched() )
+
+	if( GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_SPACE3) )
 	{
-		if( isCapital() )
+		if( isCapital() || isProductionProject())
 		{
-			iDefenders += 6;
+			iDefenders += 4;
 
 			if( bDefenseWar )
 			{
 				iDefenders += 3;
 			}
 		}
+
+		if( isCapital() && GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_SPACE4) )
+		{
+			iDefenders += 6;
+		}
 	}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 	
 	iDefenders = std::max(iDefenders, AI_minDefenders());
 
 	return iDefenders;
 }
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 int CvCityAI::AI_minDefenders()
 {
@@ -12155,7 +12172,6 @@ int CvCityAI::AI_cityThreat(bool bDangerPercent)
 	
 	iValue += getNumActiveWorldWonders() * 5;
 
-	// BBAI TODO: It's ratios of threat that matter, so giving boosts to all cities doesn't make sense
 	if (GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3))
 	{
 		iValue += 5;

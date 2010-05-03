@@ -3876,11 +3876,14 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 		// team power (if agressive, we use higher value)
 		int iTeamPower = kTeam.getPower(true);
-		if (bAggressive)
+		if (bAggressive && kTeam.getAnyWarPlanCount(true) == 0)
 		{
 			iTeamPower *= 4;
 			iTeamPower /= 3;
 		}
+
+		iTeamPower *= (100 - kTeam.AI_getEnemyPowerPercent());
+		iTeamPower /= 100;
 		
 		// we will put the values into an array, then sort it for display
 		int iBestPossibleMaxWarPass = MAX_INT;
@@ -4712,7 +4715,7 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 /*                                                                                              */
 /************************************************************************************************/
 	// Add string showing version number
-	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 0.90r");
+	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 1.00a");
 	szBuffer.append(szTempBuffer);
 #ifdef LOG_AI
 	szTempBuffer.Format(NEWLINE L"%c", gDLL->getSymbolID(BULLET_CHAR));

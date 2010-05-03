@@ -236,7 +236,7 @@ m_paMainMenus(NULL)
 // BBAI Options
 ,m_bBBAI_AIR_COMBAT(false)
 ,m_bBBAI_HUMAN_VASSAL_WAR_BUILD(false)
-,m_bBBAI_ALLIANCE_OPTION(false)
+,m_iBBAI_DEFENSIVE_PACT_BEHAVIOR(0)
 ,m_bBBAI_HUMAN_AS_VASSAL_OPTION(false)
 
 // BBAI AI Variables
@@ -2723,7 +2723,7 @@ void CvGlobals::cacheGlobals()
 // BBAI Options
 	m_bBBAI_AIR_COMBAT = !(getDefineINT("BBAI_AIR_COMBAT") == 0);
 	m_bBBAI_HUMAN_VASSAL_WAR_BUILD = !(getDefineINT("BBAI_HUMAN_VASSAL_WAR_BUILD") == 0);
-	m_bBBAI_ALLIANCE_OPTION = !(getDefineINT("BBAI_ALLIANCE_OPTION") == 0);
+	m_iBBAI_DEFENSIVE_PACT_BEHAVIOR = getDefineINT("BBAI_DEFENSIVE_PACT_BEHAVIOR");
 	m_bBBAI_HUMAN_AS_VASSAL_OPTION = !(getDefineINT("BBAI_HUMAN_AS_VASSAL_OPTION") == 0);
 
 // BBAI AI Variables
@@ -3743,9 +3743,9 @@ bool CvGlobals::getBBAI_HUMAN_VASSAL_WAR_BUILD()
 	return m_bBBAI_HUMAN_VASSAL_WAR_BUILD;
 }
 
-bool CvGlobals::getBBAI_ALLIANCE_OPTION()
+int CvGlobals::getBBAI_DEFENSIVE_PACT_BEHAVIOR()
 {
-	return m_bBBAI_ALLIANCE_OPTION;
+	return m_iBBAI_DEFENSIVE_PACT_BEHAVIOR;
 }
 
 bool CvGlobals::getBBAI_HUMAN_AS_VASSAL_OPTION()
@@ -3853,6 +3853,7 @@ bool CvGlobals::getLFBUseSlidingScale()
 {
 	return m_bLFBUseSlidingScale;
 }
+
 int CvGlobals::getLFBAdjustNumerator()
 {
 	return m_iLFBAdjustNumerator;

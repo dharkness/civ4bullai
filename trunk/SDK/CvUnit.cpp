@@ -3110,12 +3110,23 @@ bool CvUnit::canAutomate(AutomateTypes eAutomate) const
 
 	case AUTOMATE_EXPLORE:
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      06/02/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      04/25/10                                jdog5000      */
 /*                                                                                              */
 /* Player Interface                                                                             */
 /************************************************************************************************/
-		// Enable exploration for air units
-		if ((!canFight() && (getDomainType() != DOMAIN_SEA) && (getDomainType() != DOMAIN_AIR)) || (getDomainType() == DOMAIN_IMMOBILE))
+		if ( !canFight() )
+		{
+			// Enable exploration for air units
+			if((getDomainType() != DOMAIN_SEA) && (getDomainType() != DOMAIN_AIR))
+			{
+				if( !(alwaysInvisible()) || !(isSpy()) )
+				{
+					return false;
+				}
+			}
+		}
+
+		if( (getDomainType() == DOMAIN_IMMOBILE) )
 		{
 			return false;
 		}

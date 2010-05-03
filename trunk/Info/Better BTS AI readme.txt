@@ -15,7 +15,8 @@ _________________________
 
 Better BTS AI will always maintain backwards save game compatibility, meaning that you will always be able to load a save from either plain BTS or an earlier version of the mod.  (Note:  If you installed as a mod, then you will be able to load saves with the same mod name.  If you replaced default files, then you'll be able to load games from plain BTS)  However, saves from some versions of the mod cannot be opened in plain BTS or in earlier versions of the mod.  Save-game compatibility (save version:  opens with):
 
-0.80 BBAI and higher:  Only 0.80 and higher
+0.90 and higher: Only 0.90 and higher
+0.80 - 0.84:  0.80 and higher
 0.01 - 0.78:  Any BBAI
 Plain BTS:  BTS, any BBAI
 
@@ -32,17 +33,17 @@ _________________________
 [B]Customization[/B]
 _________________________
 
-Some mod options can be enabled or disabled by changing settings in GlobalDefinesAlt.xml.  Here are the important options in that file:
+There are now several XML global define files controlling different aspects of the mod.  See the particular file for more information.
 
-- BBAI_AIR_COMBAT:  Controls modification for air v air combat to make veteran units more valuable, especially when wounded.  Air v air combat is now more much more similar to land combat.  Defaults to ON.
-- BBAI_HUMAN_VASSAL_WAR_BUILD:  This setting makes vassals of human players build more military units, anticipating that their human masters will engage in more wars.  In single player, it's better to use the new SHIFT+ALT click feature to set war preparation plans described above, this is intended mainly for multiplayer where that feature should not be used.  Defaults to OFF.
-- BBAI_ALLIANCE_OPTION: Changes how defensive pacts work to be more like alliances from earlier versions of Civ.  Pacts now do not cancel on war declarations and your allies will also declare war.  This can easily be abused by a human player, but the option is now avaialable.
-- BBAI_HUMAN_AS_VASSAL_OPTION: Allows human player to offer themselves as a vassal to an AI.  The AI has been taught to consider this offer appropriately and some exploits have been resolved.
-- TECH_DIFFUSION:  This collection of settings enables and controls the diffusion of technology between a player who knows a tech and one who does not.  A form of tech diffusion exists in vanilla Civ4 where research rate increases based on how many civs you've met who already know a tech.  BBAI includes a revamped system where diffusion rates are higher under open borders and are not affected by how many civs there are on the map.  Defaults to ON.
-- TECH_DIFFUSION_WELFARE:  These settings are an extension of tech diffusion which give an extra percentage boost to the research rate of civs who are significantly behind in tech.  It has been designed to keep most smaller civs technologically relevant, while not opening the door for free-loaders.  Defaults to ON.
-- TECH_COST:  These settings provide additional control over the rate of tech research.  Since AI research rates are increasing in BBAI, these variables have been exposed to allow customization research rates.
+[I]BBAI_Game_Options_GlobalDefines.xml[/I]: Controls options for new features, including options to change how defensive pacts work, disable victory strategy system, and allow the human player to become a vassal of an AI.
 
-Next, several AI variables have been exposed to XML to allow custom tweaking of AI behavior.  See the BBAI AI variables section of GlobalDefinesAlt.xml.
+[I]TechDiffusion_GlobalDefines.xml[/I]: Enable and set up the new tech diffusion code which changes how BTS lowers research costs of techs known to many other players.
+
+[I]LeadFromBehind_GlobalDefines.xml[/I]: Controls for the Lead From Behind mod component used in BBAI to help AI make better decisions with its units in stack v stack combat.
+
+[I]BBAI_AI_Variables_GlobalDefines.xml[/I]: Some controls on AI in game decision making at various levels, including stack attacks of cities.
+
+The new AI victory strategy system is also customizable.  There are five new settings for each leader in CIV4LeaderHeadInfos.xml controlling the odds they have of starting the game looking to win a particular type of victory.  The early stages of victory strategy system depend on these odds and have small effects on AI decisions all game long.  Later stages are independent of these odds and depend mainly on the AI detecting it is close to winning in a particular way.
 
 Finally, BBAI includes a new system for easily scaling tech costs by era.  The idea is that tech rates can be easily scaled for all later era techs to adjust for the AI's better handling of its economy.  In CIV4EraInfos.xml, adjust the values for iTechCostModifier.
 
@@ -54,7 +55,7 @@ DLL:  If the other mod has a custom DLL, you will need to merge the source code 
 
 Python:  Only the file in Assets\Python\Screens\ contains a fix, the other Python files are only to facilitate testing.  AIAutoPlay and ChangePlayer are very useful for general testing, so consider including them.  Tester contains some test popups specific to this mod.  These components use DrElmerGiggles custom event manager to manage their subscriptions to different Python events.
 
-XML:  Most XML changes are fixes from the unofficial patch, if you already have these changes then you are fine, otherwise you should merge them.  The exceptions to this are GlobalDefinesAlt.xml (which has updated AI variables), and two files with game text, Text\CIV4GameText_BetterBTSAI.xml and Text\CIV4GameText_AIAutoPlay.xml.  You will want to copy these files over, although the AIAutoPlay text is only needed if you also are using the AIAutoPlay python component.
+XML:  You will need to merge over all of the XML files for the mod to work properly, particularly the _GlobalDefines.xml files (which has updated AI variables), the new leader XML files, the new CIV4EraInfos.xml, and the text files Text\CIV4GameText_BetterBTSAI.xml and Text\CIV4GameText_AIAutoPlay.xml (for AI Autoplay python component).  The unit and building XML files included with the mod are from the unofficial patch and are not strictly necessary.
 
 
 [B]Debug Keyboard Commands[/B]
@@ -73,10 +74,10 @@ _________________________
 
 The full change log from plain BTS is in changelog.txt, only the most recent changes are listed below.  There are hundreds of places where AI logic has been overhauled, tweaked, or better integrated with other pieces.
 
-New in Better BTS AI 0.90
+New in Better BTS AI 1.00
 
 Merged in Unoffical Patch 1.50
-Added the Lead From Behind mod by UncutDragon (improves selection of order for attack for both human and AI stacks, preserving GG, medics, experienced units)
+Added the Lead From Behind mod 1.2 by UncutDragon (improves selection of order for attack for both human and AI stacks, preserving GG, medics, experienced units)
 Added CIV4LeaderHeadInfos.xml and CIV4CivilizationsSchema.xml to mod files for new victory strategy system
 
 Bugfix
@@ -84,6 +85,7 @@ Bugfix
 - Fixed bug (introduced) where giving pillage orders to a stack or multi-move unit would pillage multiple times
 - Fixed bug (introduced) allowing ships to move diagonally over isthmuses under some circumstances
 - Fixed bug (introduced) slowing AI expansion, especially on Archipelago maps
+- Fixed bug where AI units could sleep indefinitely when using debug tools like Change Player and AIAutoPlay
 
 Victory Strategy AI
 - Switched all cultural victory logic to new victory strategy framework
@@ -94,6 +96,7 @@ Victory Strategy AI
 - Levels 3 & 4 of each victory strategy are now based on observables, not hidden AI leader tendencies.  So, other AIs can now understand when other AIs are going for a particular victory, and it also serves as an estimate of what the human player is doing.
 - AIs going for CONQUEST and DOMINATION victories willing to spend more gold on units
 - Improved existing system for AI going for DOMINATION to build health buildings to help boost pop
+- AIs going for culture/space now put defensive spies in important cities
 
 War strategy AI
 - AI now detects when other players are close to victory and greatly boosts start war value against them (still plays within leader's attitude no war probabilities, so won't declare on friendly)
@@ -111,20 +114,47 @@ War strategy AI
 - Added function so AI can calculate the air power of its rivals
 - Corrected AI valuation on interception abilities for UNITAI_COUNTER units so that it doesn't switch Infantry to SAM until rivals have air units
 - Adjusted Dagger and Crush strategy thresholds so if AI has started them it is more likely to keep them up
+- AI will not do Crush if also doing ALERT2
+- AI will now better defends its first few cities after invading a rivals continent
+- Reduced effect of having vassals on AI aggressiveness (victory strategies replace this)
+- AIs at war and looking for second front now adjusts it's power down for current enemies, and prefers weaker opponents
 
 War tactics AI
+- Tweaked AI_finalOddsThreshold to reduce suicide attacks in stack v stack combat, especially at sea
 - Reworked AI logic for when to raze cities it conquers
+- Rewrote logic in AI_attackCityMove so AI stacks behave more intelligently around enemy cities, will pillage if not strong enough to attack or choke from defensive terrain if outgunned
 - AI carriers will now move to support/air defend ground troops, support invasions
 - AI now values active wonders a little more in deciding cities to target
 - Fixed bug where AI would over value holy cities of religions other than its state religion
 - Upped threat cities feel when they are next to much more powerful rivals
 - The strategy FAST_MOVERS no longer limits the AI from forming main stacks of mixed fast and slow units, but it will still form small fast attack groups
 - Augmented the strategy LAND_BLITZ, a more restrictive case of FAST_MOVERS, so that main stacks will be made of multi-move units when possible in the modern era
+- Fixed bug blocking under many circumstances AI from using logic to attack without bombarding when bombarding will take a long time
+- Fixed bugs in AI calculations of how many turns they need to bombard defenses
+- AI will now pillage with healthy, fast, non-bombard units in stack first
+- AI will now pillage plot it is on before bombarding city (since need to bombard means there's a chance it won't take city)
+- AI_choke now works better for multiple units if head unit is no defensive bonus, won't accidentally attack enemy units
+- Added function for AI attack stacks to pillage around target city to buy time if not strong enough to attack.  Favors pillaging defensive terrain
+- AI attack stacks load in transports if land path is too long
+- Added option to AI_anyAttack to block attacking cities
+- Attack city stacks will now considering taking transports if overland path is long
+- Tactical nukes retreat better from cities when threatened
+- AI now moves missles safely
+- Fixed issues causing AI to rebase missles into empty forts
+- AI attack stacks now do not head out for conquest unless they have some non-seige units which can capture cities
+- AI attack stacks will wait for unit upgrades before heading out for conquest (helps most when AI has just been surprise attacked)
+
+Unit AI
+- Greatly improved speed and turn efficiency for loading of large stacks onto many transports
+- AI pillage units now value healing in enemy territory more
+- AI should now promote a few more units to medics
 
 Naval AI
 - Assault transports no longer set off to join transport groups already mounting assaults
 - When assault transports head out for invasion, other transport groups which were going to join them will now pick a new mission
 - Improved handling for when multiple transports are moving to pickup a stack of stranded units, the closest set of transports will now get the task
+- Loaded transports with no escorts now try to join a local flotilla first
+- Loaded transports with no escorts will now wait if there are waiting escorts on the same plot (catches case where transport just got troops loaded last turn, takes off before escorts can react)
 
 Pirate AI
 - Reduced suicide of pirateers starting from inside their own borders
@@ -150,11 +180,14 @@ City AI
 - Lowered max build turn limit for high priority production buildings when AI is in a tough war
 - AI will now probably only build one workboat using very early capital logic as originally intended (speeds expansion in water resource heavy starts)
 - Resolved issues where AI early game build logic would get confused because Warriors cannot be built as UNITAI_CITY_DEFENSE
+- Improved AI logic for when to conscript defenders, AI now conscripts less unless it is in dire situation.  Tied in with TURTLE strategy
 
 Tech AI
 - Separated out building and unit valuation into own function for debugging and future efforts
 - Adjusted valuation of tech based on units enabled, boost to defensive units under ALERT and TURTLE and offensive when going for conquest victory
 - AIs going for DOMINATION victory will aim for Galleons earlier
+- AIs going for SPACE emphasize getting Apollo earlier
+- AIs with Apollo now better emphasize getting techs for parts
 
 Civic AI
 - If AI is leader of AP, it now values state religion civics more
@@ -171,6 +204,10 @@ Missionary AI
 
 General AI
 - Changed player consistent random method for picking strategies from being based on capital city location to a stored rand, so AI player tendencies will be consistent even if capital moves
+- Changed how building defense is handled when unit is estimating its defensive strength against unknown attacker (CvUnit::maxCombatStr(pPlot,NULL)).  Firaxis took conservative approach and always ignored defense in this case (so defensive strength could be considerably higher in castled low culture city).  This lead to AIs suiciding stacks on city walls in early/mid game.  New method is to use ignoreBuildingDefense flag of defender which should have fewer fatal side effects.
+
+Player Interface
+- Added automate explore option for spies
 
 Efficiency
 - Several efficiency improvements were added with Lead From Behind
@@ -179,8 +216,10 @@ Efficiency
 Customization
 - Split GlobalDefinesAlt.xml into a few separate files by type
 - Improved handling of default values for new BBAI variables in case xml files are accidentally missing or something
+- Tweaked variables for AI stack attacks of cities to reduce suicides
 - Added BBAI_TURTLE_ENEMY_POWER_RATIO to BBAI_AI_Variables
 - Added BBAI_VICTORY_STRATEGY_CONQUEST, etc to BBAI_Game_Options so that you can turn off any parts of the new AI playing to win logic that you wish.  The code already checks for whether the victories are enabled or blocked by other things like the always peace option, so this is really just for if you don't like how it plays for some reason.
+- Changed BBAI_ALLIANCE_OPTION to BBAI_DEFENSIVE_PACT_BEHAVIOR, now has three options
 
 CvUnitInfos.xml
 - Returned UNITAI_CITY_DEFENSE to Roman Praetorians
