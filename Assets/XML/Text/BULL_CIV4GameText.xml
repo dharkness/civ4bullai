@@ -240,60 +240,60 @@
 	
 	<TEXT>
 		<Tag>TXT_KEY_DEFENSIVE_PACT_WITH</Tag>
-		<English>[ICON_BULLET][COLOR_BLUE]Defensive Pact with %s1_player[COLOR_REVERT]</English>
-		<French>[ICON_BULLET][COLOR_BLUE]Défensive pacte avec %s1_player[COLOR_REVERT]</French>
-		<German>[ICON_BULLET][COLOR_BLUE]Verteidigungsbündnis mit %s1_player[COLOR_REVERT]</German>
-		<Italian>[ICON_BULLET][COLOR_BLUE]Difensive patto con %s1_player[COLOR_REVERT]</Italian>
-		<Spanish>[ICON_BULLET][COLOR_BLUE]Pacto defensivo con %s1_player[COLOR_REVERT]</Spanish>
+		<English>[ICON_BULLET][COLOR_CYAN]Defensive Pact with %s1_player[COLOR_REVERT]</English>
+		<French>[ICON_BULLET][COLOR_CYAN]Défensive pacte avec %s1_player[COLOR_REVERT]</French>
+		<German>[ICON_BULLET][COLOR_CYAN]Verteidigungsbündnis mit %s1_player[COLOR_REVERT]</German>
+		<Italian>[ICON_BULLET][COLOR_CYAN]Difensive patto con %s1_player[COLOR_REVERT]</Italian>
+		<Spanish>[ICON_BULLET][COLOR_CYAN]Pacto defensivo con %s1_player[COLOR_REVERT]</Spanish>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_DEFENSIVE_PACT_WITH_YOU</Tag>
-		<English>[ICON_BULLET][COLOR_BLUE]You have a Defensive Pact[COLOR_REVERT]</English>
-		<French>[ICON_BULLET][COLOR_BLUE]Vous disposez d'un pacte défensif[COLOR_REVERT]</French>
-		<German>[ICON_BULLET][COLOR_BLUE]Ihr habt ein Verteidigungsbündnis[COLOR_REVERT]</German>
-		<Italian>[ICON_BULLET][COLOR_BLUE]Si dispone di un patto di difesa[COLOR_REVERT]</Italian>
-		<Spanish>[ICON_BULLET][COLOR_BLUE]Ustedes tiene un pacto defensivo[COLOR_REVERT]</Spanish>
+		<English>[ICON_BULLET][COLOR_CYAN]You have a Defensive Pact[COLOR_REVERT]</English>
+		<French>[ICON_BULLET][COLOR_CYAN]Vous disposez d'un pacte défensif[COLOR_REVERT]</French>
+		<German>[ICON_BULLET][COLOR_CYAN]Ihr habt ein Verteidigungsbündnis[COLOR_REVERT]</German>
+		<Italian>[ICON_BULLET][COLOR_CYAN]Si dispone di un patto di difesa[COLOR_REVERT]</Italian>
+		<Spanish>[ICON_BULLET][COLOR_CYAN]Ustedes tiene un pacto defensivo[COLOR_REVERT]</Spanish>
 	</TEXT>
 	
 	<TEXT>
 		<Tag>TXT_KEY_WARPLAN_TARGET_IS</Tag>
-		<English>[ICON_BULLET][COLOR_CYAN]War Plan against %s1_player[COLOR_REVERT]</English>
-		<French>[ICON_BULLET][COLOR_CYAN]War Plan against %s1_player[COLOR_REVERT]</French>
-		<German>[ICON_BULLET][COLOR_CYAN]Kriegsplan gegen %s1_player[COLOR_REVERT]</German>
-		<Italian>[ICON_BULLET][COLOR_CYAN]War Plan against %s1_player[COLOR_REVERT]</Italian>
-		<Spanish>[ICON_BULLET][COLOR_CYAN]War Plan against %s1_player[COLOR_REVERT]</Spanish>
+		<English>[ICON_BULLET][COLOR_ORANGE]War Plan against %s1_player[COLOR_REVERT]</English>
+		<French>[ICON_BULLET][COLOR_ORANGE]War Plan against %s1_player[COLOR_REVERT]</French>
+		<German>[ICON_BULLET][COLOR_ORANGE]Kriegsplan gegen %s1_player[COLOR_REVERT]</German>
+		<Italian>[ICON_BULLET][COLOR_ORANGE]War Plan against %s1_player[COLOR_REVERT]</Italian>
+		<Spanish>[ICON_BULLET][COLOR_ORANGE]War Plan against %s1_player[COLOR_REVERT]</Spanish>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_WARPLAN_TARGET_IS_YOU</Tag>
-		<English>[ICON_BULLET][COLOR_CYAN]You are War Target[COLOR_REVERT]</English>
-		<French>[ICON_BULLET][COLOR_CYAN]You are War Target[COLOR_REVERT]</French>
-		<German>[ICON_BULLET][COLOR_CYAN]Ihr seid Angriffsziel[COLOR_REVERT]</German>
-		<Italian>[ICON_BULLET][COLOR_CYAN]You are War Target[COLOR_REVERT]</Italian>
-		<Spanish>[ICON_BULLET][COLOR_CYAN]You are War Target[COLOR_REVERT]</Spanish>
+		<English>[ICON_BULLET][COLOR_ORANGE]You are War Target[COLOR_REVERT]</English>
+		<French>[ICON_BULLET][COLOR_ORANGE]You are War Target[COLOR_REVERT]</French>
+		<German>[ICON_BULLET][COLOR_ORANGE]Ihr seid Angriffsziel[COLOR_REVERT]</German>
+		<Italian>[ICON_BULLET][COLOR_ORANGE]You are War Target[COLOR_REVERT]</Italian>
+		<Spanish>[ICON_BULLET][COLOR_ORANGE]You are War Target[COLOR_REVERT]</Spanish>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_WARPLAN_LIMITED_TARGET_IS</Tag>
-		<English>[ICON_BULLET][COLOR_CYAN]Limited War Plan against %s1_player[COLOR_REVERT]</English>
-		<French>[ICON_BULLET][COLOR_CYAN]Limited War Plan against %s1_player[COLOR_REVERT]</French>
-		<German>[ICON_BULLET][COLOR_CYAN]Kriegsplan gegen %s1_player[COLOR_REVERT]</German>
-		<Italian>[ICON_BULLET][COLOR_CYAN]Limited War Plan against %s1_player[COLOR_REVERT]</Italian>
-		<Spanish>[ICON_BULLET][COLOR_CYAN]Limited War Plan against %s1_player[COLOR_REVERT]</Spanish>
+		<English>[ICON_BULLET][COLOR_ORANGE]Limited War Plan against %s1_player[COLOR_REVERT]</English>
+		<French>[ICON_BULLET][COLOR_ORANGE]Limited War Plan against %s1_player[COLOR_REVERT]</French>
+		<German>[ICON_BULLET][COLOR_ORANGE]Kriegsplan gegen %s1_player[COLOR_REVERT]</German>
+		<Italian>[ICON_BULLET][COLOR_ORANGE]Limited War Plan against %s1_player[COLOR_REVERT]</Italian>
+		<Spanish>[ICON_BULLET][COLOR_ORANGE]Limited War Plan against %s1_player[COLOR_REVERT]</Spanish>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_WARPLAN_LIMITED_TARGET_IS_YOU</Tag>
-		<English>[ICON_BULLET][COLOR_CYAN]You are Limited War Target[COLOR_REVERT]</English>
-		<French>[ICON_BULLET][COLOR_CYAN]You are Limited War Target[COLOR_REVERT]</French>
-		<German>[ICON_BULLET][COLOR_CYAN]Ihr seid beschränktes Angriffsziel[COLOR_REVERT]</German>
-		<Italian>[ICON_BULLET][COLOR_CYAN]You are Limited War Target[COLOR_REVERT]</Italian>
-		<Spanish>[ICON_BULLET][COLOR_CYAN]You are Limited War Target[COLOR_REVERT]</Spanish>
+		<English>[ICON_BULLET][COLOR_ORANGE]You are Limited War Target[COLOR_REVERT]</English>
+		<French>[ICON_BULLET][COLOR_ORANGE]You are Limited War Target[COLOR_REVERT]</French>
+		<German>[ICON_BULLET][COLOR_ORANGE]Ihr seid beschränktes Angriffsziel[COLOR_REVERT]</German>
+		<Italian>[ICON_BULLET][COLOR_ORANGE]You are Limited War Target[COLOR_REVERT]</Italian>
+		<Spanish>[ICON_BULLET][COLOR_ORANGE]You are Limited War Target[COLOR_REVERT]</Spanish>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_WARPLAN_TARGET_OF_YOU</Tag>
-		<English>[ICON_BULLET][COLOR_CYAN]You are preparing for War[COLOR_REVERT]</English>
-		<French>[ICON_BULLET][COLOR_CYAN]You are preparing for War[COLOR_REVERT]</French>
-		<German>[ICON_BULLET][COLOR_CYAN]Ihr bereitet Krieg vor[COLOR_REVERT]</German>
-		<Italian>[ICON_BULLET][COLOR_CYAN]You are preparing for War[COLOR_REVERT]</Italian>
-		<Spanish>[ICON_BULLET][COLOR_CYAN]You are preparing for War[COLOR_REVERT]</Spanish>
+		<English>[ICON_BULLET][COLOR_ORANGE]You are preparing for War[COLOR_REVERT]</English>
+		<French>[ICON_BULLET][COLOR_ORANGE]You are preparing for War[COLOR_REVERT]</French>
+		<German>[ICON_BULLET][COLOR_ORANGE]Ihr bereitet Krieg vor[COLOR_REVERT]</German>
+		<Italian>[ICON_BULLET][COLOR_ORANGE]You are preparing for War[COLOR_REVERT]</Italian>
+		<Spanish>[ICON_BULLET][COLOR_ORANGE]You are preparing for War[COLOR_REVERT]</Spanish>
 	</TEXT>
 	
 <!-- Tech Hover -->

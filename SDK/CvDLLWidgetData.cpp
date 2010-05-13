@@ -4704,7 +4704,7 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 /*                                                                                              */
 /*                                                                                              */
 /************************************************************************************************/
-	szTempBuffer.Format(L"%S", "Unofficial Patch 1.50 pre-release");
+	szTempBuffer.Format(L"%S", "Unofficial Patch 1.50");
 	szBuffer.append(szTempBuffer);
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                       END                                                   */
