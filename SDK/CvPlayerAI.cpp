@@ -3973,7 +3973,7 @@ int CvPlayerAI::AI_goldTarget() const
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/18/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      05/14/10                                jdog5000      */
 /*                                                                                              */
 /* Tech AI                                                                                      */
 /************************************************************************************************/
@@ -5102,9 +5102,16 @@ int CvPlayerAI::AI_techBuildingValue( TechTypes eTech, int iPathLength, bool &bE
 
 int CvPlayerAI::AI_techUnitValue( TechTypes eTech, int iPathLength, bool &bEnablesUnitWonder ) const
 {
-	// BBAI TODO: effectively war plan if total war odds high enough
-	//GET_TEAM(getTeam()).AI_getWarRands(iMaxWarRand, iLimitedWarRand, iDogpileWarRand);
 	bool bWarPlan = (GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0);
+	if( !bWarPlan )
+	{
+		// Aggressive players will stick with war civics
+		if( GET_TEAM(getTeam()).AI_getTotalWarOddsTimes100() > 400 )
+		{
+			bWarPlan = true;
+		}
+	}
+
 	bool bCapitalAlone = (GC.getGameINLINE().getElapsedGameTurns() > 0) ? AI_isCapitalAreaAlone() : false;
 	int iHasMetCount = GET_TEAM(getTeam()).getHasMetCivCount(true);
 	int iCoastalCities = countNumCoastalCities();
@@ -11222,7 +11229,11 @@ CivicTypes CvPlayerAI::AI_bestCivic(CivicOptionTypes eCivicOption, int* iBestVal
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/		
 
-
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      05/14/10                                jdog5000      */
+/*                                                                                              */
+/* Civic AI, Victory Strategy AI                                                                */
+/************************************************************************************************/
 int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 {
 	PROFILE_FUNC();
@@ -11236,16 +11247,8 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 	int iValue;
 	int iTempValue;
 	int iI, iJ;
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/08/10                                jdog5000      */
-/*                                                                                              */
-/* Victory Strategy AI                                                                          */
-/************************************************************************************************/
 	bool bCultureVictory3 = AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3);
 	bool bCultureVictory2 = AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2);
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 
 	FAssertMsg(eCivic < GC.getNumCivicInfos(), "eCivic is expected to be within maximum bounds (invalid Index)");
 	FAssertMsg(eCivic >= 0, "eCivic is expected to be non-negative (invalid Index)");
@@ -11262,12 +11265,69 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 	}
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */
-/************************************************************************************************/	
+/************************************************************************************************/
+
+	if( isBarbarian() )
+	{
+		return 1;
+	}
 
 	CvCivicInfo& kCivic = GC.getCivicInfo(eCivic);
 
-	// BBAI TODO: effectively war plan if total war odds high enough
 	bWarPlan = (GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0);
+	if( bWarPlan )
+	{
+		bWarPlan = false;
+		int iEnemyWarSuccess = 0;
+
+		for( int iTeam = 0; iTeam < MAX_CIV_TEAMS; iTeam++ )
+		{
+			if( GET_TEAM((TeamTypes)iTeam).isAlive() && !GET_TEAM((TeamTypes)iTeam).isMinorCiv() )
+			{
+				if( GET_TEAM(getTeam()).isAtWar((TeamTypes)iTeam) )
+				{
+					if( GET_TEAM(getTeam()).AI_getWarPlan((TeamTypes)iTeam) == WARPLAN_TOTAL )
+					{
+						bWarPlan = true;
+						break;
+					}
+
+					if( GET_TEAM(getTeam()).AI_isLandTarget((TeamTypes)iTeam) )
+					{
+						bWarPlan = true;
+						break;
+					}
+
+					iEnemyWarSuccess += GET_TEAM((TeamTypes)iTeam).AI_getWarSuccess(getTeam());
+				}
+			}
+		}
+
+		if( !bWarPlan )
+		{
+			if( iEnemyWarSuccess > std::min(getNumCities(), 4) * GC.getWAR_SUCCESS_CITY_CAPTURING() )
+			{
+				// Lots of fighting, so war is real
+				bWarPlan = true;
+			}
+			else if( iEnemyWarSuccess > std::min(getNumCities(), 2) * GC.getWAR_SUCCESS_CITY_CAPTURING() )
+			{
+				if( GET_TEAM(getTeam()).AI_getEnemyPowerPercent() > 120 )
+				{
+					bWarPlan = true;
+				}
+			}
+		}
+	}
+
+	if( !bWarPlan )
+	{
+		// Aggressive players will stick with war civics
+		if( GET_TEAM(getTeam()).AI_getTotalWarOddsTimes100() > 200 )
+		{
+			bWarPlan = true;
+		}
+	}
 
 	iConnectedForeignCities = countPotentialForeignTradeCitiesConnected();
 	iTotalReligonCount = countTotalHasReligion();
@@ -11287,11 +11347,6 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 
 	iValue += -(GC.getCivicInfo(eCivic).getAnarchyLength() * getNumCities());
 
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/14/10                                jdog5000      */
-/*                                                                                              */
-/* Civic AI                                                                                     */
-/************************************************************************************************/
 	iValue += -(getSingleCivicUpkeep(eCivic, true)*80)/100;
 
 	int iTemp = 0;
@@ -11704,12 +11759,12 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 	{
 	    iValue /= 10;	    
 	}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/		
 
 	return iValue;
 }
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 
 ReligionTypes CvPlayerAI::AI_bestReligion() const
@@ -17545,6 +17600,14 @@ int CvPlayerAI::AI_getStrategyHash() const
 
 								iCloseTargets++;
 							}
+
+							if( iTheirPower > 2*iOurDefensivePower )
+							{
+								if( AI_getAttitude((PlayerTypes)iI) != ATTITUDE_FRIENDLY )
+								{
+									iTempParanoia += 25;
+								}
+							}
 						}
 
 						if( iTempParanoia > 0 )
@@ -18791,7 +18854,7 @@ int CvPlayerAI::AI_getTotalFloatingDefendersNeeded(CvArea* pArea) const
 			{
 				// This may be our first city captured on a large enemy continent, need defenses to scale up based
 				// on total number of area cities not just ours
-				iDefenders = std::min(iDefenders, iAreaCities * iAreaCities + (pArea->getNumCities() - iAreaCities) - 1);
+				iDefenders = std::min(iDefenders, iAreaCities * iAreaCities + pArea->getNumCities() - iAreaCities - 1);
 			}
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */

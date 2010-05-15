@@ -72,6 +72,7 @@ BBAI 0.81e O1		14m 08 sec
 BBAI 0.81e O2		15m 14 sec  15m 27 sec
 UP O1 Os			14m 19 sec	19m 06 sec (china goof)
 UP O1 Ot			12m 45 sec
-UP O2				11m 44 Sec
+UP O2				11m 44 sec
+BBAI 1.00			11m 56 sec
 
 BBAI 0.81j O2		14m 23 sec

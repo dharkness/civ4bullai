@@ -1125,7 +1125,7 @@ int CvUnitAI::AI_sacrificeValue(const CvPlot* pPlot) const
 	else 
 	{
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      11/30/08                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      05/14/10                                jdog5000      */
 /*                                                                                              */
 /* General AI                                                                                   */
 /************************************************************************************************/
@@ -1138,28 +1138,37 @@ int CvUnitAI::AI_sacrificeValue(const CvPlot* pPlot) const
 		iValue /= std::max(1, (1 + m_pUnitInfo->getProductionCost()));
 		iValue /= (10 + getExperience());
 */
-		iValue  = 1280 * (currEffectiveStr(pPlot, ((pPlot == NULL) ? NULL : this)));
+		iValue  = 128 * (currEffectiveStr(pPlot, ((pPlot == NULL) ? NULL : this)));
 		iValue *= (100 + iCollateralDamageValue);
 		iValue /= (100 + cityDefenseModifier());
-		iValue *= (100 + withdrawalProbability());	
-		iValue /= std::max(1, (1 + m_pUnitInfo->getProductionCost()));
+		iValue *= (100 + withdrawalProbability());
 
-		// Value experience a bit more, especially medics
-		iValue /= (8 + getExperience());
-		iValue /= (10 + getSameTileHeal() + getAdjacentTileHeal());
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
+		// Experience and medics now better handled in LFB
+		iValue /= (10 + getExperience());
+		if( !GC.getLFBEnable() )
+		{
+			iValue *= 10;
+			iValue /= (10 + getSameTileHeal() + getAdjacentTileHeal());
+		}
 
-		if (m_pUnitInfo->getCombatLimit() < 100)
+		// Value units which can't kill units later, also combat limits mean higher survival odds
+		if (combatLimit() < 100)
 		{
 			iValue *= 150;
 			iValue /= 100;
+
+			iValue *= 100;
+			iValue /= std::max(1, combatLimit());
 		}
+
+		iValue /= std::max(1, (1 + m_pUnitInfo->getProductionCost()));
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	}
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      02/21/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      05/14/10                                jdog5000      */
 /*                                                                                              */
 /* From Lead From Behind                                                                        */
 /************************************************************************************************/
@@ -1170,7 +1179,9 @@ int CvUnitAI::AI_sacrificeValue(const CvPlot* pPlot) const
 		iValue *= 100;
 		int iRating = LFBgetRelativeValueRating();
 		if (iRating > 0)
-			iValue /= (iRating * 100 / GC.getLFBBasedOnAverage());
+		{
+			iValue /= (1 + 3*iRating);
+		}
 	}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
@@ -1960,16 +1971,18 @@ void CvUnitAI::AI_attackMove()
 	PROFILE_FUNC();
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/03/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      05/14/10                                jdog5000      */
 /*                                                                                              */
 /* Unit AI, Settler AI, Efficiency                                                              */
 /************************************************************************************************/
+	bool bDanger = (GET_PLAYER(getOwnerINLINE()).AI_getAnyPlotDanger(plot(), 3));
+
 	if( getGroup()->getNumUnits() > 2 )
 	{
 		UnitAITypes eGroupAI = getGroup()->getHeadUnitAI();
 		if( eGroupAI == AI_getUnitAIType() )
 		{
-			if( plot()->isCity() && plot()->getOwnerINLINE() == getOwnerINLINE() )
+			if( plot()->getOwnerINLINE() == getOwnerINLINE() && !bDanger )
 			{
 				// Shouldn't have groups of > 2 attack units
 				if( getGroup()->countNumUnitAIType(UNITAI_ATTACK) > 2 )
@@ -1993,7 +2006,42 @@ void CvUnitAI::AI_attackMove()
 		}
 	}
 
-	bool bDanger = (GET_PLAYER(getOwnerINLINE()).AI_getAnyPlotDanger(plot(), 3));
+
+	// Attack choking units
+	if( plot()->isCity() && plot()->getOwnerINLINE() == getOwnerINLINE() && bDanger )
+	{
+		int iOurDefense = GET_TEAM(getTeam()).AI_getOurPlotStrength(plot(),0,true,false,true);
+		int iEnemyOffense = GET_PLAYER(getOwnerINLINE()).AI_getEnemyPlotStrength(plot(),2,false,false);
+
+		if( iOurDefense < 3*iEnemyOffense )
+		{
+			if (AI_guardCity(true))
+			{
+				return;
+			}
+		}
+
+		if( iOurDefense > 2*iEnemyOffense )
+		{
+			if (AI_anyAttack(2, 55))
+			{
+				return;
+			}
+		}
+
+		if (AI_groupMergeRange(UNITAI_ATTACK, 1, true, true, false))
+		{
+			return;
+		}
+
+		if( iOurDefense > 2*iEnemyOffense )
+		{
+			if (AI_anyAttack(2, 30))
+			{
+				return;
+			}
+		}
+	}
 
 	{
 		PROFILE("CvUnitAI::AI_attackMove() 1");
@@ -2148,15 +2196,15 @@ void CvUnitAI::AI_attackMove()
 			}
 		}
 
-		// BBAI TODO: Not sure about this ... UNITAI_ATTACK groups with many UNITAI_ATTACK members???
+		// Allow larger groups if outside territory
 		if( getGroup()->getNumUnits() < 3 )
 		{
-			if( plot()->isOwned() && plot()->getOwnerINLINE() != getOwnerINLINE() )
+			if( plot()->isOwned() && GET_TEAM(getTeam()).isAtWar(plot()->getTeam()) )
 			{
-				//if (AI_groupMergeRange(UNITAI_ATTACK, 1, true, true, true))
-				//{
-				//	return;
-				//}
+				if (AI_groupMergeRange(UNITAI_ATTACK, 1, true, true, true))
+				{
+					return;
+				}
 			}
 		}
 
@@ -2254,6 +2302,11 @@ void CvUnitAI::AI_attackMove()
 			//		return;
 			//	}
 			//}
+
+			if (AI_group(UNITAI_ATTACK, /*iMaxGroup*/ 1, /*iMaxOwnUnitAI*/ 1, -1, true, false, false, /*iMaxPath*/ 1))
+			{
+				return;
+			}
 		}
 
 		if (area()->getAreaAIType(getTeam()) == AREAAI_OFFENSIVE)
@@ -2362,9 +2415,12 @@ void CvUnitAI::AI_attackMove()
 			return;
 		}
 
-		if (AI_patrol())
+		if( getGroup()->getNumUnits() < 4 )
 		{
-			return;
+			if (AI_patrol())
+			{
+				return;
+			}
 		}
 
 		if (AI_retreatToCity())
@@ -4719,7 +4775,12 @@ void CvUnitAI::AI_generalMove()
 		return;
 	}
 	
-	if (bOffenseWar && (GC.getGameINLINE().getSorenRandNum(2, "AI General Lead") == 0))
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      05/14/10                                jdog5000      */
+/*                                                                                              */
+/* Unit AI                                                                                      */
+/************************************************************************************************/
+	if (bOffenseWar && (AI_getBirthmark() % 2 == 0))
 	{
 		aeUnitAITypes.clear();
 		aeUnitAITypes.push_back(UNITAI_ATTACK_CITY);
@@ -4727,8 +4788,14 @@ void CvUnitAI::AI_generalMove()
 		{
 			return;
 		}
+
+		aeUnitAITypes.clear();
+		aeUnitAITypes.push_back(UNITAI_ATTACK);
+		if (AI_lead(aeUnitAITypes))
+		{
+			return;
+		}
 	}
-	
 	
 	if (AI_join(2))
 	{
@@ -4762,11 +4829,6 @@ void CvUnitAI::AI_generalMove()
 		return;
 	}
 
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      09/18/09                                jdog5000      */
-/*                                                                                              */
-/* Unit AI                                                                                      */
-/************************************************************************************************/
 	if( getGroup()->isStranded() )
 	{
 		if (AI_load(UNITAI_ASSAULT_SEA, MISSIONAI_LOAD_ASSAULT, NO_UNITAI, -1, -1, -1, -1, MOVE_NO_ENEMY_TERRITORY, 1))
@@ -12531,7 +12593,11 @@ bool CvUnitAI::AI_lead(std::vector<UnitAITypes>& aeUnitAITypes)
 
 	CvUnit* pBestHealUnit = NULL;
 	CvPlot* pBestHealPlot = NULL;
-
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      05/14/10                                jdog5000      */
+/*                                                                                              */
+/* Great People AI, Unit AI                                                                     */
+/************************************************************************************************/
 	if (bNeedLeader)
 	{
 		int iBestStrength = 0;
@@ -12541,51 +12607,36 @@ bool CvUnitAI::AI_lead(std::vector<UnitAITypes>& aeUnitAITypes)
 		{
 			for (uint iI = 0; iI < aeUnitAITypes.size(); iI++)
 			{
-				if (pLoopUnit->AI_getUnitAIType() == aeUnitAITypes[iI] || NO_UNITAI == aeUnitAITypes[iI])
+				if (pLoopUnit->AI_getUnitAIType() == aeUnitAITypes[iI] || NO_UNITAI == aeUnitAITypes[iI] || isWorldUnitClass(pLoopUnit->getUnitClassType()) )
 				{
-					if (canLead(pLoopUnit->plot(), pLoopUnit->getID()))
+					if (canLead(pLoopUnit->plot(), pLoopUnit->getID()) > 0)
 					{
 						if (AI_plotValid(pLoopUnit->plot()))
 						{
 							if (!(pLoopUnit->plot()->isVisibleEnemyUnit(this)))
 							{
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      04/03/09                                jdog5000      */
-/*                                                                                              */
-/* Unit AI                                                                                      */
-/************************************************************************************************/
-								if (generatePath(pLoopUnit->plot(), MOVE_AVOID_ENEMY_WEIGHT_3, true))
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
+								if( pLoopUnit->combatLimit() == 100 )
 								{
-									// pick the unit with the highest current strength
-									int iCombatStrength = pLoopUnit->currCombatStr(NULL, NULL);
-									if (iCombatStrength > iBestStrength)
+									if (generatePath(pLoopUnit->plot(), MOVE_AVOID_ENEMY_WEIGHT_3, true))
 									{
-										iBestStrength = iCombatStrength;
-										pBestStrUnit = pLoopUnit;
-										pBestStrPlot = getPathEndTurnPlot();
-									}
-									
-									// or the unit with the best healing ability
-									int iHealing = pLoopUnit->getSameTileHeal() + pLoopUnit->getAdjacentTileHeal();
-									if (iHealing > iBestHealing)
-									{
-										iBestHealing = iHealing;
-										pBestHealUnit = pLoopUnit;
-										pBestHealPlot = getPathEndTurnPlot();
-									}
-									
-									if (GC.getGame().getSorenRandNum(3, "AI Warlord mash unit") != 0)
-									{
-										pBestPlot = pBestStrPlot;
-										pBestUnit = pBestStrUnit;
-									}
-									else
-									{
-										pBestPlot = pBestHealPlot;
-										pBestUnit = pBestHealUnit;
+										// pick the unit with the highest current strength
+										int iCombatStrength = pLoopUnit->currCombatStr(NULL, NULL);
+
+										if (iCombatStrength > iBestStrength)
+										{
+											iBestStrength = iCombatStrength;
+											pBestStrUnit = pLoopUnit;
+											pBestStrPlot = getPathEndTurnPlot();
+										}
+										
+										// or the unit with the best healing ability
+										int iHealing = pLoopUnit->getSameTileHeal() + pLoopUnit->getAdjacentTileHeal();
+										if (iHealing > iBestHealing)
+										{
+											iBestHealing = iHealing;
+											pBestHealUnit = pLoopUnit;
+											pBestHealPlot = getPathEndTurnPlot();
+										}
 									}
 								}
 							}
@@ -12597,28 +12648,41 @@ bool CvUnitAI::AI_lead(std::vector<UnitAITypes>& aeUnitAITypes)
 		}
 	}
 
+	if( AI_getBirthmark() % 3 == 0 && pBestHealUnit != NULL )
+	{
+		pBestPlot = pBestHealPlot;
+		pBestUnit = pBestHealUnit;
+	}
+	else
+	{
+		pBestPlot = pBestStrPlot;
+		pBestUnit = pBestStrUnit;
+	}
+
 	if (pBestPlot)
 	{
 		if (atPlot(pBestPlot) && pBestUnit)
 		{
+			if( gUnitLogLevel > 2 )
+			{
+				CvWString szString;
+				getUnitAIString(szString, pBestUnit->AI_getUnitAIType());
+
+				logBBAI("      Great general %d for %S chooses to lead %S with UNITAI %S", getID(), GET_PLAYER(getOwner()).getCivilizationDescription(0), pBestUnit->getName(0).GetCString(), szString);
+			}
 			getGroup()->pushMission(MISSION_LEAD, pBestUnit->getID());
 			return true;
 		}
 		else
 		{
 			FAssert(!atPlot(pBestPlot));
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/09/09                                jdog5000      */
-/*                                                                                              */
-/* Unit AI                                                                                      */
-/************************************************************************************************/
 			getGroup()->pushMission(MISSION_MOVE_TO, pBestPlot->getX_INLINE(), pBestPlot->getY_INLINE(), MOVE_AVOID_ENEMY_WEIGHT_3);
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 			return true;
 		}
 	}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	return false;
 }
