@@ -2789,7 +2789,21 @@ void CvTeamAI::AI_getWarThresholds( int &iTotalWarThreshold, int &iLimitedWarThr
 	iTotalWarThreshold += bAggressive ? 1 : 0;
 }
 
-// BBAI TODO: Total war odds function, so that can be checked elsewhere
+// Returns odds of player declaring total war times 100
+int CvTeamAI::AI_getTotalWarOddsTimes100( ) const
+{
+	int iTotalWarRand;
+	int iLimitedWarRand;
+	int iDogpileWarRand;
+	AI_getWarRands( iTotalWarRand, iLimitedWarRand, iDogpileWarRand );
+
+	int iTotalWarThreshold;
+	int iLimitedWarThreshold;
+	int iDogpileWarThreshold;
+	AI_getWarThresholds( iTotalWarThreshold, iLimitedWarThreshold, iDogpileWarThreshold );
+
+	return ((100 * 100 * iTotalWarThreshold) / std::max(1, iTotalWarRand));
+}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
@@ -4425,8 +4439,9 @@ void CvTeamAI::AI_doWar()
 								{
 									if (AI_isChosenWar((TeamTypes)iI))
 									{
-										if (AI_getAtWarCounter((TeamTypes)iI) > 20)
+										if( AI_getAtWarCounter((TeamTypes)iI) > std::max(10, (14 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getVictoryDelayPercent())/100) )
 										{
+											// If nothing is happening in war
 											if( AI_getWarSuccess((TeamTypes)iI) + GET_TEAM((TeamTypes)iI).AI_getWarSuccess(getID()) < 2*GC.getDefineINT("WAR_SUCCESS_ATTACKING") )
 											{
 												if( (GC.getGameINLINE().getSorenRandNum(8, "AI Make Peace 1") == 0) )
@@ -4439,6 +4454,16 @@ void CvTeamAI::AI_doWar()
 														{
 															MissionAITypes eMissionAI = MISSIONAI_ASSAULT;
 															if( GET_PLAYER((PlayerTypes)iPlayer).AI_enemyTargetMissionAIs((TeamTypes)iI, &eMissionAI, 1) > 0 )
+															{
+																bValid = false;
+																break;
+															}
+														}
+
+														if( GET_PLAYER((PlayerTypes)iPlayer).getTeam() == iI )
+														{
+															MissionAITypes eMissionAI = MISSIONAI_ASSAULT;
+															if( GET_PLAYER((PlayerTypes)iPlayer).AI_enemyTargetMissionAIs(getID(), &eMissionAI, 1) > 0 )
 															{
 																bValid = false;
 																break;
@@ -4460,7 +4485,8 @@ void CvTeamAI::AI_doWar()
 												}
 											}
 
-											if (AI_getAtWarCounter((TeamTypes)iI) > ((AI_getWarPlan((TeamTypes)iI) == WARPLAN_TOTAL) ? 40 : 30))
+											// Fought to a long draw
+											if (AI_getAtWarCounter((TeamTypes)iI) > ((((AI_getWarPlan((TeamTypes)iI) == WARPLAN_TOTAL) ? 40 : 30) * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getVictoryDelayPercent())/100) )
 											{
 												int iOurValue = AI_endWarVal((TeamTypes)iI);
 												int iTheirValue = GET_TEAM((TeamTypes)iI).AI_endWarVal(getID());
@@ -4475,16 +4501,22 @@ void CvTeamAI::AI_doWar()
 												}
 											}
 
+											// All alone in what we thought was a dogpile
 											if (AI_getWarPlan((TeamTypes)iI) == WARPLAN_DOGPILE)
 											{
 												if (GET_TEAM((TeamTypes)iI).getAtWarCount(true) == 1)
 												{
-													if( gTeamLogLevel >= 1 )
+													int iOurValue = AI_endWarVal((TeamTypes)iI);
+													int iTheirValue = GET_TEAM((TeamTypes)iI).AI_endWarVal(getID());
+													if ((iTheirValue > (iOurValue / 2)))
 													{
-														logBBAI("  Team %d (%S) making peace due to being only dog-piler left", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0) );
+														if( gTeamLogLevel >= 1 )
+														{
+															logBBAI("  Team %d (%S) making peace due to being only dog-piler left", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0) );
+														}
+														makePeace((TeamTypes)iI);
+														break;
 													}
-													makePeace((TeamTypes)iI);
-													break;
 												}
 											}
 										}

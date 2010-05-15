@@ -407,7 +407,19 @@ bool CvCityAI::AI_avoidGrowth()
 		return true;
 	}
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      05/14/10                                jdog5000      */
+/*                                                                                              */
+/* City AI                                                                                      */
+/************************************************************************************************/
+/* original code
 	if (!AI_isEmphasizeYield(YIELD_FOOD) && !AI_isEmphasizeGreatPeople())
+*/
+	// AI should avoid growth when it has angry citizens, even if emphasizing great people
+	if( !(isHuman()) || (!AI_isEmphasizeYield(YIELD_FOOD) && !AI_isEmphasizeGreatPeople()) )
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	{
 		int iExtra = (isHuman()) ? 0 : 1;
 		int iHappinessLevel = happyLevel() - unhappyLevel(iExtra);
@@ -1311,12 +1323,19 @@ void CvCityAI::AI_chooseProduction()
     
 	// -------------------- BBAI Notes -------------------------
 	// Minimal attack force, both land and sea
-    if (bDanger && kPlayer.AI_totalAreaUnitAIs(pArea, UNITAI_ATTACK) < 2)
+    if (bDanger) 
     {
-    	if (AI_chooseUnit(UNITAI_ATTACK))
-    	{
-    		return;
-    	}
+		int iAttackNeeded = 4;
+		iAttackNeeded += std::max(0, AI_neededDefenders() - plot()->plotCount(PUF_isUnitAIType, UNITAI_CITY_DEFENSE, -1, getOwnerINLINE()));
+
+		if( kPlayer.AI_totalAreaUnitAIs(pArea, UNITAI_ATTACK) <  iAttackNeeded)
+		{
+    		if (AI_chooseUnit(UNITAI_ATTACK))
+    		{
+				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses danger minimal attack", getName().GetCString());
+    			return;
+    		}
+		}
     }
     
     if (bMaybeWaterArea)
@@ -1824,11 +1843,10 @@ void CvCityAI::AI_chooseProduction()
 				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses cultural victory 1", getName().GetCString());
                 return;
             }
-        }
-        
-        else if (GC.getGameINLINE().getSorenRandNum(((iCultureRateRank == 1) ? 4 : 1) + iCulturalVictoryNumCultureCities * 2 , "AI Build up Culture") < iCultureRateRank)
+		}
+        else if (GC.getGameINLINE().getSorenRandNum(((iCultureRateRank == 1) ? 4 : 1) + iCulturalVictoryNumCultureCities * 2 + (bLandWar ? 5 : 0), "AI Build up Culture") < iCultureRateRank)
         {
-            if (AI_chooseBuilding(BUILDINGFOCUS_BIGCULTURE | BUILDINGFOCUS_CULTURE | BUILDINGFOCUS_WONDEROK, 40))
+            if (AI_chooseBuilding(BUILDINGFOCUS_BIGCULTURE | BUILDINGFOCUS_CULTURE | BUILDINGFOCUS_WONDEROK, (bLandWar ? 20 : 40)))
             {
 				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses cultural victory 2", getName().GetCString());
                 return;
@@ -1877,7 +1895,7 @@ void CvCityAI::AI_chooseProduction()
         }
     }
         
-	if (AI_chooseBuilding(BUILDINGFOCUS_FOOD, 60, 10))
+	if (AI_chooseBuilding(BUILDINGFOCUS_FOOD, 60, 10, (bLandWar ? 30 : -1)))
 	{
 		if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose BUILDINGFOCUS_FOOD 3", getName().GetCString());
 		return;
@@ -1920,7 +1938,7 @@ void CvCityAI::AI_chooseProduction()
 	}
     
 	//essential economic builds
-	if (AI_chooseBuilding(iEconomyFlags, 10, 25 + iWarTroubleThreshold))
+	if (AI_chooseBuilding(iEconomyFlags, 10, 25 + iWarTroubleThreshold, (bLandWar ? 50 : -1)))
 	{
 		if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose iEconomyFlags 1", getName().GetCString());
 		return;

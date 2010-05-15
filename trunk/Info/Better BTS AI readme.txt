@@ -85,7 +85,7 @@ Bugfix
 - Fixed bug (introduced) where giving pillage orders to a stack or multi-move unit would pillage multiple times
 - Fixed bug (introduced) allowing ships to move diagonally over isthmuses under some circumstances
 - Fixed bug (introduced) slowing AI expansion, especially on Archipelago maps
-- Fixed bug where AI units could sleep indefinitely when using debug tools like Change Player and AIAutoPlay
+- Fixed bug where AI units could sleep indefinitely when using debug tools like ChangePlayer and AIAutoPlay
 
 Victory Strategy AI
 - Switched all cultural victory logic to new victory strategy framework
@@ -143,6 +143,7 @@ War tactics AI
 - Fixed issues causing AI to rebase missles into empty forts
 - AI attack stacks now do not head out for conquest unless they have some non-seige units which can capture cities
 - AI attack stacks will wait for unit upgrades before heading out for conquest (helps most when AI has just been surprise attacked)
+- AI attack units will now more readily band together in threatened cities and go after enemy units applying a choke
 
 Unit AI
 - Greatly improved speed and turn efficiency for loading of large stacks onto many transports
@@ -181,6 +182,8 @@ City AI
 - AI will now probably only build one workboat using very early capital logic as originally intended (speeds expansion in water resource heavy starts)
 - Resolved issues where AI early game build logic would get confused because Warriors cannot be built as UNITAI_CITY_DEFENSE
 - Improved AI logic for when to conscript defenders, AI now conscripts less unless it is in dire situation.  Tied in with TURTLE strategy
+- AI now will build more attack units to break a choke
+- Fixed issue where AI cities with lots of food available would not avoid growth when angry under some circumstances
 
 Tech AI
 - Separated out building and unit valuation into own function for debugging and future efforts
@@ -188,10 +191,13 @@ Tech AI
 - AIs going for DOMINATION victory will aim for Galleons earlier
 - AIs going for SPACE emphasize getting Apollo earlier
 - AIs with Apollo now better emphasize getting techs for parts
+- AIs with high odds of starting a total war now value units as if always at war
 
 Civic AI
 - If AI is leader of AP, it now values state religion civics more
 - AI now values benefits it receives from wonders for state religion buildings when computing value for state religion civics
+- AIs with high odds of starting a total war now stay in militaristic civics during short peace intervals
+- AIs will now more often stay with peaceful civics when engaged in wars they're not really committed to, not losing
 
 Diplomacy AI
 - All AIs will check more frequently for tech trades when well behind in tech race, biggest benefit for those who typically wait longest
@@ -201,6 +207,10 @@ Gold AI
 
 Missionary AI
 - Fixed issues and improved logic in AI usage of MISSIONARY strategy (religious full-court press)
+
+Great People AI
+- AI Great Generals will no longer lead units which can't kill enemy units such as catapults
+- Great Generals are always willing to lead units whose class has MaxGlobalInstances set regardless of UNITAI (for mods)
 
 General AI
 - Changed player consistent random method for picking strategies from being based on capital city location to a stored rand, so AI player tendencies will be consistent even if capital moves

@@ -6,20 +6,20 @@ For BBAI 1.00
 x Check spy explore
 x Update debug war plan output
 
-- AI construction of national wonders?
-- AI acts chooses civics/techs like always at war if its total war odds are high enough
+x AI construction of national wonders?
+x AI acts chooses civics/techs like always at war if its total war odds are high enough
+
+x AI early choke response
 
 x UNITAI_COUNTER valuation of interception based on enemy air power
 x New fast movers paradigm: FAST_MOVERS covers non-SODs only, LAND_BLITZ covers SODs
-- Turtle strategy: 
-	- Allow attack stack target cities we previously owned?
 x Get AI to produce medic units
 - Debug targetCityValues
 
-- Check AI building of power plants/factories with new health code
-- Check AI valuation of building happiness
+x Check AI building of power plants/factories with new health code
+x Check AI valuation of building happiness
 
-- Compare speed of 1.00 versus 0.81
+x Compare speed of 1.00 versus 0.81
 
 -----------------------------------------------------------
 
@@ -27,8 +27,6 @@ For 1.10
 
 - Breakout power calculations into land, sea, air, production?
 	- Add power for promotions (and subtract on death)
-
-- AI early choke response
 
 - DPII diplomacy changes?
 

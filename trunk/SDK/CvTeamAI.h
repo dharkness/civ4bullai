@@ -110,7 +110,7 @@ public:
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      03/20/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      05/14/10                                jdog5000      */
 /*                                                                                              */
 /* War Strategy AI                                                                              */
 /************************************************************************************************/
@@ -122,6 +122,7 @@ public:
 
 	void AI_getWarRands( int &iMaxWarRand, int &iLimitedWarRand, int &iDogpileWarRand ) const;
 	void AI_getWarThresholds( int &iMaxWarThreshold, int &iLimitedWarThreshold, int &iDogpileWarThreshold ) const;
+	int AI_getTotalWarOddsTimes100( ) const;
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/

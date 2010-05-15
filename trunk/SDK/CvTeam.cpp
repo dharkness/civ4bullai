@@ -1275,12 +1275,12 @@ bool CvTeam::canEventuallyDeclareWar(TeamTypes eTeam) const
 
 	return true;
 }
+
+
+void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan, bool bCancelPacts)
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
-
-
-void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 {
 	PROFILE_FUNC();
 
@@ -1640,7 +1640,6 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 
 		CvEventReporter::getInstance().changeWar(true, getID(), eTeam);
 
-
 		if( GC.getBBAI_DEFENSIVE_PACT_BEHAVIOR() <= 1 )
 		{
 			cancelDefensivePacts();
@@ -1652,7 +1651,7 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 			{
 				if (GET_TEAM((TeamTypes)iI).isDefensivePact(eTeam))
 				{
-					GET_TEAM((TeamTypes)iI).declareWar(getID(), bNewDiplo, WARPLAN_DOGPILE);
+					GET_TEAM((TeamTypes)iI).declareWar(getID(), bNewDiplo, WARPLAN_DOGPILE, (GC.getBBAI_DEFENSIVE_PACT_BEHAVIOR() == 0));
 				}
 				else if( (GC.getBBAI_DEFENSIVE_PACT_BEHAVIOR() > 1) && GET_TEAM((TeamTypes)iI).isDefensivePact(getID()))
 				{
@@ -1662,7 +1661,7 @@ void CvTeam::declareWar(TeamTypes eTeam, bool bNewDiplo, WarPlanTypes eWarPlan)
 			}
 		}
 
-		if( GC.getBBAI_DEFENSIVE_PACT_BEHAVIOR() == 0 )
+		if( GC.getBBAI_DEFENSIVE_PACT_BEHAVIOR() == 0 || (GC.getBBAI_DEFENSIVE_PACT_BEHAVIOR() == 1 && bCancelPacts))
 		{
 			GET_TEAM(eTeam).cancelDefensivePacts();
 		}
