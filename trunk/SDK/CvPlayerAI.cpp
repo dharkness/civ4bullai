@@ -11230,7 +11230,7 @@ CivicTypes CvPlayerAI::AI_bestCivic(CivicOptionTypes eCivicOption, int* iBestVal
 /************************************************************************************************/		
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      05/14/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      05/15/10                                jdog5000      */
 /*                                                                                              */
 /* Civic AI, Victory Strategy AI                                                                */
 /************************************************************************************************/
@@ -11284,9 +11284,9 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 		{
 			if( GET_TEAM((TeamTypes)iTeam).isAlive() && !GET_TEAM((TeamTypes)iTeam).isMinorCiv() )
 			{
-				if( GET_TEAM(getTeam()).isAtWar((TeamTypes)iTeam) )
+				if( GET_TEAM(getTeam()).AI_getWarPlan((TeamTypes)iTeam) != NO_WARPLAN )
 				{
-					if( GET_TEAM(getTeam()).AI_getWarPlan((TeamTypes)iTeam) == WARPLAN_TOTAL )
+					if( GET_TEAM(getTeam()).AI_getWarPlan((TeamTypes)iTeam) == WARPLAN_TOTAL || GET_TEAM(getTeam()).AI_getWarPlan((TeamTypes)iTeam) == WARPLAN_PREPARING_TOTAL )
 					{
 						bWarPlan = true;
 						break;
@@ -16419,6 +16419,7 @@ int CvPlayerAI::AI_getCultureVictoryStage() const
 
 	int iHighCultureCount = 0;
 	int iCloseToLegendaryCount = 0;
+	int iLegendaryCount = 0;
 		
 	int iLoop;
 	CvCity* pLoopCity;
@@ -16436,7 +16437,19 @@ int CvPlayerAI::AI_getCultureVictoryStage() const
 			{
 				iCloseToLegendaryCount++;
 			}
+
+			// is already there?
+			if( pLoopCity->getCulture(getID()) > pLoopCity->getCultureThreshold(GC.getGameINLINE().culturalVictoryCultureLevel()) )
+			{
+				iLegendaryCount++;
+			}
 		}
+	}
+
+	if( iLegendaryCount >= GC.getGameINLINE().culturalVictoryNumCultureCities() )
+	{
+		// Already won, keep playing culture heavy but do some tech to keep pace if human wants to keep playing
+		return 3;
 	}
 
 	if( iCloseToLegendaryCount >= GC.getGameINLINE().culturalVictoryNumCultureCities() )
@@ -16608,10 +16621,22 @@ int CvPlayerAI::AI_getSpaceVictoryStage() const
 			{
 				for( int iTeam = 0; iTeam < MAX_CIV_TEAMS; iTeam++ )
 				{
-					if( GET_TEAM((TeamTypes)iTeam).getVictoryCountdown(eSpace) <= GET_TEAM(getTeam()).getVictoryCountdown(eSpace) )
+					if( iTeam != getTeam() )
 					{
-						bOtherLaunched = true;
-						break;
+						if( GET_TEAM((TeamTypes)iTeam).getVictoryCountdown(eSpace) >= 0 )
+						{
+							if( GET_TEAM((TeamTypes)iTeam).getVictoryCountdown(eSpace) < GET_TEAM(getTeam()).getVictoryCountdown(eSpace) )
+							{
+								bOtherLaunched = true;
+								break;
+							}
+
+							if( GET_TEAM((TeamTypes)iTeam).getVictoryCountdown(eSpace) == GET_TEAM(getTeam()).getVictoryCountdown(eSpace) && (iTeam < getTeam()) )
+							{
+								bOtherLaunched = true;
+								break;
+							}
+						}
 					}
 				}
 			}

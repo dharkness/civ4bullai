@@ -1851,14 +1851,27 @@ void CvUnitAI::AI_barbAttackMove()
 		return;
 	}
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      05/15/10                                jdog5000      */
+/*                                                                                              */
+/* Barbarian AI                                                                                 */
+/************************************************************************************************/
 	if (plot()->isGoody())
 	{
-		if (plot()->plotCount(PUF_isUnitAIType, UNITAI_ATTACK, -1, getOwnerINLINE()) == 1)
+		if (AI_anyAttack(1, 90))
+		{
+			return;
+		}
+
+		if (plot()->plotCount(PUF_isUnitAIType, UNITAI_ATTACK, -1, getOwnerINLINE()) == 1 && getGroup()->getNumUnits() == 1)
 		{
 			getGroup()->pushMission(MISSION_SKIP);
 			return;
 		}
 	}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/		
 
 	if (GC.getGameINLINE().getSorenRandNum(2, "AI Barb") == 0)
 	{
@@ -1887,10 +1900,28 @@ void CvUnitAI::AI_barbAttackMove()
 
 		if (area()->getAreaAIType(getTeam()) == AREAAI_OFFENSIVE)
 		{
-			if (AI_goToTargetCity())
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      05/15/10                                jdog5000      */
+/*                                                                                              */
+/* Barbarian AI                                                                                 */
+/************************************************************************************************/
+			if (AI_groupMergeRange(UNITAI_ATTACK, 1, true, true, true))
 			{
 				return;
 			}
+
+			if (AI_groupMergeRange(UNITAI_ATTACK_CITY, 3, true, true, true))
+			{
+				return;
+			}
+			
+			if (AI_goToTargetCity(0, 12))
+			{
+				return;
+			}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/		
 		}
 	}
 	else if (GC.getGameINLINE().getNumCivCities() > (GC.getGameINLINE().countCivPlayersAlive() * 3))
@@ -1912,10 +1943,28 @@ void CvUnitAI::AI_barbAttackMove()
 
 		if (area()->getAreaAIType(getTeam()) == AREAAI_OFFENSIVE)
 		{
-			if (AI_goToTargetCity())
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      05/15/10                                jdog5000      */
+/*                                                                                              */
+/* Barbarian AI                                                                                 */
+/************************************************************************************************/
+			if (AI_groupMergeRange(UNITAI_ATTACK, 1, true, true, true))
 			{
 				return;
 			}
+
+			if (AI_groupMergeRange(UNITAI_ATTACK_CITY, 3, true, true, true))
+			{
+				return;
+			}
+			
+			if (AI_goToTargetCity(0, 12))
+			{
+				return;
+			}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/		
 		}
 	}
 	else if (GC.getGameINLINE().getNumCivCities() > (GC.getGameINLINE().countCivPlayersAlive() * 2))
@@ -2725,6 +2774,11 @@ void CvUnitAI::AI_attackCityMove()
 	{
 		int iStepDistToTarget = stepDistance(pTargetCity->getX_INLINE(), pTargetCity->getY_INLINE(), getX_INLINE(), getY_INLINE());
 		int iAttackRatio = std::max(100, GC.getBBAI_ATTACK_CITY_STACK_RATIO());
+
+		if( isBarbarian() )
+		{
+			iAttackRatio = 80;
+		}
 
 		int iComparePostBombard = 0;
 		// AI gets a 1-tile sneak peak to compensate for lack of memory
@@ -12621,6 +12675,15 @@ bool CvUnitAI::AI_lead(std::vector<UnitAITypes>& aeUnitAITypes)
 									{
 										// pick the unit with the highest current strength
 										int iCombatStrength = pLoopUnit->currCombatStr(NULL, NULL);
+
+										iCombatStrength *= 30 + pLoopUnit->getExperience();
+										iCombatStrength /= 30;
+
+										if( GC.getUnitClassInfo(pLoopUnit->getUnitClassType()).getMaxGlobalInstances() > -1 )
+										{
+											iCombatStrength *= 1 + GC.getUnitClassInfo(pLoopUnit->getUnitClassType()).getMaxGlobalInstances();
+											iCombatStrength /= std::max(1, GC.getUnitClassInfo(pLoopUnit->getUnitClassType()).getMaxGlobalInstances());
+										}
 
 										if (iCombatStrength > iBestStrength)
 										{

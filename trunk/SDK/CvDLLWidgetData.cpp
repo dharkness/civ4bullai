@@ -3898,6 +3898,7 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 			bool	bValid;
 			bool	bIsLandTarget;
+			bool	bIsVictory4;
 			bool	bIsAnyCapitalAreaAlone;
 			bool	bAdjacentCheckPassed;
 			bool	bIsMaxWarNearbyPowerRatio;
@@ -3927,7 +3928,10 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 						
 						int iLoopTeamPower = kLoopTeam.getDefensivePower();
 						bool bIsLandTarget = kTeam.AI_isLandTarget(eLoopTeam);
-						aStartWarInfo[iTeamIndex].bIsLandTarget = bIsLandTarget; 
+						aStartWarInfo[iTeamIndex].bIsLandTarget = bIsLandTarget;
+
+						bool bIsVictory4 = GET_TEAM(eLoopTeam).AI_isAnyMemberDoVictoryStrategyLevel4();
+						aStartWarInfo[iTeamIndex].bIsVictory4 = bIsVictory4;
 
 						int iNoWarAttitudeProb = kTeam.AI_noWarAttitudeProb(kTeam.AI_getAttitude(eLoopTeam));
 						aStartWarInfo[iTeamIndex].iNoWarAttitudeProb = iNoWarAttitudeProb;
@@ -3958,11 +3962,11 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 
 								// check to see which max war pass, if any is valid for this loop team
 								int iPossibleMaxWarPass = MAX_INT;
-								if (bIsMaxWarNearbyPowerRatio && bAdjacentCheckPassed)
+								if (bIsMaxWarNearbyPowerRatio && (bAdjacentCheckPassed || bIsVictory4))
 								{
 									iPossibleMaxWarPass = 0;
 								}
-								else if (bIsMaxWarNearbyPowerRatio && (bIsLandTarget || bIsAnyCapitalAreaAlone))
+								else if (bIsMaxWarNearbyPowerRatio && (bIsLandTarget || bIsAnyCapitalAreaAlone || bIsVictory4))
 								{
 									iPossibleMaxWarPass = 1;
 								}
@@ -4005,7 +4009,7 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 							int iNoWarChance = std::max(0, iNoWarAttitudeProb + 20 - (bAggressive ? 10 : 0) - (bFinancesProDogpileWar ? 10 : 0));
 							if (iNoWarChance < 100)
 							{
-								int iDogpilePower = 0;
+								int iDogpilePower = iTeamPower;
 								for (int iTeamIndex2 = 0; iTeamIndex2 < MAX_CIV_TEAMS; iTeamIndex2++)
 								{
 									TeamTypes eDogpileLoopTeam = (TeamTypes) iTeamIndex2;
@@ -4041,6 +4045,14 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 					}
 				}
 			}
+		}
+
+		if( bFinancesOpposeWar )
+		{
+			szBuffer.append(CvWString::format(SETCOLR L"## Finances oppose war%s%s%s\n" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),
+				bFinancesProTotalWar ? L", pro Total" : L"",
+				bFinancesProLimitedWar ? L", pro Limited" : L"",
+				bFinancesProDogpileWar ? L", pro Dogpile" : L""));
 		}
 
 		// display total war items, sorting the list
@@ -4090,16 +4102,18 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 						
 						if (aStartWarInfo[iTeamIndex].iPossibleMaxWarPass <= iBestPossibleMaxWarPass)
 						{
-							szBuffer.append(CvWString::format(SETCOLR L" %d%% %s war (%d) with %s\n" ENDCOLR, TEXT_COLOR("COLOR_ALT_HIGHLIGHT_TEXT"),
+							szBuffer.append(CvWString::format(SETCOLR L" %d%% %s%s war (%d) with %s\n" ENDCOLR, TEXT_COLOR("COLOR_ALT_HIGHLIGHT_TEXT"),
 								iTeamWarPercentage,
+								(aStartWarInfo[iTeamIndex].bIsVictory4) ? L"**" : L"",
 								(aStartWarInfo[iTeamIndex].bIsLandTarget) ? L"land" : L"sea",
 								aStartWarInfo[iTeamIndex].iStartWarValue, 
 								kLoopTeam.getName().GetCString()));
 						}
 						else
 						{
-							szBuffer.append(CvWString::format(SETCOLR L" (%d%% %s war (%d) with %s [%s%s])\n" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),
+							szBuffer.append(CvWString::format(SETCOLR L" (%d%% %s%s war (%d) with %s [%s%s])\n" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),
 								iTeamWarPercentage,
+								(aStartWarInfo[iTeamIndex].bIsVictory4) ? L"**" : L"",
 								(aStartWarInfo[iTeamIndex].bIsLandTarget) ? L"land" : L"sea",
 								aStartWarInfo[iTeamIndex].iStartWarValue, 
 								kLoopTeam.getName().GetCString(),
@@ -4160,8 +4174,9 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 						int iNoWarChance = std::max(0, aStartWarInfo[iTeamIndex].iNoWarAttitudeProb + 10 - (bAggressive ? 10 : 0) - (bFinancesProLimitedWar ? 10 : 0));
 						int iTeamWarPercentage = (100 - iNoWarChance);
 						
-						szBuffer.append(CvWString::format(SETCOLR L" %d%% %s war (%d) with %s\n" ENDCOLR, TEXT_COLOR("COLOR_ALT_HIGHLIGHT_TEXT"),
+						szBuffer.append(CvWString::format(SETCOLR L" %d%% %s%s war (%d) with %s\n" ENDCOLR, TEXT_COLOR("COLOR_ALT_HIGHLIGHT_TEXT"),
 							iTeamWarPercentage,
+							(aStartWarInfo[iTeamIndex].bIsVictory4) ? L"**" : L"",
 							(aStartWarInfo[iTeamIndex].bIsLandTarget) ? L"land" : L"sea",
 							aStartWarInfo[iTeamIndex].iStartWarValue, 
 							GET_TEAM((TeamTypes) iTeamIndex).getName().GetCString()));
@@ -4221,15 +4236,29 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 						
 						if( aStartWarInfo[iTeamIndex].bEnoughDogpilePower )
 						{
-							szBuffer.append(CvWString::format(SETCOLR L" %d%% %s war (%d) with %s\n" ENDCOLR, TEXT_COLOR("COLOR_ALT_HIGHLIGHT_TEXT"),
-								iTeamWarPercentage,
-								(aStartWarInfo[iTeamIndex].bIsLandTarget) ? L"land" : L"sea",
-								aStartWarInfo[iTeamIndex].iStartWarValue, 
-								GET_TEAM((TeamTypes) iTeamIndex).getName().GetCString()));
+							if( (aStartWarInfo[iTeamIndex].bIsLandTarget) || (aStartWarInfo[iTeamIndex].bIsVictory4) )
+							{
+								szBuffer.append(CvWString::format(SETCOLR L" %d%% %s%s war (%d) with %s\n" ENDCOLR, TEXT_COLOR("COLOR_ALT_HIGHLIGHT_TEXT"),
+									iTeamWarPercentage,
+									(aStartWarInfo[iTeamIndex].bIsVictory4) ? L"**" : L"",
+									L"land",
+									aStartWarInfo[iTeamIndex].iStartWarValue, 
+									GET_TEAM((TeamTypes) iTeamIndex).getName().GetCString()));
+							}
+							else
+							{
+								szBuffer.append(CvWString::format(SETCOLR L" %d%% %s%s war (%d) with %s\n" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),
+									iTeamWarPercentage,
+									(aStartWarInfo[iTeamIndex].bIsVictory4) ? L"**" : L"",
+									L"sea",
+									aStartWarInfo[iTeamIndex].iStartWarValue, 
+									GET_TEAM((TeamTypes) iTeamIndex).getName().GetCString()));
+							}
 						}
 						else
 						{
-							szBuffer.append(CvWString::format(SETCOLR L" Lack power for %s war (%d) with %s\n" ENDCOLR, TEXT_COLOR("COLOR_ALT_HIGHLIGHT_TEXT"),
+							szBuffer.append(CvWString::format(SETCOLR L" Lack power for %s%s war (%d) with %s\n" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),
+								(aStartWarInfo[iTeamIndex].bIsVictory4) ? L"**" : L"",
 								(aStartWarInfo[iTeamIndex].bIsLandTarget) ? L"land" : L"sea",
 								aStartWarInfo[iTeamIndex].iStartWarValue, 
 								GET_TEAM((TeamTypes) iTeamIndex).getName().GetCString()));
@@ -4715,7 +4744,7 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 /*                                                                                              */
 /************************************************************************************************/
 	// Add string showing version number
-	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 1.00c");
+	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 1.00d");
 	szBuffer.append(szTempBuffer);
 #ifdef LOG_AI
 	szTempBuffer.Format(NEWLINE L"%c", gDLL->getSymbolID(BULLET_CHAR));

@@ -1186,14 +1186,19 @@ int CvTeamAI::AI_startWarVal(TeamTypes eTeam) const
 		// Prioritize targets closer to victory
 		if( bConq4 || bAggressive )
 		{
-			iValue *= 2;
+			iValue *= 3;
+			iValue /= 2;
 		}
 
 		if( GET_TEAM(eTeam).AI_isAnyMemberDoVictoryStrategyLevel4() )
 		{
 			iValue *= 2;
 
-			if( bConq4 || bAggressive || AI_isAnyMemberDoVictoryStrategyLevel3() )
+			if( bConq4 || bAggressive )
+			{
+				iValue *= 4;
+			}
+			else if( AI_isAnyMemberDoVictoryStrategyLevel3() )
 			{
 				iValue *= 2;
 			}
@@ -4304,8 +4309,15 @@ void CvTeamAI::AI_doWar()
 					
 					iTimeModifier *= 50 + GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent();
 					iTimeModifier /= 150;
+
+					if( GET_TEAM((TeamTypes)iI).AI_isAnyMemberDoVictoryStrategyLevel4() )
+					{
+						iTimeModifier /= 4;
+					}
+
 					FAssert(iTimeModifier >= 0);
 				}
+
 				if (AI_getWarPlan((TeamTypes)iI) == WARPLAN_ATTACKED_RECENT)
 				{
 					FAssert(isAtWar((TeamTypes)iI));
@@ -4363,7 +4375,7 @@ void CvTeamAI::AI_doWar()
 							}
 						}
 
-						if ( (bAreaValid && iEnemyPowerPercent < 140) || (!bShareValid && iEnemyPowerPercent < 110))
+						if ( (bAreaValid && iEnemyPowerPercent < 140) || (!bShareValid && iEnemyPowerPercent < 110) || GET_TEAM((TeamTypes)iI).AI_isAnyMemberDoVictoryStrategyLevel4() )
 						{
 							if( gTeamLogLevel >= 1 )
 							{
@@ -4675,9 +4687,9 @@ void CvTeamAI::AI_doWar()
 												FAssertMsg(!(GET_TEAM((TeamTypes)iI).isBarbarian()), "Expected to not be declaring war on the barb civ");
 												FAssertMsg(iI != getID(), "Expected not to be declaring war on self (DOH!)");
 
-												if ((iPass > 1) || AI_isLandTarget((TeamTypes)iI) || AI_isAnyCapitalAreaAlone())
+												if ((iPass > 1) || AI_isLandTarget((TeamTypes)iI) || AI_isAnyCapitalAreaAlone() || GET_TEAM((TeamTypes)iI).AI_isAnyMemberDoVictoryStrategyLevel4())
 												{
-													if ((iPass > 0) || (AI_calculateAdjacentLandPlots((TeamTypes)iI) >= ((getTotalLand() * AI_maxWarMinAdjacentLandPercent()) / 100)))
+													if ((iPass > 0) || (AI_calculateAdjacentLandPlots((TeamTypes)iI) >= ((getTotalLand() * AI_maxWarMinAdjacentLandPercent()) / 100)) || GET_TEAM((TeamTypes)iI).AI_isAnyMemberDoVictoryStrategyLevel4())
 													{
 														iValue = AI_startWarVal((TeamTypes)iI);
 
@@ -4811,7 +4823,7 @@ void CvTeamAI::AI_doWar()
 									{
 										if (GET_TEAM((TeamTypes)iI).getAtWarCount(true) > 0)
 										{
-											if (AI_isLandTarget((TeamTypes)iI))
+											if (AI_isLandTarget((TeamTypes)iI) || GET_TEAM((TeamTypes)iI).AI_isAnyMemberDoVictoryStrategyLevel4())
 											{
 												iDogpilePower = iOurPower;
 
