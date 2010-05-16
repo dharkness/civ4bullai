@@ -212,6 +212,10 @@ Great People AI
 - AI Great Generals will no longer lead units which can't kill enemy units such as catapults
 - Great Generals are always willing to lead units whose class has MaxGlobalInstances set regardless of UNITAI (for mods)
 
+Barbarian AI
+- No barb stacks sitting on goody huts, only single units
+- If barbs have upper hand in an area (like new world), then they'll group stacks more actively
+
 General AI
 - Changed player consistent random method for picking strategies from being based on capital city location to a stored rand, so AI player tendencies will be consistent even if capital moves
 - Changed how building defense is handled when unit is estimating its defensive strength against unknown attacker (CvUnit::maxCombatStr(pPlot,NULL)).  Firaxis took conservative approach and always ignored defense in this case (so defensive strength could be considerably higher in castled low culture city).  This lead to AIs suiciding stacks on city walls in early/mid game.  New method is to use ignoreBuildingDefense flag of defender which should have fewer fatal side effects.

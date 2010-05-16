@@ -28,6 +28,10 @@ For 1.10
 - Breakout power calculations into land, sea, air, production?
 	- Add power for promotions (and subtract on death)
 
+- High value unit preservation
+
+- AI willing to end wars earlier if it has a much higher value target
+
 - DPII diplomacy changes?
 
 -----------------------------------------------------------
@@ -55,7 +59,7 @@ x Gold (or pop) rush defense when threatened and unprepared
 x Rush defenses just after being declared on if behind in power
 - Settler production priority, adjust area city site values based on number of settlers in the field
 - Cities build culture to grab bonuses
-- Handle early choke better
+x Handle early choke better
 
 Worker AI:
 - Build railroads on mines etc with high priority to speed industrial revolution
@@ -150,3 +154,12 @@ Rework power calculations so that:
 1)  Land, sea, and air are separate
 2)  Better economic/production power understanding (can enemy out produce us?)
 3)  Better tech power understanding (do we need to catch up in military tech?)
+
+Centralized national wonder construction:
+0) Evaluate current war/economic climate, decide how many cities can be tied up with wonders
+1) Loop over all cities (skip small, crappy ones?), and all unbuilt national wonders, creating list for each wonder of its top cities and their computed values
+2) Discount values for nat wonders which cannot be built yet, especially those far away in tech tree
+3) Loop over wonders in order of top value and assign wonder to highest value city which still has slot open
+4) Before pushing construction, check for fast production boosting builds
+- Debug values can use Ctrl+Alt hover over city? Or override civics/techs during development
+- Make sure that certain wonder combos get boosts, wall street favored for holy city, etc
