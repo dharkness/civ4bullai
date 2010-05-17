@@ -4053,6 +4053,7 @@ void CvDLLWidgetData::parseContactCivHelp(CvWidgetDataStruct &widgetDataStruct, 
 				bFinancesProTotalWar ? L", pro Total" : L"",
 				bFinancesProLimitedWar ? L", pro Limited" : L"",
 				bFinancesProDogpileWar ? L", pro Dogpile" : L""));
+			szBuffer.append(NEWLINE);
 		}
 
 		// display total war items, sorting the list
@@ -4733,7 +4734,7 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 /*                                                                                              */
 /*                                                                                              */
 /************************************************************************************************/
-	szTempBuffer.Format(L"%S", "Unofficial Patch 1.50");
+	szTempBuffer.Format(L"%S", "Unofficial Patch 1.50+");
 	szBuffer.append(szTempBuffer);
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                       END                                                   */
@@ -4744,7 +4745,7 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 /*                                                                                              */
 /************************************************************************************************/
 	// Add string showing version number
-	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 1.00d");
+	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 1.00e");
 	szBuffer.append(szTempBuffer);
 #ifdef LOG_AI
 	szTempBuffer.Format(NEWLINE L"%c", gDLL->getSymbolID(BULLET_CHAR));

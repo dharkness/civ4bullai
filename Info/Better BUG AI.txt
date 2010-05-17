@@ -1,21 +1,21 @@
-Better BUG AI 1.00d (2010-05-16)
+Better BUG AI 1.00e (2010-05-17)
 --------------------------
 http://forums.civfanatics.com/showthread.php?t=354019
 
 
 Components:
-Better BTS AI 1.00d r567
+Better BTS AI 1.00e r572
 * AI Logging
-BULL 1.1+ r178
+BULL 1.2 r187
 * Fractional Trade Routes
 * New Sentry Actions
 * City Governours Build Workers
-BUG 4.3 r2212
+BUG 4.4 r2225
 
  Unofficial Patch r30: Total production modifiers are not allowed to be negative, 
   this UP release would change this to allow down to -50. This will never be part of Better BUG AI.
 -----------------------------------------------------------------------------------------------------------------
-my very own changes:
+my own changes:
 
     * The AI no longer considers unhealthy buildings that would make the city shrink, and also
      factors in future unheathiness from power when evaluating buildings that would recieve a bonus

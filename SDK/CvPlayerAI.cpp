@@ -1664,7 +1664,7 @@ void CvPlayerAI::AI_makeProductionDirty()
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      04/19/10                              jdog5000        */
+/* BETTER_BTS_AI_MOD                      05/16/10                              jdog5000        */
 /*                                                                                              */
 /* War tactics AI                                                                               */
 /************************************************************************************************/
@@ -1699,6 +1699,14 @@ void CvPlayerAI::AI_conquerCity(CvCity* pCity)
 			if( gPlayerLogLevel >= 1 )
 			{
 				logBBAI("    Player %d (%S) decides not to raze %S because they're going for domination", getID(), getCivilizationDescription(0), pCity->getName().GetCString() );
+			}
+		}
+		else if( isBarbarian() )
+		{
+			if( (pCity->getPreviousOwner() != BARBARIAN_PLAYER) && (pCity->getOriginalOwner() != BARBARIAN_PLAYER) )
+			{
+				iRazeValue += GC.getLeaderHeadInfo(getPersonalityType()).getRazeCityProb();
+				iRazeValue -= iCloseness;
 			}
 		}
 		else
@@ -1755,11 +1763,11 @@ void CvPlayerAI::AI_conquerCity(CvCity* pCity)
 				// Distance related aspects
 				if (iCloseness > 0)
 				{
-					iRazeValue -= iCloseness/2;
+					iRazeValue -= iCloseness;
 				}
 				else
 				{
-					iRazeValue += 50;
+					iRazeValue += 40;
 
 					CvCity* pNearestTeamAreaCity = GC.getMapINLINE().findCity(pCity->getX_INLINE(), pCity->getY_INLINE(), NO_PLAYER, getTeam(), true, false, NO_TEAM, NO_DIRECTION, pCity);
 
@@ -1852,6 +1860,7 @@ void CvPlayerAI::AI_conquerCity(CvCity* pCity)
 			{
 				bRaze = true;
 				pCity->doTask(TASK_RAZE);
+				logBBAI("    Player %d (%S) decides to to raze city %S!!!", getID(), getCivilizationDescription(0), pCity->getName().GetCString() );
 			}
 		}		
 	}
@@ -2103,11 +2112,11 @@ int CvPlayerAI::AI_commerceWeight(CommerceTypes eCommerce, CvCity* pCity) const
 				}
 
 			}
-			else if (AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2))
+			else if (AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2) || getCommercePercent(COMMERCE_CULTURE) > 60)
 			{
 				iWeight *= 3;
 			}
-			else if (AI_isDoVictoryStrategy(AI_VICTORY_CULTURE1) || getCommercePercent(COMMERCE_CULTURE) > 50)
+			else if (AI_isDoVictoryStrategy(AI_VICTORY_CULTURE1) || getCommercePercent(COMMERCE_CULTURE) > 40)
 			{
 				iWeight *= 2;
 			}
@@ -2122,17 +2131,17 @@ int CvPlayerAI::AI_commerceWeight(CommerceTypes eCommerce, CvCity* pCity) const
 		// pCity == NULL
 		else
 		{
-			if (AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3) || getCommercePercent(COMMERCE_CULTURE) > 90 )
+			if (AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3) || getCommercePercent(COMMERCE_CULTURE) > 80 )
 			{
 				iWeight *= 3;
 				iWeight /= 4;
 			}
-			else if (AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2) || getCommercePercent(COMMERCE_CULTURE) > 70 )
+			else if (AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2) || getCommercePercent(COMMERCE_CULTURE) > 60 )
 			{
 				iWeight *= 2;
 				iWeight /= 3;
 			}
-			else if (AI_isDoVictoryStrategy(AI_VICTORY_CULTURE1) || getCommercePercent(COMMERCE_CULTURE) > 50 )
+			else if (AI_isDoVictoryStrategy(AI_VICTORY_CULTURE1) || getCommercePercent(COMMERCE_CULTURE) > 40 )
 			{
 				iWeight /= 2;
 			}
@@ -3274,7 +3283,7 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 	}
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      04/03/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      05/16/10                                jdog5000      */
 /*                                                                                              */
 /* War strategy AI                                                                              */
 /************************************************************************************************/
@@ -3321,6 +3330,42 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 			if (pLoopPlot->isAdjacentPlayer(getID(), true))
 			{
 				iValue++;
+			}
+		}
+	}
+
+	if( GET_PLAYER(pCity->getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3) )
+	{
+		if( pCity->getCultureLevel() >= (GC.getGameINLINE().culturalVictoryCultureLevel() - 1) )
+		{
+			iValue += 10;
+			
+			if( GET_PLAYER(pCity->getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE4) )
+			{
+				iValue += 10;
+
+				if( pCity->getCultureLevel() >= (GC.getGameINLINE().culturalVictoryCultureLevel()) )
+				{
+					iValue += 10;
+				}
+			}
+		}
+	}
+
+	if( GET_PLAYER(pCity->getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_SPACE3) )
+	{
+		if( pCity->isCapital() )
+		{
+			iValue += 10;
+
+			if( GET_PLAYER(pCity->getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_SPACE4) )
+			{
+				iValue += 10;
+
+				if( GET_TEAM(pCity->getTeam()).getVictoryCountdown(GC.getGameINLINE().getSpaceVictory()) >= 0 )
+				{
+					iValue += 30;
+				}
 			}
 		}
 	}
@@ -17982,13 +18027,24 @@ int CvPlayerAI::AI_getStrategyHash() const
 			iTheirVictoryCountdown = -1;
 		}
 
-		if ((iOurVictoryCountdown >= 0) && (iOurVictoryCountdown <= iTheirVictoryCountdown))
+		if ((iOurVictoryCountdown >= 0) && (iTheirVictoryCountdown < 0 || iOurVictoryCountdown <= iTheirVictoryCountdown))
 		{
 			m_iStrategyHash |= AI_STRATEGY_LAST_STAND;
 		}
-		if ((iTheirVictoryCountdown > 0) && (iTheirVictoryCountdown < iOurVictoryCountdown))
+		else if ((iTheirVictoryCountdown >= 0))
 		{
-			m_iStrategyHash |= AI_STRATEGY_FINAL_WAR;			
+			if((iTheirVictoryCountdown < iOurVictoryCountdown))
+			{
+				m_iStrategyHash |= AI_STRATEGY_FINAL_WAR;			
+			}
+			else if( GC.getGameINLINE().isOption(GAMEOPTION_AGGRESSIVE_AI) )
+			{
+				m_iStrategyHash |= AI_STRATEGY_FINAL_WAR;
+			}
+			else if( AI_isDoVictoryStrategyLevel4() || AI_isDoVictoryStrategy(AI_VICTORY_SPACE3) )
+			{
+				m_iStrategyHash |= AI_STRATEGY_FINAL_WAR;
+			}
 		}
 		
 		if (iOurVictoryCountdown < 0)

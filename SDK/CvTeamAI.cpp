@@ -1153,7 +1153,7 @@ int CvTeamAI::AI_startWarVal(TeamTypes eTeam) const
 	
 	int iClosenessValue = AI_teamCloseness(eTeam);
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      04/24/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      05/16/10                                jdog5000      */
 /*                                                                                              */
 /* War Strategy AI, Victory Strategy AI                                                         */
 /************************************************************************************************/
@@ -1178,7 +1178,7 @@ int CvTeamAI::AI_startWarVal(TeamTypes eTeam) const
 	// Target other teams close to victory
 	if( GET_TEAM(eTeam).AI_isAnyMemberDoVictoryStrategyLevel3() )
 	{
-		iValue++;
+		iValue += 10;
 
 		bool bAggressive = GC.getGameINLINE().isOption(GAMEOPTION_AGGRESSIVE_AI);
 		bool bConq4 = AI_isAnyMemberDoVictoryStrategy(AI_VICTORY_CONQUEST4);
@@ -1192,6 +1192,11 @@ int CvTeamAI::AI_startWarVal(TeamTypes eTeam) const
 
 		if( GET_TEAM(eTeam).AI_isAnyMemberDoVictoryStrategyLevel4() )
 		{
+			if( GET_TEAM(eTeam).AI_getLowestVictoryCountdown() >= 0 )
+			{
+				iValue += 50;
+			}
+
 			iValue *= 2;
 
 			if( bConq4 || bAggressive )
@@ -1212,18 +1217,11 @@ int CvTeamAI::AI_startWarVal(TeamTypes eTeam) const
 		iValue *= (GC.getGameINLINE().isOption(GAMEOPTION_AGGRESSIVE_AI) ? 3 : 2);
 	}
 
-	// If early or not strong, have those inclined for conquest pick off weak opponents
-	if( AI_isAnyMemberDoVictoryStrategy(AI_VICTORY_CONQUEST2) && !(AI_isAnyMemberDoVictoryStrategy(AI_VICTORY_CONQUEST3)) )
+	// If occupied or conquest inclined and early/not strong, value weak opponents
+	if( getAnyWarPlanCount(true) > 0 || 
+		(AI_isAnyMemberDoVictoryStrategy(AI_VICTORY_CONQUEST2) && !(AI_isAnyMemberDoVictoryStrategy(AI_VICTORY_CONQUEST3))) )
 	{
-		if( 4*getPower(false) > 5*GET_TEAM(eTeam).getDefensivePower() )
-		{
-			iValue *= 2;
-		}
-	}
-
-	if( getAnyWarPlanCount(true) > 0 )
-	{
-		int iMultiplier = (70 * getPower(false))/std::max(1, GET_TEAM(eTeam).getDefensivePower());
+		int iMultiplier = (75 * getPower(false))/std::max(1, GET_TEAM(eTeam).getDefensivePower());
 
 		iValue *= range(iMultiplier, 50, 400);
 		iValue /= 100;
@@ -4310,13 +4308,10 @@ void CvTeamAI::AI_doWar()
 					iTimeModifier *= 50 + GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent();
 					iTimeModifier /= 150;
 
-					if( GET_TEAM((TeamTypes)iI).AI_isAnyMemberDoVictoryStrategyLevel4() )
-					{
-						iTimeModifier /= 4;
-					}
-
 					FAssert(iTimeModifier >= 0);
 				}
+
+				bool bEnemyVictoryLevel4 = GET_TEAM((TeamTypes)iI).AI_isAnyMemberDoVictoryStrategyLevel4();
 
 				if (AI_getWarPlan((TeamTypes)iI) == WARPLAN_ATTACKED_RECENT)
 				{
@@ -4335,7 +4330,7 @@ void CvTeamAI::AI_doWar()
 				{
 					FAssert(canEventuallyDeclareWar((TeamTypes)iI));
 
-					if (AI_getWarPlanStateCounter((TeamTypes)iI) > ((5 * iTimeModifier) / 100))
+					if (AI_getWarPlanStateCounter((TeamTypes)iI) > ((5 * iTimeModifier) / (bEnemyVictoryLevel4 ? 400 : 100)))
 					{
 						if( gTeamLogLevel >= 1 )
 						{
@@ -4348,7 +4343,7 @@ void CvTeamAI::AI_doWar()
 				{
 					FAssert(canEventuallyDeclareWar((TeamTypes)iI));
 
-					if (AI_getWarPlanStateCounter((TeamTypes)iI) > ((10 * iTimeModifier) / 100))
+					if (AI_getWarPlanStateCounter((TeamTypes)iI) > ((10 * iTimeModifier) / (bEnemyVictoryLevel4 ? 400 : 100)))
 					{
 						bAreaValid = false;
 						bShareValid = false;
@@ -4375,7 +4370,7 @@ void CvTeamAI::AI_doWar()
 							}
 						}
 
-						if ( (bAreaValid && iEnemyPowerPercent < 140) || (!bShareValid && iEnemyPowerPercent < 110) || GET_TEAM((TeamTypes)iI).AI_isAnyMemberDoVictoryStrategyLevel4() )
+						if ( (bAreaValid && iEnemyPowerPercent < 140) || (!bShareValid && iEnemyPowerPercent < 110) || (GET_TEAM((TeamTypes)iI).AI_getLowestVictoryCountdown() >= 0) )
 						{
 							if( gTeamLogLevel >= 1 )
 							{
