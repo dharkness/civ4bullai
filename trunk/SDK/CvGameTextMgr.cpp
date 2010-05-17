@@ -8949,7 +8949,6 @@ void CvGameTextMgr::setBasicUnitHelpWithCity(CvWStringBuffer &szBuffer, UnitType
 
 		if ((UnitTypes)kCivilization.getCivilizationUnits(eUnitClass) == eUnit && kUnit.canAcquireExperience())
 		{
-			CvPlayer& kPlayer = GET_PLAYER(pCity->getOwnerINLINE());
 			int iExperience;
 
 			iExperience = pCity->getFreeExperience();
@@ -8977,7 +8976,12 @@ void CvGameTextMgr::setBasicUnitHelpWithCity(CvWStringBuffer &szBuffer, UnitType
 				if (eBuilding != NO_BUILDING)
 				{
 					CvBuildingInfo& kBuilding = GC.getBuildingInfo(eBuilding);
-					iExperience = kBuilding.getDomainFreeExperience(eDomainType) + kBuilding.getUnitCombatFreeExperience(eCombatType);
+					iExperience = kBuilding.getUnitCombatFreeExperience(eCombatType);
+					if (!kUnit.isSpy())
+					{
+						iExperience += kBuilding.getDomainFreeExperience(eDomainType);
+					}
+
 					if (iExperience != 0)
 					{
 						if (pCity->getNumBuilding(eBuilding) > 0)

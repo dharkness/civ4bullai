@@ -86,6 +86,8 @@ Bugfix
 - Fixed bug (introduced) allowing ships to move diagonally over isthmuses under some circumstances
 - Fixed bug (introduced) slowing AI expansion, especially on Archipelago maps
 - Fixed bug where AI units could sleep indefinitely when using debug tools like ChangePlayer and AIAutoPlay
+- Fixed issues with rounding off small commerce amounts leading to AI or governor working suboptimal tiles/specialists in some circumstances (reported by Caboose)
+- Fixed bug in calculation of city closeness where city would consider its closeness to itself, so cities can now properly tell when they are close to other cities in their owner's empire (should now see more AI city razing)
 
 Victory Strategy AI
 - Switched all cultural victory logic to new victory strategy framework
@@ -118,6 +120,10 @@ War strategy AI
 - AI will now better defends its first few cities after invading a rivals continent
 - Reduced effect of having vassals on AI aggressiveness (victory strategies replace this)
 - AIs at war and looking for second front now adjusts it's power down for current enemies, and prefers weaker opponents
+- AI will now always start last stand strategy after it launches space ship, even if other players haven't launched yet
+- AI now much more willing to start final war strategy if enemy launches spaceship, if either Aggressive AI is on or AI is close to winning itself
+- Vastly sped up AI war planning/declaration process in end of game situations, particularly enemy spaceship launch
+- AI now targets cultural victory cities, capital if enemy is going for space
 
 War tactics AI
 - Tweaked AI_finalOddsThreshold to reduce suicide attacks in stack v stack combat, especially at sea

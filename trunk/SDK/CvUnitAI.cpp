@@ -12659,53 +12659,63 @@ bool CvUnitAI::AI_lead(std::vector<UnitAITypes>& aeUnitAITypes)
 		int iLoop;
 		for (CvUnit* pLoopUnit = kOwner.firstUnit(&iLoop); pLoopUnit; pLoopUnit = kOwner.nextUnit(&iLoop))
 		{
-			for (uint iI = 0; iI < aeUnitAITypes.size(); iI++)
+			bool bValid = isWorldUnitClass(pLoopUnit->getUnitClassType());
+
+			if( !bValid )
 			{
-				if (pLoopUnit->AI_getUnitAIType() == aeUnitAITypes[iI] || NO_UNITAI == aeUnitAITypes[iI] || isWorldUnitClass(pLoopUnit->getUnitClassType()) )
+				for (uint iI = 0; iI < aeUnitAITypes.size(); iI++)
 				{
-					if (canLead(pLoopUnit->plot(), pLoopUnit->getID()) > 0)
+					if (pLoopUnit->AI_getUnitAIType() == aeUnitAITypes[iI] || NO_UNITAI == aeUnitAITypes[iI])
 					{
-						if (AI_plotValid(pLoopUnit->plot()))
+						bValid = true;
+						break;
+					}
+				}
+			}
+
+			if( bValid )
+			{
+				if (canLead(pLoopUnit->plot(), pLoopUnit->getID()) > 0)
+				{
+					if (AI_plotValid(pLoopUnit->plot()))
+					{
+						if (!(pLoopUnit->plot()->isVisibleEnemyUnit(this)))
 						{
-							if (!(pLoopUnit->plot()->isVisibleEnemyUnit(this)))
+							if( pLoopUnit->combatLimit() == 100 )
 							{
-								if( pLoopUnit->combatLimit() == 100 )
+								if (generatePath(pLoopUnit->plot(), MOVE_AVOID_ENEMY_WEIGHT_3, true))
 								{
-									if (generatePath(pLoopUnit->plot(), MOVE_AVOID_ENEMY_WEIGHT_3, true))
+									// pick the unit with the highest current strength
+									int iCombatStrength = pLoopUnit->currCombatStr(NULL, NULL);
+
+									iCombatStrength *= 30 + pLoopUnit->getExperience();
+									iCombatStrength /= 30;
+
+									if( GC.getUnitClassInfo(pLoopUnit->getUnitClassType()).getMaxGlobalInstances() > -1 )
 									{
-										// pick the unit with the highest current strength
-										int iCombatStrength = pLoopUnit->currCombatStr(NULL, NULL);
+										iCombatStrength *= 1 + GC.getUnitClassInfo(pLoopUnit->getUnitClassType()).getMaxGlobalInstances();
+										iCombatStrength /= std::max(1, GC.getUnitClassInfo(pLoopUnit->getUnitClassType()).getMaxGlobalInstances());
+									}
 
-										iCombatStrength *= 30 + pLoopUnit->getExperience();
-										iCombatStrength /= 30;
-
-										if( GC.getUnitClassInfo(pLoopUnit->getUnitClassType()).getMaxGlobalInstances() > -1 )
-										{
-											iCombatStrength *= 1 + GC.getUnitClassInfo(pLoopUnit->getUnitClassType()).getMaxGlobalInstances();
-											iCombatStrength /= std::max(1, GC.getUnitClassInfo(pLoopUnit->getUnitClassType()).getMaxGlobalInstances());
-										}
-
-										if (iCombatStrength > iBestStrength)
-										{
-											iBestStrength = iCombatStrength;
-											pBestStrUnit = pLoopUnit;
-											pBestStrPlot = getPathEndTurnPlot();
-										}
-										
-										// or the unit with the best healing ability
-										int iHealing = pLoopUnit->getSameTileHeal() + pLoopUnit->getAdjacentTileHeal();
-										if (iHealing > iBestHealing)
-										{
-											iBestHealing = iHealing;
-											pBestHealUnit = pLoopUnit;
-											pBestHealPlot = getPathEndTurnPlot();
-										}
+									if (iCombatStrength > iBestStrength)
+									{
+										iBestStrength = iCombatStrength;
+										pBestStrUnit = pLoopUnit;
+										pBestStrPlot = getPathEndTurnPlot();
+									}
+									
+									// or the unit with the best healing ability
+									int iHealing = pLoopUnit->getSameTileHeal() + pLoopUnit->getAdjacentTileHeal();
+									if (iHealing > iBestHealing)
+									{
+										iBestHealing = iHealing;
+										pBestHealUnit = pLoopUnit;
+										pBestHealPlot = getPathEndTurnPlot();
 									}
 								}
 							}
 						}
 					}
-					break;
 				}
 			}
 		}
