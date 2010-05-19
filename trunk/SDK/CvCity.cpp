@@ -13237,11 +13237,12 @@ void CvCity::doMeltdown()
 				{
 */
 			int iOdds = GC.getBuildingInfo((BuildingTypes)iI).getNukeExplosionRand();
-			iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent();
-			iOdds /= 100;
 
 			if( iOdds > 0 )
 			{
+				iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getVictoryDelayPercent();
+				iOdds /= 100;
+
 				if( GC.getGameINLINE().getSorenRandNum(iOdds, "Meltdown!!!") == 0)
 				{
 /************************************************************************************************/

@@ -10235,7 +10235,16 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 	{
 		if (pPlot->getImprovementType() != NO_IMPROVEMENT)
 		{
+/*************************************************************************************************/
+/**	Forts Connect Resources									02/12/10				Xienwolf	**/
+/*************************************************************************************************/
+/* original code
 			if (GC.getImprovementInfo(pPlot->getImprovementType()).isImprovementBonusTrade(eNonObsoleteBonus))
+*/
+/*************************************************************************************************/
+/**	Forts Connect Resources					END													**/
+/*************************************************************************************************/
+			if (GC.getImprovementInfo(pPlot->getImprovementType()).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(pPlot->getImprovementType()).isActsAsCity())
 			{
 				bHasBonusImprovement = true;
 			}
@@ -10486,17 +10495,21 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 				
 				if (eBonus != NO_BONUS)
 				{
+/*************************************************************************************************/
+/**	Forts Connect Resources									02/12/10			Xienwolf & Fuyu	**/
+/*************************************************************************************************/
 					if (eNonObsoleteBonus != NO_BONUS)
 					{
 						if (!bHasBonusImprovement)
 						{
-							if (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus))
+							//Fuyu: taking this out again here because I fear the AI workers would spend too much time on forts for not yet enabled resources
+							if (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) /* || GC.getImprovementInfo(eFinalImprovement).isActsAsCity() */)
 							{
 								iValue += (GET_PLAYER(getOwnerINLINE()).AI_bonusVal(eNonObsoleteBonus) * 10);
 								iValue += 200;
 								if (eBestBuild != NO_BUILD)
 								{
-									if ((GC.getBuildInfo(eBestBuild).getImprovement() == NO_IMPROVEMENT) || (!GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus)))
+									if ((GC.getBuildInfo(eBestBuild).getImprovement() == NO_IMPROVEMENT) || !(GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isActsAsCity()))
 									{
 										//Always prefer improvements which connect bonuses.
 										eBestBuild = NO_BUILD;
@@ -10508,7 +10521,7 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 							{
 								if (eBestBuild != NO_BUILD)
 								{
-									if ((GC.getBuildInfo(eBestBuild).getImprovement() != NO_IMPROVEMENT) && (GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus)))
+									if ((GC.getBuildInfo(eBestBuild).getImprovement() != NO_IMPROVEMENT) && (GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isActsAsCity()))
 									{
 										iValue -= 1000;
 									}
@@ -10516,10 +10529,13 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 							}
 
 						}
-						else if (!GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus))
+						else if (!(GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(eFinalImprovement).isActsAsCity()))
 						{
 							iValue -= 1000;
 						}
+/*************************************************************************************************/
+/**	Forts Connect Resources					END													**/
+/*************************************************************************************************/
 					}
 				}
 				else
@@ -10685,41 +10701,6 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 /********************************************************************************/
 /*	Better Evaluation							19.03.2010		Fuyu		    */
 /********************************************************************************/
-/* original code
-					int iHappiness = GC.getImprovementInfo(eFinalImprovement).getHappiness();
-					if ((iHappiness != 0) && !(GET_PLAYER(getOwnerINLINE()).getAdvancedStartPoints() >= 0))
-					{
-						int iHappyLevel = iHappyAdjust + (happyLevel() - unhappyLevel(0));
-						if (eImprovement == pPlot->getImprovementType())
-						{
-							iHappyLevel -= iHappiness;
-						}
-						int iHealthLevel = (goodHealth() - badHealth(false, 0));
-						
-						int iHappyValue = 0;
-						if (iHappyLevel <= 0)
-						{
-							iHappyValue += 400;
-						}
-						bool bCanGrow = true;// (getYieldRate(YIELD_FOOD) > foodConsumption());
-						
-						if (iHappyLevel <= iHealthLevel)
-						{
-							iHappyValue += 200 * std::max(0, (bCanGrow ? std::min(6, 2 + iHealthLevel - iHappyLevel) : 0) - iHappyLevel);
-						}
-						else
-						{
-							iHappyValue += 200 * std::max(0, (bCanGrow ? 1 : 0) - iHappyLevel);
-						}
-						if (!pPlot->isBeingWorked())
-						{
-							iHappyValue *= 4;
-							iHappyValue /= 3;
-						}
-						iHappyValue += std::max(0, (pPlot->getCityRadiusCount() - 1)) * ((iHappyValue > 0) ? iHappyLevel / 2 : 200);
-						iValue += iHappyValue * iHappiness;
-					}
-*/
 					//int iNewHappiness = GC.getImprovementInfo(eFinalImprovement).getHappiness();
 					//int iCurHappiness = GC.getImprovementInfo(eCurFinalImprovement).getHappiness();
 					//int iHappinessDiff = iNewHappiness - iCurHappiness;
@@ -10758,7 +10739,7 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 							}
 							else
 							{
-								iHappyValue += 200 * std::max(0, (bCanGrow ? 1 : 0) - iHappyLevel);
+								iHappyValue += 50 * std::max(0, (bCanGrow ? 4 : 0) - iHappyLevel);
 							}
 							if (!pPlot->isBeingWorked())
 							{
