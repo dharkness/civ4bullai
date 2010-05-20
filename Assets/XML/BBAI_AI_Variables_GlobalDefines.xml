@@ -38,8 +38,13 @@
 		<iDefineIntVal>150</iDefineIntVal>
 	</Define>
 	<Define>
-		<!-- Approximate fraction by number of units of attack stacks which AI aims to consist of bombard units.  BBAI default: 20 -->
+		<!-- Approximate fraction by number of units of attack stacks which AI aims to consist of bombard units.  default: 15 -->
 		<DefineName>BBAI_BOMBARD_ATTACK_STACK_FRACTION</DefineName>
 		<iDefineIntVal>15</iDefineIntVal>
+	</Define>
+	<Define>
+		<!-- Maximum fraction by number of units of city attack stacks which AI aims to consist of bombard units.  default: 50 -->
+		<DefineName>BBAI_BOMBARD_ATTACK_CITY_MAX_STACK_FRACTION</DefineName>
+		<iDefineIntVal>50</iDefineIntVal>
 	</Define>
 </Civ4Defines>

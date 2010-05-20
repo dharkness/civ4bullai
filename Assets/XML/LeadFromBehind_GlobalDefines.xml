@@ -7,7 +7,7 @@
 	</Define>
 	<Define>
 		<DefineName>LFB_BASEDONGENERAL</DefineName>
-		<iDefineIntVal>2</iDefineIntVal>
+		<iDefineIntVal>5</iDefineIntVal>
 	</Define>
 	<Define>
 		<DefineName>LFB_BASEDONEXPERIENCE</DefineName>
@@ -15,11 +15,11 @@
 	</Define>
 	<Define>
 		<DefineName>LFB_BASEDONLIMITED</DefineName>
-		<iDefineIntVal>3</iDefineIntVal>
+		<iDefineIntVal>5</iDefineIntVal>
 	</Define>
 	<Define>
 		<DefineName>LFB_BASEDONHEALER</DefineName>
-		<iDefineIntVal>1</iDefineIntVal>
+		<iDefineIntVal>2</iDefineIntVal>
 	</Define>
 	<Define>
 		<DefineName>LFB_USESLIDINGSCALE</DefineName>
