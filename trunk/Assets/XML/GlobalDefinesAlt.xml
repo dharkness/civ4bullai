@@ -5,9 +5,10 @@
 <!-- -->
 <!-- Global Defines -->
 <Civ4Defines xmlns="x-schema:CIV4GlobalDefinesSchema.xml">
-	<!-- No Global Warming from Nukes, to be removed when a usable GWmod is implemented -->
+	<!-- Global Warming from Nukes back to BTS default, since I'm not about to write a GW mod
+			and nuclear warfare needs to have a negative impact somehow -->
 	<Define>
 		<DefineName>GLOBAL_WARMING_NUKE_WEIGHT</DefineName>
-		<iDefineIntVal>0</iDefineIntVal>
+		<iDefineIntVal>50</iDefineIntVal>
 	</Define>
 </Civ4Defines>

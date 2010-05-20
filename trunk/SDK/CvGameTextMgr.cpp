@@ -15635,23 +15635,27 @@ void CvGameTextMgr::getActiveTeamRelationsString(CvWStringBuffer& szString, Team
 		szString.append(gDLL->getText(L"TXT_KEY_DEFENSIVE_PACT_WITH_YOU"));
 	}
 
-	if (kActiveTeam.AI_getWarPlan(eThisTeam) == WARPLAN_PREPARING_TOTAL)
+	if (!kThisTeam.isAtWar(eActiveTeam))
 	{
-		szString.append(NEWLINE);
-		szString.append(gDLL->getText(L"TXT_KEY_WARPLAN_TARGET_OF_YOU"));
-	}
 
-	if (GC.getGameINLINE().isDebugMode())
-	{
-		if (kThisTeam.AI_getWarPlan(eActiveTeam) == WARPLAN_PREPARING_TOTAL)
+		if (kActiveTeam.AI_getWarPlan(eThisTeam) == WARPLAN_PREPARING_TOTAL)
 		{
 			szString.append(NEWLINE);
-			szString.append(gDLL->getText(L"TXT_KEY_WARPLAN_TARGET_IS_YOU"));
+			szString.append(gDLL->getText(L"TXT_KEY_WARPLAN_TARGET_OF_YOU"));
 		}
-		else if (kThisTeam.AI_getWarPlan(eActiveTeam) == WARPLAN_PREPARING_LIMITED)
+
+		if (GC.getGameINLINE().isDebugMode())
 		{
-			szString.append(NEWLINE);
-			szString.append(gDLL->getText(L"TXT_KEY_WARPLAN_LIMITED_TARGET_IS_YOU"));
+			if (kThisTeam.AI_getWarPlan(eActiveTeam) == WARPLAN_PREPARING_TOTAL || kThisTeam.AI_getWarPlan(eActiveTeam) == WARPLAN_TOTAL)
+			{
+				szString.append(NEWLINE);
+				szString.append(gDLL->getText(L"TXT_KEY_WARPLAN_TARGET_IS_YOU"));
+			}
+			else if (kThisTeam.AI_getWarPlan(eActiveTeam) == WARPLAN_PREPARING_LIMITED || kThisTeam.AI_getWarPlan(eActiveTeam) == WARPLAN_LIMITED)
+			{
+				szString.append(NEWLINE);
+				szString.append(gDLL->getText(L"TXT_KEY_WARPLAN_LIMITED_TARGET_IS_YOU"));
+			}
 		}
 	}
 }
@@ -15718,14 +15722,14 @@ void CvGameTextMgr::getOtherRelationsString(CvWStringBuffer& szString, TeamTypes
 				}
 
 				//Show own war plans
-				if (eThisTeam == GC.getGameINLINE().getActiveTeam() || GC.getGameINLINE().isDebugMode())
+				if (eThisTeam == GC.getGameINLINE().getActiveTeam() || (GC.getGameINLINE().isDebugMode() && !(::atWar((TeamTypes) iTeam, eThisTeam))))
 				{
-					if (kThisTeam.AI_getWarPlan((TeamTypes)iTeam) == WARPLAN_PREPARING_TOTAL)
+					if (kThisTeam.AI_getWarPlan((TeamTypes)iTeam) == WARPLAN_PREPARING_TOTAL || kThisTeam.AI_getWarPlan((TeamTypes)iTeam) == WARPLAN_TOTAL)
 					{
 						setListHelp(szWarPlanTotal, L"", kTeam.getName().GetCString(), L", ", bFirstWarPlanTotal);
 						bFirstWarPlanTotal = false;
 					}
-					else if (kThisTeam.AI_getWarPlan((TeamTypes)iTeam) == WARPLAN_PREPARING_LIMITED)
+					else if (kThisTeam.AI_getWarPlan((TeamTypes)iTeam) == WARPLAN_PREPARING_LIMITED || kThisTeam.AI_getWarPlan((TeamTypes)iTeam) == WARPLAN_LIMITED || kThisTeam.AI_getWarPlan((TeamTypes)iTeam) == WARPLAN_DOGPILE)
 					{
 						setListHelp(szWarPlanLimited, L"", kTeam.getName().GetCString(), L", ", bFirstWarPlanLimited);
 						bFirstWarPlanLimited = false;
