@@ -3760,21 +3760,24 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 					{
 						for (iI = 0; iI < iBuildingActualHappiness; iI++)
 						{
-							if (bIsNegative) { iTempHappinessLevel--; iTempCurrentHappinessLevel--; }
+							if (bIsNegative) { iTempHappinessLevel--; iTempCurrentHappinessLevel--; iTempHappyChangeValue += 1;}
 							
 							//The Value of Happiness
 							if (iTempHappinessLevel < 0)
 							{
 								iTempHappyChangeValue += 10;
 								if (bIsNegative) {
-									iTempHappyChangeValue += 10;
+									iTempHappyChangeValue += 9;
 									if (iTempCurrentHappinessLevel < 0)
 									{
 										iTempHappyChangeValue += 10;
 									}								
 								} 
 							}
-							else if (iTempHappinessLevel <= iTempHealthLevel && iTempHappinessLevel <= 6) { iTempHappyChangeValue += 6; }
+							else if (iTempHappinessLevel <= iTempHealthLevel && iTempHappinessLevel <= 6) {
+								iTempHappyChangeValue += 6;
+								if (bIsNegative) { iTempHappyChangeValue += 3;}
+							}
 							else if (iTempHappinessLevel < 10 ) { iTempHappyChangeValue += 3; }
 							else { iTempHappyChangeValue += 1; }
 							
@@ -3884,13 +3887,13 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 				{
 					for (iI = 0; iI < iBuildingActualHealth; iI++)
 					{
-						if (bIsNegative) { iTempHealthLevel--; iTempCurrentHealthLevel--; }
+						if (bIsNegative) { iTempHealthLevel--; iTempCurrentHealthLevel--; iTempHealthChangeValue += 1;}
 					
 						//Health Values
 						if (iTempCurrentHealthLevel < 0) {
 							iTempHealthChangeValue += 10;
 							if (bIsNegative) {
-								iTempHealthChangeValue += 10;
+								iTempHealthChangeValue += 9;
 								if(std::max(0,iBaseFoodDifference-1) < -iTempCurrentHealthLevel)
 								{
 									iTempHealthChangeValue += 10;
@@ -3898,9 +3901,12 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 							}
 						}
 						else if (iTempHealthLevel < 0) { iTempHealthChangeValue += 8; }
-						else if (iTempHealthLevel < iTempHappinessLevel && iTempHealthLevel <= 4) { iTempHealthChangeValue += 4; }
+						else if (iTempHealthLevel < iTempHappinessLevel && iTempHealthLevel <= 4) {
+							iTempHealthChangeValue += 4;
+							if (bIsNegative) { iTempHealthChangeValue += 1;}
+						}
 						else if (iTempHealthLevel < 8 ) { iTempHealthChangeValue += 2; }
-						else { iTempHealthChangeValue += 1; }
+						else if (!bIsNegative) { iTempHealthChangeValue += 1; }
 					
 						if (!bIsNegative) { iTempHealthLevel++; iTempCurrentHealthLevel++; }
 					}
@@ -10740,11 +10746,18 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 							else
 							{
 								iHappyValue += 50 * std::max(0, (bCanGrow ? 4 : 0) - iHappyLevel);
+
 							}
-							if (!pPlot->isBeingWorked())
+							if (!pPlot->isBeingWorked() || bIsNegative)
 							{
 								iHappyValue *= 4;
 								iHappyValue /= 3;
+							}
+
+							if (iHappyValue == 0 && bIsNegative && iHappyLevel < 8)
+							{
+								//an unhappy improvement always has negative value, even if the city is really happy right now
+								iHappyValue = 10;
 							}
 
 							//iHappyValue += std::max(0, (pPlot->getCityRadiusCount() - 1)) * ((iHappyValue > 0) ? iHappyLevel / 2 : 200);

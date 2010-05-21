@@ -9787,7 +9787,7 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI, CvArea* pArea
 				{
 					bNoBombardValue = true;
 				}
-				else if ((100*iTotalBombard)/(iThisBombard*AI_totalUnitAIs(UNITAI_ATTACK_CITY)) >= GC.getDefineINT("BBAI_BOMBARD_ATTACK_CITY_MAX_STACK_FRACTION"))
+				else if ((100*iTotalBombard)/(std::max(1, (iThisBombard*AI_totalUnitAIs(UNITAI_ATTACK_CITY)))) >= GC.getDefineINT("BBAI_BOMBARD_ATTACK_CITY_MAX_STACK_FRACTION"))
 				{
 					//too many bombard units already
 					bNoBombardValue = true;
