@@ -3283,7 +3283,7 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 	}
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      05/16/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      05/16/10                     Mongoose & jdog5000      */
 /*                                                                                              */
 /* War strategy AI                                                                              */
 /************************************************************************************************/
@@ -4626,7 +4626,7 @@ int CvPlayerAI::AI_techValue( TechTypes eTech, int iPathLength, bool bIgnoreCost
 				if( !(GC.getProjectInfo((ProjectTypes)iJ).isSpaceship()) )
 				{
 					// Apollo
-					iValue += (AI_isDoVictoryStrategy(AI_VICTORY_SPACE2) ? 1000 : 100);
+					iValue += (AI_isDoVictoryStrategy(AI_VICTORY_SPACE2) ? 2000 : 100);
 				}
 				else
 				{
@@ -5016,15 +5016,18 @@ int CvPlayerAI::AI_techBuildingValue( TechTypes eTech, int iPathLength, bool &bE
                     iBuildingValue += 600;
                 }
                 
-                if (kLoopBuilding.getCommerceChange(COMMERCE_CULTURE) > 0)
-                {
-                    bIsCultureBuilding = true;
-                }
+				if( !isLimitedWonderClass((BuildingClassTypes)iJ) )
+				{
+					if (kLoopBuilding.getCommerceChange(COMMERCE_CULTURE) > 0 || kLoopBuilding.getObsoleteSafeCommerceChange(COMMERCE_CULTURE) > 0)
+					{
+						bIsCultureBuilding = true;
+					}
+				}
                 
                 if (AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2))
                 {
                     int iMultiplier = (isLimitedWonderClass((BuildingClassTypes)iJ) ? 1 : 3);
-                    iBuildingValue += (150 * kLoopBuilding.getCommerceChange(COMMERCE_CULTURE)) * iMultiplier;
+                    iBuildingValue += (150 * (kLoopBuilding.getCommerceChange(COMMERCE_CULTURE) + kLoopBuilding.getObsoleteSafeCommerceChange(COMMERCE_CULTURE))) * iMultiplier;
                     iBuildingValue += kLoopBuilding.getCommerceModifier(COMMERCE_CULTURE) * 4 * iMultiplier ;
                 }
 				
@@ -5076,7 +5079,12 @@ int CvPlayerAI::AI_techBuildingValue( TechTypes eTech, int iPathLength, bool &bE
 
 									if (AI_isDoVictoryStrategy(AI_VICTORY_CULTURE1))
 									{
-										iValue += 400;
+										if (kLoopBuilding.getCommerceChange(COMMERCE_CULTURE) >= 3 || 
+											kLoopBuilding.getObsoleteSafeCommerceChange(COMMERCE_CULTURE) >= 3 ||
+											kLoopBuilding.getCommerceModifier(COMMERCE_CULTURE) >= 10)
+										{
+											iValue += 400;
+										}
 									}
 
 									if (bCapitalAlone)
@@ -5089,6 +5097,13 @@ int CvPlayerAI::AI_techBuildingValue( TechTypes eTech, int iPathLength, bool &bE
 					}
 				}
 
+				if( AI_isDoVictoryStrategy(AI_VICTORY_DIPLOMACY1) )
+				{
+					if( kLoopBuilding.getVoteSourceType() >= 0 )
+					{
+						iValue += 400;
+					}
+				}
 
 				if (iBuildingValue > iBestLandBuildingValue)
 				{
@@ -5115,7 +5130,7 @@ int CvPlayerAI::AI_techBuildingValue( TechTypes eTech, int iPathLength, bool &bE
 				{
 					if (!isLimitedWonderClass((BuildingClassTypes)iJ))
 					{
-						if (kLoopBuilding.getCommerceChange(COMMERCE_CULTURE) > 0)
+						if (kLoopBuilding.getCommerceChange(COMMERCE_CULTURE) > 0 || kLoopBuilding.getObsoleteSafeCommerceChange(COMMERCE_CULTURE) > 0)
 						{
 							iExistingCultureBuildingCount++;
 						}
@@ -5454,15 +5469,12 @@ int CvPlayerAI::AI_techUnitValue( TechTypes eTech, int iPathLength, bool &bEnabl
 						UnitTypes eExistingUnit = NO_UNIT;
 						if (AI_bestAreaUnitAIValue(UNITAI_ASSAULT_SEA, NULL, &eExistingUnit) == 0)
 						{
-							iAssaultValue += 1000;
+							iAssaultValue += 250;
 						}
 						else if( eExistingUnit != NO_UNIT )
 						{
-							iAssaultValue += 100 * std::max(0, AI_unitImpassableCount(eLoopUnit) - AI_unitImpassableCount(eExistingUnit));
-							if (iAssaultValue > 0)
-							{
-								iAssaultValue += 200;
-							}
+							iAssaultValue += 1000 * std::max(0, AI_unitImpassableCount(eLoopUnit) - AI_unitImpassableCount(eExistingUnit));
+
 							int iNewCapacity = kLoopUnit.getMoves() * kLoopUnit.getCargoSpace();
 							int iOldCapacity = GC.getUnitInfo(eExistingUnit).getMoves() * GC.getUnitInfo(eExistingUnit).getCargoSpace();
 
@@ -5487,11 +5499,11 @@ int CvPlayerAI::AI_techUnitValue( TechTypes eTech, int iPathLength, bool &bEnabl
 							}
 							if (bIsAnyAssault)
 							{
-								iUnitValue += iAssaultValue;
+								iUnitValue += iAssaultValue * 4;
 							}
 							else
 							{
-								iUnitValue += iAssaultValue / 6;
+								iUnitValue += iAssaultValue;
 							}
 						}
 					}
@@ -11170,11 +11182,11 @@ int CvPlayerAI::AI_enemyTargetMissionAIs(MissionAITypes* aeMissionAI, int iMissi
 }
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      10/26/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      05/19/10                                jdog5000      */
 /*                                                                                              */
 /* General AI                                                                                   */
 /************************************************************************************************/
-int CvPlayerAI::AI_enemyTargetMissionAIs(TeamTypes eTargetTeam, MissionAITypes* aeMissionAI, int iMissionAICount, CvSelectionGroup* pSkipSelectionGroup) const
+int CvPlayerAI::AI_enemyTargetMissions(TeamTypes eTargetTeam, CvSelectionGroup* pSkipSelectionGroup) const
 {
 	PROFILE_FUNC();
 
@@ -11187,21 +11199,19 @@ int CvPlayerAI::AI_enemyTargetMissionAIs(TeamTypes eTargetTeam, MissionAITypes* 
 		{
 			CvPlot* pMissionPlot = pLoopSelectionGroup->AI_getMissionAIPlot();
 
-			if (NULL != pMissionPlot && pMissionPlot->isOwned())
+			if( pMissionPlot == NULL )
 			{
-				MissionAITypes eGroupMissionAI = pLoopSelectionGroup->AI_getMissionAIType();
-				for (int iMissionAIIndex = 0; iMissionAIIndex < iMissionAICount; iMissionAIIndex++)
+				pMissionPlot = pLoopSelectionGroup->plot();
+			}
+
+			if (NULL != pMissionPlot )
+			{
+				if( pMissionPlot->isOwned() && pMissionPlot->getTeam() == eTargetTeam )
 				{
-					if (eGroupMissionAI == aeMissionAI[iMissionAIIndex] || NO_MISSIONAI == aeMissionAI[iMissionAIIndex])
+					if (atWar(getTeam(),pMissionPlot->getTeam()) || pLoopSelectionGroup->AI_isDeclareWar(pMissionPlot))
 					{
-						if( pMissionPlot->getTeam() == eTargetTeam )
-						{
-							if (GET_TEAM(getTeam()).AI_isChosenWar(pMissionPlot->getTeam()))
-							{
-								iCount += pLoopSelectionGroup->getNumUnits();
-								iCount += pLoopSelectionGroup->getCargo();
-							}
-						}
+						iCount += pLoopSelectionGroup->getNumUnits();
+						iCount += pLoopSelectionGroup->getCargo();
 					}
 				}
 			}
@@ -16430,8 +16440,19 @@ int CvPlayerAI::AI_cultureVictoryTechValue(TechTypes eTech) const
 					//UB
 					iValue += 100;
 				}
-				
-				iValue += (150 * kLoopBuilding.getCommerceChange(COMMERCE_CULTURE)) * 20;
+
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       05/25/10                          Fuyu & jdog5000     */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
+						iValue += (150 * kLoopBuilding.getCommerceChange(COMMERCE_CULTURE)) * 20;
+*/
+						iValue += (150 * (kLoopBuilding.getCommerceChange(COMMERCE_CULTURE) + kLoopBuilding.getObsoleteSafeCommerceChange(COMMERCE_CULTURE))) / 20;
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 				iValue += kLoopBuilding.getCommerceModifier(COMMERCE_CULTURE) * 2;
 			}
 		}
@@ -16811,9 +16832,12 @@ int CvPlayerAI::AI_getConquestVictoryStage() const
 					iTotalPower += kTeam.getPower(true);
 					iNumNonVassals++;
 
-					if( 95*kTeam.getPower(false) > 100*iOurPower )
+					if( GET_TEAM(getTeam()).isHasMet((TeamTypes) iI) )
 					{
-						iOurPowerRank++;
+						if( 95*kTeam.getPower(false) > 100*iOurPower )
+						{
+							iOurPowerRank++;
+						}
 					}
 				}
 			}
@@ -16821,30 +16845,36 @@ int CvPlayerAI::AI_getConquestVictoryStage() const
 	}
 	int iAverageOtherPower = iTotalPower / std::max(1, iNumNonVassals);
 
-	if( iOurPowerRank <= 1 + (GC.getGameINLINE().countCivPlayersAlive()/10) )
+	if( 3*iOurPower > 4*iAverageOtherPower )
 	{
-		if( (iOurPower > 2*iAverageOtherPower) && (iOurPower - iAverageOtherPower > 100) )
+		// BBAI TODO: Have we declared total war on anyone?  Need some aggressive action taken, maybe past war success
+		int iOthersWarMemoryOfUs = 0;
+		for( int iPlayer = 0; iPlayer < MAX_CIV_PLAYERS; iPlayer++ )
 		{
-			return 4;
-		}
-	}
-
-	if (getCurrentEra() >= ((GC.getNumEraInfos() / 3)))
-	{
-		if( iOurPowerRank <= 1 + (GC.getGameINLINE().countCivPlayersAlive()/7) )
-		{
-			if( 3*iOurPower > 4*iAverageOtherPower )
+			if( GET_PLAYER((PlayerTypes)iPlayer).getTeam() != getTeam() && GET_PLAYER((PlayerTypes)iPlayer).isEverAlive() )
 			{
-				// BBAI TODO: Have we declared total war on anyone?  Need some aggressive action taken, maybe past war success
-				int iOthersWarMemoryOfUs = 0;
-				for( int iPlayer = 0; iPlayer < MAX_CIV_PLAYERS; iPlayer++ )
+				iOthersWarMemoryOfUs += GET_PLAYER((PlayerTypes)iPlayer).AI_getMemoryCount(getID(), MEMORY_DECLARED_WAR);
+			}
+		}
+
+		if( GET_TEAM(getTeam()).getHasMetCivCount(false) > GC.getGameINLINE().countCivPlayersAlive()/4 )
+		{
+			if( iOurPowerRank <= 1 + (GET_TEAM(getTeam()).getHasMetCivCount(true)/10) )
+			{
+				if( (iOurPower > 2*iAverageOtherPower) && (iOurPower - iAverageOtherPower > 100) )
 				{
-					if( GET_PLAYER((PlayerTypes)iPlayer).getTeam() != getTeam() && GET_PLAYER((PlayerTypes)iPlayer).isEverAlive() )
+					if( iOthersWarMemoryOfUs > 0  )
 					{
-						iOthersWarMemoryOfUs += GET_PLAYER((PlayerTypes)iPlayer).AI_getMemoryCount(getID(), MEMORY_DECLARED_WAR);
+						return 4;
 					}
 				}
+			}
+		}
 
+		if (getCurrentEra() >= ((GC.getNumEraInfos() / 3)))
+		{
+			if( iOurPowerRank <= 1 + (GET_TEAM(getTeam()).getHasMetCivCount(true)/7) )
+			{
 				if( iOthersWarMemoryOfUs > 2  )
 				{
 					return 3;

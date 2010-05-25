@@ -224,7 +224,7 @@ public:
 	int getNumActiveBuilding(BuildingTypes eIndex) const;						// Exposed to Python
 	bool hasActiveWorldWonder() const;																			// Exposed to Python
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                       03/04/10                                jdog5000      */
+/* UNOFFICIAL_PATCH                       03/04/10                     Mongoose & jdog5000      */
 /*                                                                                              */
 /* Bugfix                                                                                       */
 /************************************************************************************************/

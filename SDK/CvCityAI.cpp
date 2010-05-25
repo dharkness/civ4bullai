@@ -4406,6 +4406,12 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 				{
 					if (kBuilding.getVoteSourceType() == iI)
 					{
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      05/24/10                              jdog5000        */
+/*                                                                                              */
+/* City AI, Victory Strategy AI                                                                 */
+/************************************************************************************************/					
+						iTempValue = 0;
 						if (kBuilding.isStateReligion())
 						{
 							int iShareReligionCount = 0;
@@ -4422,13 +4428,18 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 									}
 								}
 							}
-							iValue += (200 * (1 + iShareReligionCount)) / (1 + iPlayerCount);
+							iTempValue += (200 * (1 + iShareReligionCount)) / (1 + iPlayerCount);
 						}
 						else
 						{
-							iValue += 100;
+							iTempValue += 100;
 						}
+
+						iValue += (iTempValue * (GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_DIPLOMACY1) ? 5 : 1));
 					}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 				}
 
 			}
