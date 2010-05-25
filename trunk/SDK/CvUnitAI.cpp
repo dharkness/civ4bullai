@@ -3150,11 +3150,18 @@ void CvUnitAI::AI_attackCityMove()
 	else
 	{
 		int iTargetCount = GET_PLAYER(getOwnerINLINE()).AI_unitTargetMissionAIs(this, MISSIONAI_GROUP);
-
-		// If will be ready to attack with soon to group units
-		if( ((iTargetCount * 3) > getGroup()->getNumUnits()) || ((getGroup()->getNumUnits() + iTargetCount) >= (bHuntBarbs ? 3 : AI_stackOfDoomExtra())) )
+		if( ((iTargetCount * 4) > getGroup()->getNumUnits()) || ((getGroup()->getNumUnits() + iTargetCount) >= (bHuntBarbs ? 3 : AI_stackOfDoomExtra())) )
 		{
-			if (AI_moveToStagingCity())
+			MissionAITypes eMissionAIType = MISSIONAI_GROUP;
+			int iJoiners = GET_PLAYER(getOwnerINLINE()).AI_unitTargetMissionAIs(this, &eMissionAIType, 1, getGroup(), 2);
+			
+			if( (iJoiners*6) > getGroup()->getNumUnits() )
+			{
+				getGroup()->pushMission(MISSION_SKIP);
+				return;
+			}
+
+			if (AI_safety())
 			{
 				return;
 			}
