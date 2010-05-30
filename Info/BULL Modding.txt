@@ -81,6 +81,14 @@ The following are all of the compile-time options for BULL. Each one has a uniqu
 	
 		The mod is already enabled; setting this flag shows the Altered Gameplay modifiers
 
+[6] Events with Images
+
+	Flag: _MOD_EVENTIMG
+	by Renegadechicken
+	http://forums.civfanatics.com/showthread.php?t=314164
+	
+		Adds optional <EventArt> tag to random events and displays them in the popup
+
 
 ____________________________________________________________________________________________________
 3. EVENTS
@@ -168,6 +176,16 @@ CyCity
 	int getAdditionalCommerceRateTimes100ByBuilding(CommerceTypes eIndex, BuildingTypes eBuilding)
 	int getAdditionalBaseCommerceRateByBuilding(CommerceTypes eIndex, BuildingTypes eBuilding)
 	int getAdditionalCommerceRateModifierByBuilding(CommerceTypes eIndex, BuildingTypes eBuilding)
+	
+	int getAdditionalHappinessByBuilding(BuildingTypes eBuilding)
+	int getAdditionalGoodHappinessByBuilding(BuildingTypes eBuilding)
+	int getAdditionalBadHappinessByBuilding(BuildingTypes eBuilding)
+	int getAdditionalAngryPopulationByBuilding(BuildingTypes eBuilding)
+	
+	int getAdditionalHealthByBuilding(BuildingTypes eBuilding)
+	int getAdditionalGoodHealthByBuilding(BuildingTypes eBuilding)
+	int getAdditionalBadHealthByBuilding(BuildingTypes eBuilding)
+	int getAdditionalSpoiledFoodByBuilding(BuildingTypes eBuilding)
 	
 	int getAdditionalGreatPeopleRateByBuilding(BuildingTypes eBuilding)
 	int getAdditionalBaseGreatPeopleRateByBuilding(BuildingTypes eBuilding)
