@@ -5931,9 +5931,7 @@ public:
 	int getNumWorldNews() const;
 
 // BUG - Events with Images - start
-#ifdef _MOD_EVENTIMG
 	const TCHAR* getEventArt() const;				// Exposed to Python
-#endif
 // BUG - Events with Images - end
 	bool isSinglePlayer() const;				// Exposed to Python
 	bool isTeam() const;						// Exposed to Python
@@ -6016,9 +6014,7 @@ private:
 	std::vector<CvWString> m_aszWorldNews;
 
 // BUG - Events with Images - start
-#ifdef _MOD_EVENTIMG
 	CvString m_szEventArt;
-#endif
 // BUG - Events with Images - end
 	bool m_bSinglePlayer;
 	bool m_bTeam;

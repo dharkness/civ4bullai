@@ -35,7 +35,6 @@ LINK = "$(TOOLKIT)/bin/link.exe"
 #   _MOD_GOVWORKERS		Governours can build Workers Mod
 #   _MOD_GWARM			Global Warming Mod
 #   _MOD_SHAM_SPOILER	always show all hidden attitude modifiers. Leave this off
-#   _MOD_EVENTIMG		Events with Images. Requires <EventArt> tag on every EventTriggerInfo
 #  ------------------------
 #   MAX_CIV_50			Sets the maximum number of civilizations in a game to 50 (BTS default: 18). Don't use unless you know what you are doing.
 
