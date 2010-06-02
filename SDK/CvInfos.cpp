@@ -20242,7 +20242,6 @@ int CvEventTriggerInfo::getNumCorporationsRequired() const
 }
 
 // BUG - Events with Images - start
-#ifdef _MOD_EVENTIMG
 const TCHAR* CvEventTriggerInfo::getEventArt() const
 {
 	if (m_szEventArt.empty())
@@ -20252,7 +20251,6 @@ const TCHAR* CvEventTriggerInfo::getEventArt() const
 	
 	return m_szEventArt;
 }
-#endif
 // BUG - Events with Images - end
 
 bool CvEventTriggerInfo::isSinglePlayer() const
@@ -20568,11 +20566,6 @@ void CvEventTriggerInfo::read(FDataStreamBase* stream)
 		m_aiCorporationsRequired.push_back(iElement);
 	}
 
-// BUG - Events with Images - start
-#ifdef _MOD_EVENTIMG
-	stream->ReadString(m_szEventArt);
-#endif
-// BUG - Events with Images - end
 	stream->Read(&m_bSinglePlayer);
 	stream->Read(&m_bTeam);
 	stream->Read(&m_bRecurring);
@@ -20730,11 +20723,6 @@ void CvEventTriggerInfo::write(FDataStreamBase* stream)
 		stream->Write(*it);
 	}
 
-// BUG - Events with Images - start
-#ifdef _MOD_EVENTIMG
-	stream->WriteString(m_szEventArt);
-#endif
-// BUG - Events with Images - end
 	stream->Write(m_bSinglePlayer);
 	stream->Write(m_bTeam);
 	stream->Write(m_bRecurring);
@@ -21287,9 +21275,7 @@ bool CvEventTriggerInfo::read(CvXMLLoadUtility* pXML)
 	}
 
 // BUG - Events with Images - start
-#ifdef _MOD_EVENTIMG
 	pXML->GetChildXmlValByName(m_szEventArt, "EventArt");
-#endif
 // BUG - Events with Images - end
 	pXML->GetChildXmlValByName(&m_bSinglePlayer, "bSinglePlayer");
 	pXML->GetChildXmlValByName(&m_bTeam, "bTeam");

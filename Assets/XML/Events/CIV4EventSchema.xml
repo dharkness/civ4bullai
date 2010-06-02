@@ -11,6 +11,7 @@
 	<ElementType name="QuestFailText" content="textOnly"/>
 	<ElementType name="Button" content="textOnly"/>
 	<ElementType name="bQuest" content="textOnly" dt:type="boolean"/>
+	<ElementType name="EventArt" content="textOnly"/>
 	<ElementType name="bSinglePlayer" content="textOnly" dt:type="boolean"/>
 	<ElementType name="iMinTreasury" content="textOnly" dt:type="int"/>
 	<ElementType name="iGold" content="textOnly" dt:type="int"/>
@@ -273,6 +274,7 @@
 		<element type="Type"/>
 		<element type="WorldNewsTexts"/>
 		<element type="TriggerTexts"/>
+		<element type="EventArt" minOccurs="0"/>
 		<element type="bSinglePlayer"/>
 		<element type="iPercentGamesActive"/>
 		<element type="iWeight"/>
