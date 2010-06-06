@@ -386,10 +386,17 @@ public:
 	void updateFeatureHealth();
 // BUG - Feature Health - start
 	void calculateFeatureHealthPercent(int& iGood, int& iBad) const;
+	void calculateFeatureHealthPercentChange(int& iGood, int& iBad, CvPlot* pIgnorePlot = NULL) const;
 	int getAdditionalHealthByFeature(FeatureTypes eFeature, int iChange) const;									// Exposed to Python
-	int getAdditionalHealthByFeature(FeatureTypes eFeature, int iChange, int& iGood, int& iBad, int& iSpoiledFood, int& iStarvation) const;
-	int getAdditionalHealth(int iGoodPercent, int iBadPercent, int& iGood, int& iBad, int& iSpoiledFood, int& iStarvation) const;
+	int getAdditionalHealthByFeature(FeatureTypes eFeature, int iChange, int& iGood, int& iBad) const;
+	int getAdditionalHealth(int iGoodPercent, int iBadPercent, int& iGood, int& iBad) const;
 // BUG - Feature Health - end
+
+// BUG - Actual Effects - start
+	int getAdditionalAngryPopuplation(int iGood, int iBad) const;
+	int getAdditionalSpoiledFood(int iGood, int iBad) const;
+	int getAdditionalStarvation(int iSpoiledFood) const;
+// BUG - Actual Effects - end
 
 	int getBuildingGoodHealth() const;																		// Exposed to Python
 	int getBuildingBadHealth() const;																			// Exposed to Python
@@ -424,7 +431,7 @@ public:
 
 // BUG - Building Additional Happiness - start
 	int getAdditionalHappinessByBuilding(BuildingTypes eBuilding) const;									// Exposed to Python
-	int getAdditionalHappinessByBuilding(BuildingTypes eBuilding, int& iGood, int& iBad, int& iAngryPop) const;
+	int getAdditionalHappinessByBuilding(BuildingTypes eBuilding, int& iGood, int& iBad) const;
 // BUG - Building Additional Happiness - end
 
 	int getExtraBuildingGoodHealth() const;														// Exposed to Python
@@ -433,7 +440,7 @@ public:
 
 // BUG - Building Additional Health - start
 	int getAdditionalHealthByBuilding(BuildingTypes eBuilding) const;										// Exposed to Python
-	int getAdditionalHealthByBuilding(BuildingTypes eBuilding, int& iGood, int& iBad, int& iSpoiledFood, int& iStarvation) const;
+	int getAdditionalHealthByBuilding(BuildingTypes eBuilding, int& iGood, int& iBad) const;
 // BUG - Building Additional Health - end
 
 	int getFeatureGoodHappiness() const;																	// Exposed to Python
