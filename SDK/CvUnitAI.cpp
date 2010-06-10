@@ -5865,20 +5865,42 @@ void CvUnitAI::AI_attackSeaMove()
 	{
 		if( pCity->isBlockaded() )
 		{
+			int iBlockadeRange = GC.getDefineINT("SHIP_BLOCKADE_RANGE");
 			// City under blockade
 			// Attacker has low odds since anyAttack checks above passed, try to break if sufficient numbers
 
 			int iAttackers = plot()->plotCount(PUF_isUnitAIType, UNITAI_ATTACK_SEA, -1, NO_PLAYER, getTeam(), PUF_isGroupHead, -1, -1);
-			int iBlockaders = GET_PLAYER(getOwnerINLINE()).AI_getWaterDanger(plot(), 4);
+			int iBlockaders = GET_PLAYER(getOwnerINLINE()).AI_getWaterDanger(plot(), (iBlockadeRange + 1));
 
-			if( iAttackers > (iBlockaders + 2) )
+			if( iAttackers > (iBlockaders + 2) || iAttackers >= 2*iBlockaders)
 			{
 				if( iAttackers > GC.getGameINLINE().getSorenRandNum(2*iBlockaders + 1, "AI - Break blockade") )
 				{
 					// BBAI TODO: Make odds scale by # of blockaders vs number of attackers
-					if (AI_anyAttack(1, 15))
+					if (baseMoves() >= iBlockadeRange)
 					{
-						return;
+						if (AI_anyAttack(1, 15))
+						{
+							return;
+						}
+					}
+					else
+					{
+						//Fuyu: Even slow ships should attack
+						//Assuming that every ship can reach a blockade with 2 moves
+						if (AI_anyAttack(2, 15))
+						{
+							return;
+						}
+					}
+					
+					//If no mission was pushed yet and we have a lot of ships, try again with even lower odds
+					if(iAttackers > 2*iBlockaders)
+					{
+						if (AI_anyAttack(1, 10))
+						{
+							return;
+						}
 					}
 				}
 			}

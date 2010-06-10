@@ -471,11 +471,11 @@ class MapConstants :
         self.ChieftainBonus = 0
         self.WarlordBonus = 0
         self.NobleBonus = 0
-        self.PrinceBonus = 1
-        self.MonarchBonus = 1
-        self.EmperorBonus = 2
-        self.ImmortalBonus = 2
-        self.DeityBonus = 3
+        self.PrinceBonus = 0
+        self.MonarchBonus = 0
+        self.EmperorBonus = 1
+        self.ImmortalBonus = 1
+        self.DeityBonus = 2
         
         #Decides whether to use the Python random generator or the one that is
         #intended for use with civ maps. The Python random has much higher precision

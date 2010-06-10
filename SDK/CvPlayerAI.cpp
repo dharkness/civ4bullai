@@ -16447,9 +16447,9 @@ int CvPlayerAI::AI_cultureVictoryTechValue(TechTypes eTech) const
 /* Bugfix                                                                                       */
 /************************************************************************************************/
 /* original bts code
-						iValue += (150 * kLoopBuilding.getCommerceChange(COMMERCE_CULTURE)) * 20;
+				iValue += (150 * kLoopBuilding.getCommerceChange(COMMERCE_CULTURE)) * 20;
 */
-						iValue += (150 * (kLoopBuilding.getCommerceChange(COMMERCE_CULTURE) + kLoopBuilding.getObsoleteSafeCommerceChange(COMMERCE_CULTURE))) / 20;
+				iValue += (150 * (kLoopBuilding.getCommerceChange(COMMERCE_CULTURE) + kLoopBuilding.getObsoleteSafeCommerceChange(COMMERCE_CULTURE))) / 20;
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */
 /************************************************************************************************/

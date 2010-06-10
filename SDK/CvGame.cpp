@@ -5782,9 +5782,9 @@ void CvGame::doTurn()
 			{
 				kTeam.setTurnActive(true);
 				FAssert(getNumGameTurnActive() == kTeam.getAliveCount());
+				//Fuyu UP
+				break;
 			}
-
-			break;
 		}
 	}
 	else

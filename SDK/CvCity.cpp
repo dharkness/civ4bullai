@@ -828,7 +828,8 @@ void CvCity::kill(bool bUpdatePlotGroups)
 	{
 		for (int iJ = 0; iJ < GC.getNumFeatureInfos(); iJ++)
 		{
-			/* Fuyu: don't limit to riverside
+			//Fuyu: don't limit to riverside
+			/* 
 			if (GC.getFeatureInfo((FeatureTypes)iJ).isRequiresRiver())
 			{
 			*/
@@ -843,6 +844,7 @@ void CvCity::kill(bool bUpdatePlotGroups)
 			/*
 			}
 			*/
+			//Fuyu END
 		}
 	}
 /************************************************************************************************/
@@ -6420,11 +6422,11 @@ int CvCity::getAdditionalAngryPopuplation(int iGood, int iBad) const
  *
  * Positive values for iBad mean an increase in unhealthiness.
  */
-int CvCity::getAdditionalSpoiledFood(int iGood, int iBad) const
+int CvCity::getAdditionalSpoiledFood(int iGood, int iBad, int iHealthAdjust) const
 {
 	int iHealthy = goodHealth();
 	int iUnhealthy = badHealth();
-	int iRate = iHealthy - iUnhealthy;
+	int iRate = iHealthy - iUnhealthy + iHealthAdjust;
 
 	return std::min(0, iRate) - std::min(0, iRate + iGood - iBad);
 }
@@ -6432,9 +6434,9 @@ int CvCity::getAdditionalSpoiledFood(int iGood, int iBad) const
 /*
  * Returns the additional starvation caused by the given spoiled food.
  */
-int CvCity::getAdditionalStarvation(int iSpoiledFood) const
+int CvCity::getAdditionalStarvation(int iSpoiledFood, int iFoodAdjust) const
 {
-	int iFood = getYieldRate(YIELD_FOOD) - foodConsumption();
+	int iFood = getYieldRate(YIELD_FOOD) - foodConsumption() + iFoodAdjust;
 
 	if (iSpoiledFood > 0)
 	{

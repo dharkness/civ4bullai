@@ -2891,6 +2891,7 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct, CvWS
 
 							if (iHealthPercent != 0)
 							{
+								bool bCountOtherTiles = getBugOptionBOOL("MiscHover__RemoveFeatureHealthEffectsCountOtherTiles", true, "BUG_REMOVE_FEATURE_HEALTH_EFFECTS_COUNT_OTHER_TILES");
 								int iGoodPercentChange = 0;
 								int iBadPercentChange = 0;
 
@@ -2913,8 +2914,9 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct, CvWS
 										if (pLoopCity != NULL && pLoopCity->getTeam() == pHeadSelectedUnit->getTeam())
 										{
 											int iGood = 0, iBad = 0;
+											int iFeatureHealthAdjust = 0;
 
-											if (true)
+											if (bCountOtherTiles)
 											{
 												int iCityGoodPercentChange = 0;
 												int iCityBadPercentChange = 0;
@@ -2923,6 +2925,7 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct, CvWS
 												pLoopCity->getAdditionalHealth(iCityGoodPercentChange, iCityBadPercentChange, iGood, iBad);
 												iGood = -iGood;
 												iBad = -iBad;
+												iFeatureHealthAdjust = iGood - iBad;
 												iCityGoodPercentChange += iGoodPercentChange;
 												iCityBadPercentChange += iBadPercentChange;
 												pLoopCity->getAdditionalHealth(iCityGoodPercentChange, iCityBadPercentChange, iGood, iBad);
@@ -2933,14 +2936,64 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct, CvWS
 											}
 											if (iGood != 0 || iBad != 0)
 											{
-												int iSpoiledFood = pLoopCity->getAdditionalSpoiledFood(iGood, iBad);
-												int iStarvation = pLoopCity->getAdditionalStarvation(iSpoiledFood);
 												bool bStarted = false;
-
 												CvWStringBuffer szFeatureEffects;
 												bStarted = GAMETEXT.setResumableGoodBadChangeHelp(szFeatureEffects, L"", L"", L"", iGood, gDLL->getSymbolID(HEALTHY_CHAR), iBad, gDLL->getSymbolID(UNHEALTHY_CHAR), false, false, bStarted);
+
+												//Fuyu Negative Health Adjust
+												//if both clearing the feature at hand and the building being contructed in the city cause health reduction, consider both effects
+												int iBadHealthAdjust = 0;
+												if (iBad > iGood)
+												{
+													iBadHealthAdjust = -std::min(0, pLoopCity->getAdditionalHealthByBuilding(pLoopCity->getProductionBuilding()));
+												}
+
+												int iSpoiledFood = pLoopCity->getAdditionalSpoiledFood(iGood, iBad, -iBadHealthAdjust);
+												int iStarvation = 0;
+												if (iSpoiledFood != 0)
+												{
+                                                    iStarvation = pLoopCity->getAdditionalStarvation(iSpoiledFood, /* iFoodAdjust: spoiled food from building */ ((iBadHealthAdjust != 0)? -pLoopCity->getAdditionalSpoiledFood(0, iBadHealthAdjust) : 0));
+												}
+
 												bStarted = GAMETEXT.setResumableValueChangeHelp(szFeatureEffects, L"", L"", L"", iSpoiledFood, gDLL->getSymbolID(EATEN_FOOD_CHAR), false, false, bStarted);
 												bStarted = GAMETEXT.setResumableValueChangeHelp(szFeatureEffects, L"", L"", L"", iStarvation, gDLL->getSymbolID(BAD_FOOD_CHAR), false, false, bStarted);
+
+												//Fuyu Health Level dropping below Happy Level?
+												if (bStarted && bCountOtherTiles && iBad > iGood && iSpoiledFood == 0 && !pLoopCity->isNoUnhappiness())
+												{
+													//Disregard all temporary unhappiness, and unhealth from espionage
+													int iTemporaryUnhappiness = 0;
+													int iAngerPercent = 0;
+													iAngerPercent += pLoopCity->getHurryPercentAnger();
+													iAngerPercent += pLoopCity->getConscriptPercentAnger();
+													iAngerPercent += pLoopCity->getDefyResolutionPercentAnger();
+													iAngerPercent += pLoopCity->getWarWearinessPercentAnger();
+													iTemporaryUnhappiness += ((iAngerPercent * (pLoopCity->getPopulation())) / GC.getPERCENT_ANGER_DIVISOR());
+													iTemporaryUnhappiness += pLoopCity->getEspionageHappinessCounter();
+
+													int iHappinessLevel = pLoopCity->happyLevel() - pLoopCity->unhappyLevel() + iTemporaryUnhappiness;
+													int iHealthLevel = pLoopCity->goodHealth() - pLoopCity->badHealth() + pLoopCity->getEspionageHealthCounter();
+													//Adjustments
+													iHealthLevel += iFeatureHealthAdjust - iBadHealthAdjust;
+													//Happy Adjust (only +happy buildings)
+													iHappinessLevel += std::max(0, pLoopCity->getAdditionalHappinessByBuilding(pLoopCity->getProductionBuilding()));
+
+													if (iHealthLevel < iHappinessLevel)
+													{
+														//Health level is already below happy
+														CvWString szHealthLimitTempBuffer;
+														szHealthLimitTempBuffer.Format(L", (%c&lt;%c)", gDLL->getSymbolID(HEALTHY_CHAR), gDLL->getSymbolID(HAPPY_CHAR));
+														szFeatureEffects.append(szHealthLimitTempBuffer);
+													}
+													else if (iHealthLevel - iBad + iGood < iHappinessLevel)
+													{
+														CvWString szHealthLimitTempBuffer;
+														szHealthLimitTempBuffer.Format(L", %c&lt;%c", gDLL->getSymbolID(HEALTHY_CHAR), gDLL->getSymbolID(HAPPY_CHAR));
+														szFeatureEffects.append(szHealthLimitTempBuffer);
+													}
+												}
+												//Fuyu END
+
 												szBuffer.append(NEWLINE);
 												szBuffer.append(gDLL->getText("TXT_KEY_ACTION_CHANGE_IN_CITY", szFeatureEffects.getCString(), pLoopCity->getNameKey()));
 											}

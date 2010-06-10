@@ -3725,10 +3725,20 @@ bool CvUnit::canHeal(const CvPlot* pPlot) const
 		return false;
 	}
 
+	// Mongoose FeatureDamageFix BEGIN
+	/* original code
 	if (healRate(pPlot) <= 0)
 	{
 		return false;
 	}
+	*/
+	if (healTurns(pPlot) == MAX_INT)
+	{
+		return false;
+	}
+	// Mongoose FeatureDamageFix END
+
+
 
 	return true;
 }
@@ -3862,6 +3872,14 @@ int CvUnit::healTurns(const CvPlot* pPlot) const
 	}
 
 	iHeal = healRate(pPlot);
+
+	// Mongoose FeatureDamageFix BEGIN
+	FeatureTypes eFeature = plot()->getFeatureType();
+	if (NO_FEATURE != eFeature)
+	{
+		iHeal -= GC.getFeatureInfo(eFeature).getTurnDamage();
+	}
+	// Mongoose FeatureDamageFix END
 
 	if (iHeal > 0)
 	{
