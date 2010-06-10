@@ -73,7 +73,7 @@ public:
 /************************************************************************************************/
 
 	bool AI_isWarPossible() const;
-	bool AI_isLandTarget(TeamTypes eTeam) const;
+	bool AI_isLandTarget(TeamTypes eTeam, bool bNeighboursOnly = false) const; //Fuyu land target diplo fix
 	bool AI_isAllyLandTarget(TeamTypes eTeam) const;
 	bool AI_shareWar(TeamTypes eTeam) const;
 

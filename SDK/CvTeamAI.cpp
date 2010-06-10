@@ -873,7 +873,7 @@ bool CvTeamAI::AI_isWarPossible() const
 }
 
 
-bool CvTeamAI::AI_isLandTarget(TeamTypes eTeam) const
+bool CvTeamAI::AI_isLandTarget(TeamTypes eTeam, bool bNeighboursOnly) const
 {
 	if (!AI_hasCitiesInPrimaryArea(eTeam))
 	{
@@ -886,18 +886,23 @@ bool CvTeamAI::AI_isLandTarget(TeamTypes eTeam) const
 /* War Strategy AI                                                                              */
 /************************************************************************************************/
 	// If shared capital area is largely unclaimed, then we can reach over land
-	for( int iPlayer = 0; iPlayer < MAX_CIV_PLAYERS; iPlayer++ )
+
+	//Fuyu: No diplo hit from starting on same continent
+	if (!bNeighboursOnly)
 	{
-		if( GET_PLAYER((PlayerTypes)iPlayer).getTeam() == getID() && GET_PLAYER((PlayerTypes)iPlayer).getNumCities() > 0 )
+		for( int iPlayer = 0; iPlayer < MAX_CIV_PLAYERS; iPlayer++ )
 		{
-			CvCity* pCapital = GET_PLAYER((PlayerTypes)iPlayer).getCapitalCity();
-			if( pCapital != NULL )
+			if( GET_PLAYER((PlayerTypes)iPlayer).getTeam() == getID() && GET_PLAYER((PlayerTypes)iPlayer).getNumCities() > 0 )
 			{
-				if( GET_TEAM(eTeam).AI_isPrimaryArea(pCapital->area()) )
+				CvCity* pCapital = GET_PLAYER((PlayerTypes)iPlayer).getCapitalCity();
+				if( pCapital != NULL )
 				{
-					if( 2*pCapital->area()->getNumOwnedTiles() < pCapital->area()->getNumTiles() )
+					if( GET_TEAM(eTeam).AI_isPrimaryArea(pCapital->area()) )
 					{
-						return true;
+						if( 2*pCapital->area()->getNumOwnedTiles() < pCapital->area()->getNumTiles() )
+						{
+							return true;
+						}
 					}
 				}
 			}
