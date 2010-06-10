@@ -1,4 +1,4 @@
-Better BUG AI 1.01b (2010-05-26)
+Better BUG AI 1.01b (2010-06-10)
 --------------------------
 http://forums.civfanatics.com/showthread.php?t=354019
 
@@ -6,11 +6,11 @@ http://forums.civfanatics.com/showthread.php?t=354019
 Components:
 Better BTS AI 1.01b r576
 * AI Logging
-BULL 1.2 r187
+BULL 1.2+ r200
 * Fractional Trade Routes
 * New Sentry Actions
 * City Governours Build Workers
-BUG 4.4 r2232
+BUG 4.4 r2236
 
  Unofficial Patch r30: Total production modifiers are not allowed to be negative, 
   this UP release would change this to allow down to -50. This will never be part of Better BUG AI.
@@ -22,6 +22,8 @@ my own changes:
      from power.
     * Worker AI: hopefully there is now less improvement oscillation between forest preserve and lumbermills,
      and less hamlets/villages/towns get turned to workshops.
+    * Considering currently constructed building and checking Health level against happy level
+	 for Health Effects from Removing Features.
     * xml changes:
           o CIV4UnitInfos.xml: changed iPower for Catapult(5->6), Cannon(12->14), Artillery(18->19) and
            MobileArtillery(26->28) because they seem to better account for the actual military strength of

@@ -394,8 +394,8 @@ public:
 
 // BUG - Actual Effects - start
 	int getAdditionalAngryPopuplation(int iGood, int iBad) const;
-	int getAdditionalSpoiledFood(int iGood, int iBad) const;
-	int getAdditionalStarvation(int iSpoiledFood) const;
+	int getAdditionalSpoiledFood(int iGood, int iBad, int iHealthAdjust = 0) const;
+	int getAdditionalStarvation(int iSpoiledFood, int iFoodAdjust = 0) const;
 // BUG - Actual Effects - end
 
 	int getBuildingGoodHealth() const;																		// Exposed to Python
