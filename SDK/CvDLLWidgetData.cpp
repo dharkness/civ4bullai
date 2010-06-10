@@ -2943,7 +2943,7 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct, CvWS
 												//Fuyu Negative Health Adjust
 												//if both clearing the feature at hand and the building being contructed in the city cause health reduction, consider both effects
 												int iBadHealthAdjust = 0;
-												if (iBad > iGood)
+												if (iBad > iGood && pLoopCity->getProductionBuilding() != NO_BUILDING)
 												{
 													iBadHealthAdjust = -std::min(0, pLoopCity->getAdditionalHealthByBuilding(pLoopCity->getProductionBuilding()));
 												}
@@ -2976,7 +2976,10 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct, CvWS
 													//Adjustments
 													iHealthLevel += iFeatureHealthAdjust - iBadHealthAdjust;
 													//Happy Adjust (only +happy buildings)
-													iHappinessLevel += std::max(0, pLoopCity->getAdditionalHappinessByBuilding(pLoopCity->getProductionBuilding()));
+													if (pLoopCity->getProductionBuilding() != NO_BUILDING)
+													{
+														iHappinessLevel += std::max(0, pLoopCity->getAdditionalHappinessByBuilding(pLoopCity->getProductionBuilding()));
+													}
 
 													if (iHealthLevel < iHappinessLevel)
 													{
