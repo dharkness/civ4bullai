@@ -18,7 +18,7 @@
 					type="boolean" default="True"/>
 			
 			<list   id="Draw_Method" key="Draw Method" 
-					type="int" default="1" listType="string" 
+					type="int" default="0" listType="string" 
 					values="PLE|VAN|NEW BUG" 
 					get="getDrawMethod" dirtyBit="PlotListButtons"/>
 
