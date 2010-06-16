@@ -2691,7 +2691,7 @@ bool CvUnit::canMoveInto(const CvPlot* pPlot, bool bAttack, bool bDeclareWar, bo
 			if (bAttack)
 			{
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      02/21/10                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      06/14/10                                jdog5000      */
 /*                                                                                              */
 /* Efficiency                                                                                   */
 /************************************************************************************************/
@@ -2706,8 +2706,21 @@ bool CvUnit::canMoveInto(const CvPlot* pPlot, bool bAttack, bool bDeclareWar, bo
 					}
 				}
 */				// modified
-				if (!pPlot->hasDefender(true, NO_PLAYER, getOwnerINLINE(), this, true))
-						return false;
+				if( combatLimit() < 100 )
+				{
+					CvUnit* pDefender = pPlot->getBestDefender(NO_PLAYER, getOwnerINLINE(), this, true);
+					if (NULL != pDefender)
+					{
+						if (!canAttack(*pDefender))
+						{
+							return false;
+						}
+					}
+				}
+				else if (!pPlot->hasDefender(true, NO_PLAYER, getOwnerINLINE(), this, true))
+				{
+					return false;
+				}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
@@ -3332,10 +3345,10 @@ bool CvUnit::canLoadUnit(const CvUnit* pUnit, const CvPlot* pPlot) const
 /* Bugfix                                                                                       */
 /************************************************************************************************/
 	// From Mongoose SDK
-	/*if (isCargo())
+	if (isCargo() && getTransportUnit() == pUnit)
 	{
 		return false;
-	}*/
+	}
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */
 /************************************************************************************************/
@@ -3725,7 +3738,12 @@ bool CvUnit::canHeal(const CvPlot* pPlot) const
 		return false;
 	}
 
-	// Mongoose FeatureDamageFix BEGIN
+/*************************************************************************************************/
+/* UNOFFICIAL_PATCH                       06/10/10                           LunarMongoose       */
+/*                                                                                               */
+/* Bugfix                                                                                        */
+/*************************************************************************************************/
+	// Mongoose FeatureDamageFix
 	/* original code
 	if (healRate(pPlot) <= 0)
 	{
@@ -3736,9 +3754,9 @@ bool CvUnit::canHeal(const CvPlot* pPlot) const
 	{
 		return false;
 	}
-	// Mongoose FeatureDamageFix END
-
-
+/*************************************************************************************************/
+/* UNOFFICIAL_PATCH                         END                                                  */
+/*************************************************************************************************/
 
 	return true;
 }
@@ -3873,13 +3891,20 @@ int CvUnit::healTurns(const CvPlot* pPlot) const
 
 	iHeal = healRate(pPlot);
 
-	// Mongoose FeatureDamageFix BEGIN
-	FeatureTypes eFeature = plot()->getFeatureType();
-	if (NO_FEATURE != eFeature)
+/*************************************************************************************************/
+/* UNOFFICIAL_PATCH                       06/02/10                           LunarMongoose       */
+/*                                                                                               */
+/* Bugfix                                                                                        */
+/*************************************************************************************************/
+	// Mongoose FeatureDamageFix
+	FeatureTypes eFeature = pPlot->getFeatureType();
+	if (eFeature != NO_FEATURE)
 	{
 		iHeal -= GC.getFeatureInfo(eFeature).getTurnDamage();
 	}
-	// Mongoose FeatureDamageFix END
+/*************************************************************************************************/
+/* UNOFFICIAL_PATCH                         END                                                  */
+/*************************************************************************************************/
 
 	if (iHeal > 0)
 	{
@@ -4751,6 +4776,13 @@ bool CvUnit::bombard()
 
 bool CvUnit::canPillage(const CvPlot* pPlot) const
 {
+	// Mongoose NoPillagingFromInsideTransportFix BEGIN
+	if (isCargo())
+	{
+		return false;
+	}
+	// Mongoose NoPillagingFromInsideTransportFix END
+
 	if (!(m_pUnitInfo->isPillage()))
 	{
 		return false;

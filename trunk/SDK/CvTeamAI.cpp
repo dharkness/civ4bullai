@@ -872,23 +872,22 @@ bool CvTeamAI::AI_isWarPossible() const
 	return false;
 }
 
-
-bool CvTeamAI::AI_isLandTarget(TeamTypes eTeam, bool bNeighboursOnly) const
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      06/12/10                         Fuyu & jdog5000      */
+/*                                                                                              */
+/* War Strategy AI                                                                              */
+/************************************************************************************************/
+bool CvTeamAI::AI_isLandTarget(TeamTypes eTeam, bool bNeighborsOnly) const
 {
 	if (!AI_hasCitiesInPrimaryArea(eTeam))
 	{
 		return false;
 	}
 
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      05/21/10                                jdog5000      */
-/*                                                                                              */
-/* War Strategy AI                                                                              */
-/************************************************************************************************/
 	// If shared capital area is largely unclaimed, then we can reach over land
+	int iModifier = 100;
 
-	//Fuyu: No diplo hit from starting on same continent
-	if (!bNeighboursOnly)
+	if( !bNeighborsOnly )
 	{
 		for( int iPlayer = 0; iPlayer < MAX_CIV_PLAYERS; iPlayer++ )
 		{
@@ -899,23 +898,21 @@ bool CvTeamAI::AI_isLandTarget(TeamTypes eTeam, bool bNeighboursOnly) const
 				{
 					if( GET_TEAM(eTeam).AI_isPrimaryArea(pCapital->area()) )
 					{
-						if( 2*pCapital->area()->getNumOwnedTiles() < pCapital->area()->getNumTiles() )
-						{
-							return true;
-						}
+						iModifier *= pCapital->area()->getNumOwnedTiles();
+						iModifier /= pCapital->area()->getNumTiles();
 					}
 				}
 			}
 		}
 	}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 
-	if (AI_calculateAdjacentLandPlots(eTeam) < 8)
+	if (AI_calculateAdjacentLandPlots(eTeam) < range((8 * (iModifier - 40))/40, 0, 8))
 	{
 		return false;
 	}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	return true;
 }
@@ -2029,10 +2026,18 @@ DenialTypes CvTeamAI::AI_surrenderTrade(TeamTypes eTeam, int iPowerMultiplier) c
 		}
 		else
 		{
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      06/12/10                                jdog5000      */
+/*                                                                                              */
+/* Diplomacy AI                                                                                 */
+/************************************************************************************************/
 			if (!GET_TEAM(eTeam).AI_isLandTarget(getID()))
 			{
 				iMasterPower /= 2;
 			}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 		}
 
 
@@ -4438,7 +4443,7 @@ void CvTeamAI::AI_doWar()
 							}
 						}
 
-						if ( (bAreaValid && iEnemyPowerPercent < 140) || (!bShareValid && iEnemyPowerPercent < 110) || (GET_TEAM((TeamTypes)iI).AI_getLowestVictoryCountdown() >= 0) )
+						if ( (bAreaValid && (iEnemyPowerPercent < 140)) || (!bShareValid && (iEnemyPowerPercent < 110)) || (GET_TEAM((TeamTypes)iI).AI_getLowestVictoryCountdown() >= 0) )
 						{
 							if( gTeamLogLevel >= 1 )
 							{
@@ -4785,7 +4790,7 @@ void CvTeamAI::AI_doWar()
 
 														if( iValue > 0 && gTeamLogLevel >= 2 )
 														{
-															logBBAI("      Team %d (%S) considering starting TOTAL war with team %d with value %d on pass %d with %d adjacent plots", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), iI, iValue, iPass, AI_calculateAdjacentLandPlots((TeamTypes)iI) );
+															logBBAI("      Team %d (%S) considering starting TOTAL warplan with team %d with value %d on pass %d with %d adjacent plots", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), iI, iValue, iPass, AI_calculateAdjacentLandPlots((TeamTypes)iI) );
 														}
 
 														if (iValue > iBestValue)
@@ -4807,7 +4812,7 @@ void CvTeamAI::AI_doWar()
 					{
 						if( gTeamLogLevel >= 1 )
 						{
-							logBBAI("    Team %d (%S) starting TOTAL war preparations against team %d on pass %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eBestTeam, iPass );
+							logBBAI("    Team %d (%S) starting TOTAL warplan preparations against team %d on pass %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eBestTeam, iPass );
 						}
 
 						AI_setWarPlan(eBestTeam, (iDaggerCount > 0) ? WARPLAN_TOTAL : WARPLAN_PREPARING_TOTAL);
@@ -4857,7 +4862,7 @@ void CvTeamAI::AI_doWar()
 
 												if( iValue > 0 && gTeamLogLevel >= 2 )
 												{
-													logBBAI("      Team %d (%S) considering starting LIMITED war with team %d with value %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), iI, iValue );
+													logBBAI("      Team %d (%S) considering starting LIMITED warplan with team %d with value %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), iI, iValue );
 												}
 
 												if (iValue > iBestValue)
@@ -4879,7 +4884,7 @@ void CvTeamAI::AI_doWar()
 				{
 					if( gTeamLogLevel >= 1 )
 					{
-						logBBAI("    Team %d (%S) starting LIMITED war preparations against team %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eBestTeam );
+						logBBAI("    Team %d (%S) starting LIMITED warplan preparations against team %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eBestTeam );
 					}
 
 					AI_setWarPlan(eBestTeam, (iDaggerCount > 0) ? WARPLAN_LIMITED : WARPLAN_PREPARING_LIMITED);
@@ -4939,7 +4944,7 @@ void CvTeamAI::AI_doWar()
 
 													if( iValue > 0 && gTeamLogLevel >= 2 )
 													{
-														logBBAI("      Team %d (%S) considering starting DOGPILE war with team %d with value %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), iI, iValue );
+														logBBAI("      Team %d (%S) considering starting DOGPILE warplan with team %d with value %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), iI, iValue );
 													}
 
 													if (iValue > iBestValue)
@@ -4962,7 +4967,7 @@ void CvTeamAI::AI_doWar()
 				{
 					if( gTeamLogLevel >= 1 )
 					{
-						logBBAI("  Team %d (%S) starting DOGPILE war preparations with team %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eBestTeam );
+						logBBAI("  Team %d (%S) starting DOGPILE warplan preparations with team %d", getID(), GET_PLAYER(getLeaderID()).getCivilizationDescription(0), eBestTeam );
 					}
 					AI_setWarPlan(eBestTeam, WARPLAN_DOGPILE);
 				}

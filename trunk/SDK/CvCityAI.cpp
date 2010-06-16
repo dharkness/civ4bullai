@@ -1238,8 +1238,7 @@ void CvCityAI::AI_chooseProduction()
 				}
 			}
 
-			//Fuyu: anything bigger than 0 is ok
-			if( iExistingWorkers == 0 && AI_totalBestBuildValue(area()) > 0 )
+			if( iExistingWorkers == 0 && AI_totalBestBuildValue(area()) > 0 /*Fuyu: anything bigger than 0 is ok*/ )
 			{
 				if (!bChooseWorker && AI_chooseUnit(UNITAI_WORKER))
 				{
@@ -1727,27 +1726,6 @@ void CvCityAI::AI_chooseProduction()
 		}
 	}
 
-	//Fuyu: build more workers
-	if( !(bLandWar && iWarSuccessRatio < -30) && !bDanger )
-	{
-		/* financial trouble: 3/4; */
-		if (bFinancialTrouble && (iExistingWorkers < ((3*iNeededWorkers) + 2)/4))
-		{
-			if ((AI_getWorkersNeeded() > 0) && (AI_getWorkersHave() == 0))
-			{
-				if( getPopulation() > 1 || (GC.getGameINLINE().getGameTurn() - getGameTurnAcquired() > (15 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent())/100) )
-				{
-					if (!bChooseWorker && AI_chooseUnit(UNITAI_WORKER))
-					{
-						if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker 6a", getName().GetCString());
-						return;
-					}
-					bChooseWorker = true;
-				}
-			}
-		}
-	}
-	
 	if( !(bDefenseWar && iWarSuccessRatio < -50) )
 	{
 		if ((iAreaBestFoundValue > iMinFoundValue) || (iWaterAreaBestFoundValue > iMinFoundValue))
@@ -1779,6 +1757,28 @@ void CvCityAI::AI_chooseProduction()
 					if (AI_chooseUnit(UNITAI_SETTLER_SEA))
 					{
 						if( gCityLogLevel >= 2 ) logBBAI("      City %S uses main settler sea", getName().GetCString());
+/********************************************************************************/
+/* 	Build more workers #1.1										Fuyu		    */
+/********************************************************************************/
+						/* financial trouble: 2/3; */
+						if (!bDanger && bFinancialTrouble && (iExistingWorkers < ((2*iNeededWorkers) + 2)/3))
+						{
+							if ((AI_getWorkersNeeded() > 0) && (AI_getWorkersHave() == 0))
+							{
+								if( getPopulation() > 1 || (GC.getGameINLINE().getGameTurn() - getGameTurnAcquired() > (15 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent())/100) )
+								{
+									if (!bChooseWorker && AI_chooseUnit(UNITAI_WORKER))
+									{
+										if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker 6a", getName().GetCString());
+										return;
+									}
+									bChooseWorker = true;
+								}
+							}
+						}
+/********************************************************************************/
+/* 	Build more workers #1.1											END		    */
+/********************************************************************************/
 						return;
 					}
 				}
@@ -1791,6 +1791,28 @@ void CvCityAI::AI_chooseProduction()
 					if (AI_chooseUnit(UNITAI_SETTLE, bLandWar ? 50 : -1))
 					{
 						if( gCityLogLevel >= 2 ) logBBAI("      City %S uses build settler 1", getName().GetCString());
+/********************************************************************************/
+/* 	Build more workers #1.2										Fuyu		    */
+/********************************************************************************/
+						/* financial trouble: 2/3; */
+						if (!bDanger && bFinancialTrouble && (iExistingWorkers < ((2*iNeededWorkers) + 2)/3))
+						{
+							if ((AI_getWorkersNeeded() > 0) && (AI_getWorkersHave() == 0))
+							{
+								if( getPopulation() > 1 || (GC.getGameINLINE().getGameTurn() - getGameTurnAcquired() > (15 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent())/100) )
+								{
+									if (!bChooseWorker && AI_chooseUnit(UNITAI_WORKER))
+									{
+										if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker 6a", getName().GetCString());
+										return;
+									}
+									bChooseWorker = true;
+								}
+							}
+						}
+/********************************************************************************/
+/* 	Build more workers #1.2											END		    */
+/********************************************************************************/	
 
 						if (kPlayer.getNumMilitaryUnits() <= kPlayer.getNumCities() + 1)
 						{
@@ -1808,13 +1830,16 @@ void CvCityAI::AI_chooseProduction()
 		}
 	}
 
-	//Fuyu: build more workers, #2
-	if( !(bLandWar && iWarSuccessRatio < -30) && !bDanger )
+/********************************************************************************/
+/* 	Build more workers #2										Fuyu		    */
+/********************************************************************************/
+	if( !(bLandWar && iWarSuccessRatio < 0) && !bDanger )
 	{
-		/* financial trouble: 4/5; will grow above happy cap: 3/4; else 2/3 */
-		if ( (bFinancialTrouble && (iExistingWorkers < (((8*iNeededWorkers) + 5)/10)))
-			|| (iExistingWorkers < ((4*iNeededWorkers) + 3)/6)
-			|| ((iExistingWorkers < ((3*iNeededWorkers) + 2)/4) && (((happyLevel() - unhappyLevel() + getEspionageHappinessCounter()) == 0) && (foodDifference(false) > 0))))
+		/* financial trouble: ---; will grow above happy cap: 2/3; both: 3/4; else 4/7 */
+		if ( (iExistingWorkers < ((4*iNeededWorkers) + 6)/7)
+			/* || (bFinancialTrouble && (iExistingWorkers < (((2*iNeededWorkers) + 1)/3))) */
+			|| (((iExistingWorkers < ((2*iNeededWorkers) + 2)/3) || (bFinancialTrouble && (iExistingWorkers < (((3*iNeededWorkers) + 3)/4))))
+				&& (((happyLevel() - unhappyLevel()) <= 0) && (foodDifference(false) > 0 || (foodDifference(false) == 0 && happyLevel() - unhappyLevel() < 0)))) )
 		{
 			if ((AI_getWorkersNeeded() > 0) && (AI_getWorkersHave() == 0))
 			{
@@ -1830,6 +1855,9 @@ void CvCityAI::AI_chooseProduction()
 			}
 		}
 	}
+/********************************************************************************/
+/* 	Build more workers #2											END		    */
+/********************************************************************************/
 
 
 	//this is needed to build the cathedrals quickly
@@ -1938,7 +1966,7 @@ void CvCityAI::AI_chooseProduction()
 	}
     
 	//essential economic builds
-	if (AI_chooseBuilding(iEconomyFlags, 10, 25 + iWarTroubleThreshold, (bLandWar ? 50 : -1)))
+	if (AI_chooseBuilding(iEconomyFlags, 10, 25 + iWarTroubleThreshold, (bLandWar ? 40 : -1)))
 	{
 		if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose iEconomyFlags 1", getName().GetCString());
 		return;
@@ -2139,7 +2167,7 @@ void CvCityAI::AI_chooseProduction()
 						
 					if ((iAttackSea < ((1 + 2 * iTransports) / iDivisor)))
 					{
-						if (AI_chooseUnit(UNITAI_ATTACK_SEA, bFinancialTrouble ? 20 : 50))
+						if (AI_chooseUnit(UNITAI_ATTACK_SEA, (iUnitCostPercentage < iMaxUnitSpending) ? 50 : 20))
 						{
 							AI_chooseBuilding(BUILDINGFOCUS_DOMAINSEA, 12);
 							return;
@@ -2149,7 +2177,7 @@ void CvCityAI::AI_chooseProduction()
 				
 				if (iUnitsToTransport > iTransportCapacity)
 				{
-					if ((iUnitCostPercentage < iMaxUnitSpending + 5) || (2*iUnitsToTransport > 3*iTransportCapacity))
+					if ((iUnitCostPercentage < iMaxUnitSpending) || (iUnitsToTransport > 2*iTransportCapacity))
 					{
 						if (AI_chooseUnit(UNITAI_ASSAULT_SEA))
 						{
@@ -3545,13 +3573,23 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 	int iBaseHealthLevel = goodHealth() - badHealth() + getEspionageHealthCounter();
 	int iBaseFoodDifference = getYieldRate(YIELD_FOOD) - getPopulation()*GC.getFOOD_CONSUMPTION_PER_POPULATION() - std::max(0,-iBaseHealthLevel);
 	int iTempHappinessLevel,iTempHealthLevel;
+
+	//Temporary unhappiness that will mostly not be ignored
+	int iTemporaryUnhappiness = 0;
+	int iAngerPercent = 0;
+	iAngerPercent += getHurryPercentAnger();
+	iAngerPercent += getConscriptPercentAnger();
+	iAngerPercent += getDefyResolutionPercentAnger();
+	iAngerPercent += getWarWearinessPercentAnger();
+	iTemporaryUnhappiness += ((iAngerPercent * (getPopulation())) / GC.getPERCENT_ANGER_DIVISOR());
+
 	int iBadHealthFromBuilding = std::max(0,(-iBuildingActualHealth));
 	int iUnhealthyPopulationFromBuilding = std::min(0,(-iBaseHealthLevel)) + iBadHealthFromBuilding;
 //	int iTotalHealth = iBaseHealthLevel + iBuildingActualHealth;
 	bool bShrinksWithPower = false;
 //Allow a bit of shrinking: Population is expendable if angry, working a bad tile, or running a not-so-good specialist
 	int iAllowedShrinkRate = GC.getFOOD_CONSUMPTION_PER_POPULATION() * (0
-		+ std::max(0,-iBaseHappinessLevel)
+		+ std::max(0,-iBaseHappinessLevel-iTemporaryUnhappiness)
 		+ std::min(1, std::max(0,(getWorkingPopulation() - AI_countGoodTiles(true, false, 50))))
 		+ std::max(0,(visiblePopulation() - AI_countGoodSpecialists(false))));
 	if (iUnhealthyPopulationFromBuilding > 0 && (iBaseFoodDifference + iAllowedShrinkRate < iUnhealthyPopulationFromBuilding ))
@@ -10144,13 +10182,17 @@ int CvCityAI::AI_buildUnitProb()
 {
 	int iProb;
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      09/18/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      05/29/10                                jdog5000      */
 /*                                                                                              */
 /* City AI, Barbarian AI                                                                        */
 /************************************************************************************************/
 	iProb = (GC.getLeaderHeadInfo(getPersonalityType()).getBuildUnitProb() + AI_experienceWeight());
 
 	if (!isBarbarian() && GET_PLAYER(getOwnerINLINE()).AI_isFinancialTrouble())
+	{
+		iProb /= 2;
+	}
+	else if( GET_TEAM(getTeam()).getHasMetCivCount(false) == 0 )
 	{
 		iProb /= 2;
 	}

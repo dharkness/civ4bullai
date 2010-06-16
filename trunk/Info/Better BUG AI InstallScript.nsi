@@ -13,8 +13,8 @@
 ;These are the variables you need to define for your mod
 
 !define NAME "Better BUG AI" ;Full Name of Mod
-!define VERSION "1.01b (2010-06-10)" ;Mod Version Number - reflecting Better BTS AI Version
-!define VERSION_VERBOSE "* Better BTS AI 1.01b r576$\n* BULL 1.2+ r200$\n* BUG 4.4 r2236"
+!define VERSION "1.01c (2010-06-16)" ;Mod Version Number - reflecting Better BTS AI Version
+!define VERSION_VERBOSE "* Better BTS AI 1.01c r579$\n* BULL 1.2+ r200$\n* BUG 4.4 r2236"
 
 !define MOD_LOC "Better BUG AI" ;Name of Mod Folder
 !define SHORT_NAME "Better BUG AI" ;Shorthand/nick of your mod
@@ -318,16 +318,16 @@ Function setWelcomePageText
 	Call findINSTDIR1
 
 	${If} $CurrentVersion == "true" ;BtS found and everything apears normal
-		StrCpy $WelcomePageText "This wizard will guide you through the installation of \
-		${NAME} (${VERSION}),  $\n$\n\
+		StrCpy $WelcomePageText "This wizard will guide you through the installation of $\n\
+		${NAME} ${VERSION},  $\n$\n\
 		consisting of: $\n\
 		${VERSION_VERBOSE} $\n$\n\
 		Please ensure that Civilization 4 is not running while installing, \
 		otherwise the installation may not work as expected.  $\n$\n\
 		Click $\"Next$\" to continue."
 	${ElseIf} $CurrentVersion == "${UNKNOWN}" ;BtS directory found, but setup could not figure out the version
-		StrCpy $WelcomePageText "This wizard will guide you through the installation of \
-		${NAME} (${VERSION}).  $\n$\n\
+		StrCpy $WelcomePageText "This wizard will guide you through the installation of $\n\
+		${NAME} ${VERSION}.  $\n$\n\
 		Autodetection found a Civilization IV registry, \
 		but could not find a Global Defines file in the  ${BTS_SHORT} directory.  \
 		Setup could not verify the ${BTS_SHORT} version or the install path.  \
@@ -339,8 +339,8 @@ Function setWelcomePageText
 		The patch is also simple to find by using Google, or other internet search engine.  $\n$\n\
 		Click $\"Next$\" to continue"
 	${ElseIf} $CurrentVersion == "${NULL}" ;No BtS installation found on the computer
-		StrCpy $WelcomePageText "This wizard will guide you through the installation of \
-		${NAME} (${VERSION}).  $\n$\n\
+		StrCpy $WelcomePageText "This wizard will guide you through the installation of $\n\
+		${NAME} ${VERSION}.  $\n$\n\
 		Autodetection has completely failed to locate a valid Civilization 4 registry; \
 		so you will need to manually set some items that the installer would normally handle automatically.  \
 		${NAME} requires that ${BTS} be updated to version ${BTS_VERSION}, \

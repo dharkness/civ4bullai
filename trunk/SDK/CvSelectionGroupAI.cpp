@@ -341,7 +341,7 @@ bool CvSelectionGroupAI::AI_update()
 /* Unit AI                                                                                      */
 /************************************************************************************************/
 			// AI should never put units to sleep, how does this ever happen?
-			FAssert( getHeadUnit()->isCargo() || getActivityType() != ACTIVITY_SLEEP );
+			//FAssert( getHeadUnit()->isCargo() || getActivityType() != ACTIVITY_SLEEP );
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/

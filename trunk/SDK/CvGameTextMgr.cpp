@@ -5389,7 +5389,12 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
 			szString.append(gDLL->getText("TXT_KEY_PLOT_DAMAGE", iDamage));
 			szString.append(CvWString::format( ENDCOLR));
 		}
-		// Mongoose FeatureDamageFix BEGIN
+/*************************************************************************************************/
+/* UNOFFICIAL_PATCH                       06/02/10                           LunarMongoose       */
+/*                                                                                               */
+/* User interface                                                                                */
+/*************************************************************************************************/
+		// Mongoose FeatureDamageFix
 		else if (iDamage < 0)
 		{
 			szString.append(CvWString::format(SETCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT")));
@@ -5397,8 +5402,9 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
 			szString.append(gDLL->getText("TXT_KEY_PLOT_DAMAGE", iDamage));
 			szString.append(CvWString::format( ENDCOLR));
 		}
-		// Mongoose FeatureDamageFix END
-
+/*************************************************************************************************/
+/* UNOFFICIAL_PATCH                         END                                                  */
+/*************************************************************************************************/
 
 	}
 }
@@ -10882,10 +10888,13 @@ void CvGameTextMgr::buildBuildingRequiresString(CvWStringBuffer& szBuffer, Build
 
 		for (int iI = 0; iI < GC.getNumBuildingClassInfos(); ++iI)
 		{
-// BUG - Unofficial Patch - start
+/*************************************************************************************************/
+/* UNOFFICIAL_PATCH                       06/10/10                           EmperorFool         */
+/*                                                                                               */
+/* Bugfix                                                                                        */
+/*************************************************************************************************/
 			// EF: show "Requires Hospital" if "Requires Hospital (x/5)" requirement has been met
 			bool bShowedPrereq = false;
-
 			if (ePlayer == NO_PLAYER && kBuilding.getPrereqNumOfBuildingClass((BuildingClassTypes)iI) > 0)
 			{
 				eLoopBuilding = (BuildingTypes)GC.getBuildingClassInfo((BuildingClassTypes)iI).getDefaultBuildingIndex();
@@ -10916,8 +10925,8 @@ void CvGameTextMgr::buildBuildingRequiresString(CvWStringBuffer& szBuffer, Build
 					}
 				}
 			}
+			
 			if (!bShowedPrereq && kBuilding.isBuildingClassNeededInCity(iI))
-// BUG - Unofficial Patch - end
 			{
 				if (NO_PLAYER != ePlayer)
 				{
@@ -10937,6 +10946,9 @@ void CvGameTextMgr::buildBuildingRequiresString(CvWStringBuffer& szBuffer, Build
 					}
 				}
 			}
+/*************************************************************************************************/
+/* UNOFFICIAL_PATCH                         END                                                  */
+/*************************************************************************************************/
 		}
 
 		if (kBuilding.isStateReligion())
@@ -14590,7 +14602,12 @@ void CvGameTextMgr::setFeatureHelp(CvWStringBuffer &szBuffer, FeatureTypes eFeat
 		szBuffer.append(gDLL->getText("TXT_KEY_TERRAIN_DEFENSE_MODIFIER", feature.getDefenseModifier()));
 	}
 
-	// Mongoose FeatureDamageFix BEGIN
+/*************************************************************************************************/
+/* UNOFFICIAL_PATCH                       06/02/10                           LunarMongoose       */
+/*                                                                                               */
+/* Bugfix                                                                                        */
+/*************************************************************************************************/
+	// Mongoose FeatureDamageFix
 	if (feature.getTurnDamage() > 0)
 	{
 		szBuffer.append(gDLL->getText("TXT_KEY_TERRAIN_TURN_DAMAGE", feature.getTurnDamage()));
@@ -14599,7 +14616,10 @@ void CvGameTextMgr::setFeatureHelp(CvWStringBuffer &szBuffer, FeatureTypes eFeat
 	{
 		szBuffer.append(gDLL->getText("TXT_KEY_TERRAIN_TURN_HEALING", -feature.getTurnDamage()));
 	}
-	// Mongoose FeatureDamageFix END
+/*************************************************************************************************/
+/* UNOFFICIAL_PATCH                         END                                                  */
+/*************************************************************************************************/
+
 
 	if (feature.isAddsFreshWater())
 	{
@@ -18815,13 +18835,19 @@ void CvGameTextMgr::assignFontIds(int iFirstSymbolCode, int iPadAmount)
 
 	// set bonus symbols
 	int bonusBaseID = iCurSymbolID;
-
-	// Mongoose GameFontFix BEGIN
-	/*
+/*************************************************************************************************/
+/* UNOFFICIAL_PATCH                       06/02/10                           LunarMongoose       */
+/*                                                                                               */
+/* Bugfix                                                                                        */
+/*************************************************************************************************/
+/* original bts code
 	++iCurSymbolID;
-	*/
-	// Mongoose GameFontFix END
-
+*/
+			// Mongoose GameFontFix
+			// removes an erroneous extra increment command that was breaking GameFont.tga files when using exactly 49 or 74 resource types in a mod
+/*************************************************************************************************/
+/* UNOFFICIAL_PATCH                         END                                                  */
+/*************************************************************************************************/
 	for (int i = 0; i < GC.getNumBonusInfos(); i++)
 	{
 		int bonusID = bonusBaseID + GC.getBonusInfo((BonusTypes) i).getArtInfo()->getFontButtonIndex();

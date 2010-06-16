@@ -73,7 +73,15 @@ public:
 /************************************************************************************************/
 
 	bool AI_isWarPossible() const;
-	bool AI_isLandTarget(TeamTypes eTeam, bool bNeighboursOnly = false) const; //Fuyu land target diplo fix
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      06/12/10                         Fuyu & jdog5000      */
+/*                                                                                              */
+/* War Strategy AI                                                                              */
+/************************************************************************************************/
+	bool AI_isLandTarget(TeamTypes eTeam, bool bNeighborsOnly = false) const;
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 	bool AI_isAllyLandTarget(TeamTypes eTeam) const;
 	bool AI_shareWar(TeamTypes eTeam) const;
 

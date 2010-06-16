@@ -31,7 +31,7 @@
 				ExceptionHandling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="FALSE"
+				BufferSecurityCheck="TRUE"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
@@ -233,7 +233,7 @@
 				ProgramDataBaseFileName="$(IntDir)/vc70.pdb"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="FALSE"
-				DebugInformationFormat="4"
+				DebugInformationFormat="2"
 				CallingConvention="0"
 				ShowIncludes="FALSE"/>
 			<Tool
@@ -308,6 +308,73 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="boost_python-vc71-mt-1_32.lib  winmm.lib"
 				OutputFile="Assets/CvGameCoreDLL.dll"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="Python24\libs;&quot;boost-1.32.0\libs\&quot;"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)/CvGameCoreDLL.pdb"
+				SubSystem="2"
+				LargeAddressAware="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				ImportLibrary="$(OutDir)/CvGameCoreDLL.lib"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Final 50Civ Release|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				GlobalOptimizations="FALSE"
+				InlineFunctionExpansion="0"
+				EnableIntrinsicFunctions="FALSE"
+				FavorSizeOrSpeed="0"
+				OmitFramePointers="FALSE"
+				OptimizeForProcessor="3"
+				AdditionalIncludeDirectories="&quot;Boost-1.32.0\include&quot;;Python24\include;CxImage\general;CxImage\jpeg"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CVGAMECOREDLL_EXPORTS;FINAL_RELEASE;MAX_CIV_50;LOG_AI;_MOD_FRACTRADE;_MOD_SENTRY;_MOD_GOVWORKERS"
+				MinimalRebuild="FALSE"
+				ExceptionHandling="TRUE"
+				RuntimeLibrary="2"
+				BufferSecurityCheck="FALSE"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderThrough="CvGameCoreDLL.h"
+				ProgramDataBaseFileName="$(IntDir)/vc70.pdb"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="FALSE"
+				DebugInformationFormat="2"
+				CallingConvention="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="boost_python-vc71-mt-1_32.lib  winmm.lib"
+				OutputFile="Assets/CvGameCoreDLL_50_Civs.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="Python24\libs;&quot;boost-1.32.0\libs\&quot;"
 				GenerateDebugInformation="TRUE"
@@ -778,10 +845,19 @@
 					RelativePath=".\CyArtFileMgrInterface.cpp">
 				</File>
 				<File
+					RelativePath=".\CyCity.cpp">
+				</File>
+				<File
 					RelativePath=".\CyCityInterface1.cpp">
 				</File>
 				<File
+					RelativePath=".\CyDeal.cpp">
+				</File>
+				<File
 					RelativePath=".\CyEnumsInterface.cpp">
+				</File>
+				<File
+					RelativePath=".\CyGame.cpp">
 				</File>
 				<File
 					RelativePath=".\CyGameCoreUtils.cpp">
@@ -899,19 +975,10 @@
 					RelativePath=".\CyArtFileMgr.h">
 				</File>
 				<File
-					RelativePath=".\CyCity.cpp">
-				</File>
-				<File
 					RelativePath=".\CyCity.h">
 				</File>
 				<File
-					RelativePath=".\CyDeal.cpp">
-				</File>
-				<File
 					RelativePath=".\CyDeal.h">
-				</File>
-				<File
-					RelativePath=".\CyGame.cpp">
 				</File>
 				<File
 					RelativePath=".\CyGame.h">

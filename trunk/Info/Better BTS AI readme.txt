@@ -76,11 +76,20 @@ The full change log from plain BTS is in changelog.txt, only the most recent cha
 
 New in Better BTS AI 1.01
 
-Bugfixes
+Merged in UP 1.6
 
+Bugfixes
+- AI now considers monuments a cultural building when evaluating techs (thanks denev)
+- Fixed detection of when to have AIs go for wonders for cultural reasons in late game (thanks Fuyu)
+- Fixed bug introduced with Lead from Behind which allowed siege units to attack cities/stacks with non-combat units after all defenders were knocked below the siege combat limit
+- Fixed diplomatic side effects of new early game changes to AI_isLandTarget (thanks Fuyu)
+- Fixed issue causing crashes with debug DLLs under rare circumstances (I think ...)
 
 Victory strategy
 - Tweaked Conquest 3 and 4 so that they work better for isolated starts and continents maps
+- Boosted value of Apollo granting tech for civs running Space 2
+- AIs going for diplo victory now more highly value techs allowing construction of diplo wonder
+- AIs going for diplo victory now more highly value building wonders which allow diplo votes
 
 War strategy
 - Changes to encourage aggressive AI players to consider limited wars in early game to choke opponents, should make first couple eras a little less predictable in normal games
@@ -91,6 +100,11 @@ War strategy
 
 War tactics
 - Fixed issue where AI would pull back its troops to its own borders to regroup instead of regrouping in enemy territory
+- AI now puts extra emphasis on state religion holy cities of enemies in picking target cities (thanks Lunar Mongoose)
+
+City AI
+- AIs in isolated starts now will build fewer units until they meet somebody
+- Turned down AI production of transports and attack ships when approaching unit spending caps
 
 Tech AI
 - Big boost to value placed on ocean-capable transports when AI has naval assault war plans
