@@ -4569,7 +4569,8 @@ void CvSelectionGroup::setActivityType(ActivityTypes eNewValue)
 /*                                                                                              */
 /* Unit AI                                                                                      */
 /************************************************************************************************/
-	FAssert(isHuman() || getHeadUnit()->isCargo() || eNewValue != ACTIVITY_SLEEP);
+	// For debugging activities, but can cause crashes very occasionally times
+	//FAssert(isHuman() || getHeadUnit()->isCargo() || eNewValue != ACTIVITY_SLEEP);
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/

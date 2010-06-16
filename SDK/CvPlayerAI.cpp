@@ -1679,6 +1679,8 @@ void CvPlayerAI::AI_conquerCity(CvCity* pCity)
 	    iRazeValue = 0;
 		int iCloseness = pCity->AI_playerCloseness(getID());
 
+		//BBAI TODO: Raze city enemy needs for cultural victory unless we greatly over power them, also raze pointless holy cities
+
 		if ( (pCity->isHolyCity()) || (pCity->hasActiveWorldWonder()))
 		{
 			if( gPlayerLogLevel >= 1 )
@@ -3283,7 +3285,7 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 	}
 
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      05/16/10                     Mongoose & jdog5000      */
+/* BETTER_BTS_AI_MOD                      06/14/10                     Mongoose & jdog5000      */
 /*                                                                                              */
 /* War strategy AI                                                                              */
 /************************************************************************************************/
@@ -3295,7 +3297,11 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 		{
 			iValue += 3;
 
-			if( getStateReligion() == iI )
+			if (GET_PLAYER(pCity->getOwnerINLINE()).getStateReligion() == iI)
+			{
+				iValue += 2;
+			}
+			if (getStateReligion() == iI)
 			{
 				iValue += 4;
 			}
@@ -6247,16 +6253,16 @@ int CvPlayerAI::AI_getCloseBordersAttitude(PlayerTypes ePlayer) const
 
 		iPercent = std::min(60, (AI_calculateStolenCityRadiusPlots(ePlayer) * 3));
 
-		if (GET_TEAM(getTeam()).AI_isLandTarget(GET_PLAYER(ePlayer).getTeam(), /*//Fuyu diplo hit fix*/ true)) 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      06/12/10                                jdog5000      */
+/*                                                                                              */
+/* Bugfix, Victory Strategy AI                                                                  */
+/************************************************************************************************/
+		if (GET_TEAM(getTeam()).AI_isLandTarget(GET_PLAYER(ePlayer).getTeam(), true))
 		{
 			iPercent += 40;
 		}
 
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      04/24/10                                jdog5000      */
-/*                                                                                              */
-/* Victory Strategy AI                                                                          */
-/************************************************************************************************/
 		if( AI_isDoStrategy(AI_VICTORY_CONQUEST3) )
 		{
 			iPercent = std::min( 120, (3 * iPercent)/2 );
@@ -7554,10 +7560,18 @@ bool CvPlayerAI::AI_considerOffer(PlayerTypes ePlayer, const CLinkList<TradeData
 
 		iThreshold *= 2;
 
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      06/12/10                                jdog5000      */
+/*                                                                                              */
+/* Diplomacy AI                                                                                 */
+/************************************************************************************************/
 		if (GET_TEAM(GET_PLAYER(ePlayer).getTeam()).AI_isLandTarget(getTeam()))
 		{
 			iThreshold *= 3;
 		}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 		iThreshold *= (GET_TEAM(GET_PLAYER(ePlayer).getTeam()).getPower(false) + 100);
 		iThreshold /= (GET_TEAM(getTeam()).getPower(false) + 100);
