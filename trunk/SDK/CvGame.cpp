@@ -7618,7 +7618,7 @@ void CvGame::processVote(const VoteTriggeredData& kData, int iChange)
 /************************************************************************************************/
 					if( gTeamLogLevel >= 1 )
 					{
-						logBBAI("  Vote for assigning %S to %d (%S) passes", pCity->getName(), GET_PLAYER(kData.kVoteOption.eOtherPlayer).getTeam(), GET_PLAYER(kData.kVoteOption.eOtherPlayer).getCivilizationDescription(0) );
+						logBBAI("  Vote for assigning %S to %d (%S) passes", pCity->getName().GetCString(), GET_PLAYER(kData.kVoteOption.eOtherPlayer).getTeam(), GET_PLAYER(kData.kVoteOption.eOtherPlayer).getCivilizationDescription(0) );
 					}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */

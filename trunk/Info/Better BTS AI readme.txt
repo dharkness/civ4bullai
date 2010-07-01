@@ -90,6 +90,7 @@ Victory strategy
 - Boosted value of Apollo granting tech for civs running Space 2
 - AIs going for diplo victory now more highly value techs allowing construction of diplo wonder
 - AIs going for diplo victory now more highly value building wonders which allow diplo votes
+- Vassals now a little more likely to try space strategy
 
 War strategy
 - Changes to encourage aggressive AI players to consider limited wars in early game to choke opponents, should make first couple eras a little less predictable in normal games
@@ -97,10 +98,12 @@ War strategy
 - If AI is preparing a dogpile attack and the enemies of its target break off war, then it will replan
 - Improved AI detection of when its wars were cold and it might as well break them off
 - When AI has many more units in enemy territory or en route than its enemies have in its territory, it is now less inclined make peace.  Conversely, you can now move a big attack force into AI territory and sue for peace.  Replaced prior flawed city danger based method and expanded to include non-Aggressive AI games.
+- AI decisions to raze cities now factor in cultural victory, resources, how good a holy city is, and how likely the conquerer is to hold the city
 
 War tactics
 - Fixed issue where AI would pull back its troops to its own borders to regroup instead of regrouping in enemy territory
 - AI now puts extra emphasis on state religion holy cities of enemies in picking target cities (thanks Lunar Mongoose)
+- More changes to AI target city values to put higher value on wonders, holy cities, and needed resources
 
 City AI
 - AIs in isolated starts now will build fewer units until they meet somebody

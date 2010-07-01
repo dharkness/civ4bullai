@@ -1593,6 +1593,36 @@ void CvGameTextMgr::setPlotListHelp(CvWStringBuffer &szString, CvPlot* pPlot, bo
 							{
 								szString.append(CvWString::format(L"\nTarget City: None"));
 							}
+
+							if( gDLL->shiftKey() )
+							{
+								CvCity* pLoopCity;
+								int iLoop = 0;
+								int iBestTargetValue = (pTargetCity != NULL ? GET_PLAYER(pHeadGroup->getOwner()).AI_targetCityValue(pTargetCity,false,true) : 0);
+								int iTargetValue = 0;
+								szString.append(CvWString::format(L"\n\nTarget City values:\n"));
+								for( int iPlayer = 0; iPlayer < MAX_PLAYERS; iPlayer++ )
+								{
+									if( GET_TEAM(pHeadGroup->getTeam()).AI_getWarPlan(GET_PLAYER((PlayerTypes)iPlayer).getTeam()) != NO_WARPLAN )
+									{
+										if( pPlot->area()->getCitiesPerPlayer((PlayerTypes)iPlayer) > 0 )
+										{
+											for (pLoopCity = GET_PLAYER((PlayerTypes)iPlayer).firstCity(&iLoop); pLoopCity != NULL; pLoopCity = GET_PLAYER((PlayerTypes)iPlayer).nextCity(&iLoop))
+											{
+												if( pLoopCity->area() == pPlot->area() )
+												{
+													iTargetValue = GET_PLAYER(pHeadGroup->getOwner()).AI_targetCityValue(pLoopCity,false,true);
+
+													if( (GC.getMapINLINE().calculatePathDistance(pPlot, pLoopCity->plot()) < 20))
+													{
+														szString.append(CvWString::format(L"\n%s : %d + rand %d", pLoopCity->getName().c_str(), iTargetValue, (pLoopCity->getPopulation() / 2)));
+													}
+												}
+											}
+										}
+									}
+								}
+							}
 						}
 					}
 /************************************************************************************************/
@@ -10325,7 +10355,12 @@ void CvGameTextMgr::setBuildingHelpActual(CvWStringBuffer &szBuffer, BuildingTyp
 			szBuffer.append(gDLL->getText("TXT_KEY_BUILDING_ADJUST_COMM_RATE", GC.getCommerceInfo((CommerceTypes) iI).getChar()));
 		}
 	}
-
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       06/27/10                    Afforess & jdog5000       */
+/*                                                                                              */
+/* Efficiency                                                                                   */
+/************************************************************************************************/
+/* original bts code
 	for (iI = 0; iI < GC.getNumSpecialistInfos(); ++iI)
 	{
 		szFirstBuffer = gDLL->getText("TXT_KEY_BUILDING_FROM_IN_ALL_CITIES", GC.getSpecialistInfo((SpecialistTypes) iI).getTextKeyWide());
@@ -10337,6 +10372,27 @@ void CvGameTextMgr::setBuildingHelpActual(CvWStringBuffer &szBuffer, BuildingTyp
 		szFirstBuffer = gDLL->getText("TXT_KEY_BUILDING_WITH_BONUS", GC.getBonusInfo((BonusTypes) iI).getTextKeyWide());
 		setYieldChangeHelp(szBuffer, L"", L"", szFirstBuffer, kBuilding.getBonusYieldModifierArray(iI), true);
 	}
+*/
+	if( kBuilding.isAnySpecialistYieldChange() )
+	{
+		for (iI = 0; iI < GC.getNumSpecialistInfos(); ++iI)
+		{
+			szFirstBuffer = gDLL->getText("TXT_KEY_BUILDING_FROM_IN_ALL_CITIES", GC.getSpecialistInfo((SpecialistTypes) iI).getTextKeyWide());
+			setYieldChangeHelp(szBuffer, L"", L"", szFirstBuffer, kBuilding.getSpecialistYieldChangeArray(iI));
+		}
+	}
+
+	if( kBuilding.isAnyBonusYieldModifier() )
+	{
+		for (iI = 0; iI < GC.getNumBonusInfos(); ++iI)
+		{
+			szFirstBuffer = gDLL->getText("TXT_KEY_BUILDING_WITH_BONUS", GC.getBonusInfo((BonusTypes) iI).getTextKeyWide());
+			setYieldChangeHelp(szBuffer, L"", L"", szFirstBuffer, kBuilding.getBonusYieldModifierArray(iI), true);
+		}
+	}
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 
 	for (iI = 0; iI < GC.getNumReligionInfos(); ++iI)
 	{
