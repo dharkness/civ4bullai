@@ -2974,21 +2974,22 @@ void CvDLLWidgetData::parseActionHelp(CvWidgetDataStruct &widgetDataStruct, CvWS
 													int iHappinessLevel = pLoopCity->happyLevel() - pLoopCity->unhappyLevel() + iTemporaryUnhappiness;
 													int iHealthLevel = pLoopCity->goodHealth() - pLoopCity->badHealth() + pLoopCity->getEspionageHealthCounter();
 													//Adjustments
-													iHealthLevel += iFeatureHealthAdjust - iBadHealthAdjust;
-													//Happy Adjust (only +happy buildings)
+													iHealthLevel += iFeatureHealthAdjust;
+													//Adjustment for building 
+													int iBuildingAdjust = 0;
 													if (pLoopCity->getProductionBuilding() != NO_BUILDING)
 													{
-														iHappinessLevel += std::max(0, pLoopCity->getAdditionalHappinessByBuilding(pLoopCity->getProductionBuilding()));
+														iBuildingAdjust = std::max(0, pLoopCity->getAdditionalHappinessByBuilding(pLoopCity->getProductionBuilding()) - pLoopCity->getAdditionalHealthByBuilding(pLoopCity->getProductionBuilding()));
 													}
 
-													if (iHealthLevel < iHappinessLevel)
+													if (iHealthLevel < iHappinessLevel + iBuildingAdjust)
 													{
 														//Health level is already below happy
 														CvWString szHealthLimitTempBuffer;
 														szHealthLimitTempBuffer.Format(L", (%c&lt;%c)", gDLL->getSymbolID(HEALTHY_CHAR), gDLL->getSymbolID(HAPPY_CHAR));
 														szFeatureEffects.append(szHealthLimitTempBuffer);
 													}
-													else if (iHealthLevel - iBad + iGood < iHappinessLevel)
+													else if (iHealthLevel - iBad + iGood < iHappinessLevel + iBuildingAdjust)
 													{
 														CvWString szHealthLimitTempBuffer;
 														szHealthLimitTempBuffer.Format(L", %c&lt;%c", gDLL->getSymbolID(HEALTHY_CHAR), gDLL->getSymbolID(HAPPY_CHAR));
@@ -4882,7 +4883,7 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 /*                                                                                              */
 /************************************************************************************************/
 	// Add string showing version number
-	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 1.01c");
+	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 1.01f");
 	szBuffer.append(szTempBuffer);
 #ifdef LOG_AI
 	szTempBuffer.Format(NEWLINE L"%c", gDLL->getSymbolID(BULLET_CHAR));

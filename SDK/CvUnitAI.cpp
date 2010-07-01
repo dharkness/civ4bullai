@@ -5859,6 +5859,8 @@ void CvUnitAI::AI_attackSeaMove()
 /* Naval AI                                                                                     */
 /************************************************************************************************/
 	// BBAI TODO: Turn this into a function, have docked escort ships do it to
+
+	//Fuyu: search for more attackers, and when enough are found, always try to break through
 	CvCity* pCity = plot()->getPlotCity();
 
 	if( pCity != NULL )
@@ -5871,10 +5873,36 @@ void CvUnitAI::AI_attackSeaMove()
 
 			int iAttackers = plot()->plotCount(PUF_isUnitAIType, UNITAI_ATTACK_SEA, -1, NO_PLAYER, getTeam(), PUF_isGroupHead, -1, -1);
 			int iBlockaders = GET_PLAYER(getOwnerINLINE()).AI_getWaterDanger(plot(), (iBlockadeRange + 1));
+			//bool bBreakBlockade = (iAttackers > (iBlockaders + 2) || iAttackers >= 2*iBlockaders);
 
-			if( iAttackers > (iBlockaders + 2) || iAttackers >= 2*iBlockaders)
+			if (true)
 			{
-				if( iAttackers > GC.getGameINLINE().getSorenRandNum(2*iBlockaders + 1, "AI - Break blockade") )
+				int iMaxRange = iBlockadeRange - 1;
+				if( gUnitLogLevel > 2 ) logBBAI("      Not enough attack fleet found in %S, searching for more in a %d-tile radius", pCity->getName().GetCString(), iMaxRange);
+
+				for (int iDX = -(iMaxRange); iDX <= iMaxRange; iDX++)
+				{
+					for (int iDY = -(iMaxRange); iDY <= iMaxRange; iDY++)
+					{
+						CvPlot* pLoopPlot = plotXY(plot()->getX_INLINE(), plot()->getY_INLINE(), iDX, iDY);
+							
+						if (pLoopPlot != NULL && pLoopPlot->isWater())
+						{
+							if (pLoopPlot->getBlockadedCount(getTeam()) > 0)
+							{
+								iAttackers += pLoopPlot->plotCount(PUF_isUnitAIType, UNITAI_ATTACK_SEA, -1, NO_PLAYER, getTeam(), PUF_isGroupHead, -1, -1);
+							}
+						}
+					}
+				}
+			}
+			//bBreakBlockade = (iAttackers > (iBlockaders + 2) || iAttackers >= 2*iBlockaders);
+
+			//if (bBreakBlockade)
+			if (iAttackers > (iBlockaders + 2) || iAttackers >= 2*iBlockaders)
+			{
+				if( gUnitLogLevel > 2 ) logBBAI("      Found %d attackers and %d blockaders, proceeding to break blockade", iAttackers, iBlockaders);
+				if(true) /* (iAttackers > GC.getGameINLINE().getSorenRandNum(2*iBlockaders + 1, "AI - Break blockade")) */
 				{
 					// BBAI TODO: Make odds scale by # of blockaders vs number of attackers
 					if (baseMoves() >= iBlockadeRange)
@@ -14414,7 +14442,7 @@ CvCity* CvUnitAI::AI_pickTargetCity(int iFlags, int iMaxPathTurns, bool bHuntBar
 
 									if( pLoopCity == pTargetCity )
 									{
-										iValue *= 3;
+										iValue *= 2;
 									}
 									
 									if ((area()->getAreaAIType(getTeam()) == AREAAI_DEFENSIVE))
@@ -15104,13 +15132,13 @@ bool CvUnitAI::AI_leaveAttack(int iRange, int iOddsThreshold, int iStrengthThres
 				{
 					if (pLoopPlot->isVisibleEnemyUnit(this) || (pLoopPlot->isCity() && AI_potentialEnemy(pLoopPlot->getTeam(), pLoopPlot)))
 					{
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      02/22/10                                jdog5000      */
-/*                                                                                              */
-/* Efficiency                                                                                   */
-/************************************************************************************************/
 						if (pLoopPlot->getNumVisibleEnemyDefenders(this) > 0)
 						{
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      06/27/10                                jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
 							if (!atPlot(pLoopPlot) && (generatePath(pLoopPlot, 0, true, &iPathTurns) && (iPathTurns <= iRange)))
 							{
 /************************************************************************************************/

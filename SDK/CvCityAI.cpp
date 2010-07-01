@@ -6144,7 +6144,18 @@ int CvCityAI::AI_clearFeatureValue(int iIndex)
 	{
 		int iHealth = goodHealth() - badHealth();
 		
+/************************************************************************************************/
+/* Afforess	                  Start		 06/17/10                                               */
+/************************************************************************************************/
+/*
 		iHealthValue += (6 * kFeatureInfo.getHealthPercent()) / std::max(3, 1 + iHealth);
+*/
+	//speed up Jungle Clearing
+		int iMultiplier = kFeatureInfo.getHealthPercent() > 0 ? 6 : 10;
+		iHealthValue += (iMultiplier * kFeatureInfo.getHealthPercent()) / std::max(3, 1 + iHealth);
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 		if (iHealthValue > 0 && !pPlot->isBeingWorked())
 		{
 			iHealthValue *= 3;

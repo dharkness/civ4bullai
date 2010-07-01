@@ -3340,7 +3340,7 @@ bool CvUnit::canLoadUnit(const CvUnit* pUnit, const CvPlot* pPlot) const
 	}
 
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                       11/06/09                     Mongoose & jdog5000      */
+/* UNOFFICIAL_PATCH                       06/23/10                     Mongoose & jdog5000      */
 /*                                                                                              */
 /* Bugfix                                                                                       */
 /************************************************************************************************/
@@ -3739,17 +3739,17 @@ bool CvUnit::canHeal(const CvPlot* pPlot) const
 	}
 
 /*************************************************************************************************/
-/* UNOFFICIAL_PATCH                       06/10/10                           LunarMongoose       */
+/* UNOFFICIAL_PATCH                       06/30/10                           LunarMongoose       */
 /*                                                                                               */
 /* Bugfix                                                                                        */
 /*************************************************************************************************/
-	// Mongoose FeatureDamageFix
-	/* original code
+/* original bts code
 	if (healRate(pPlot) <= 0)
 	{
 		return false;
 	}
-	*/
+*/
+	// Mongoose FeatureDamageFix
 	if (healTurns(pPlot) == MAX_INT)
 	{
 		return false;
@@ -4776,13 +4776,6 @@ bool CvUnit::bombard()
 
 bool CvUnit::canPillage(const CvPlot* pPlot) const
 {
-	// Mongoose NoPillagingFromInsideTransportFix BEGIN
-	if (isCargo())
-	{
-		return false;
-	}
-	// Mongoose NoPillagingFromInsideTransportFix END
-
 	if (!(m_pUnitInfo->isPillage()))
 	{
 		return false;
@@ -4792,6 +4785,20 @@ bool CvUnit::canPillage(const CvPlot* pPlot) const
 	{
 		return false;
 	}
+
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       06/23/10                     Mongoose & jdog5000      */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+	// From Mongoose SDK
+	if (isCargo())
+	{
+		return false;
+	}
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 
 	if (pPlot->getImprovementType() == NO_IMPROVEMENT)
 	{
@@ -12458,7 +12465,8 @@ bool CvUnit::canRangeStrikeAt(const CvPlot* pPlot, int iX, int iY) const
 /* Bugfix                                                                                       */
 /************************************************************************************************/
 	// Need to check target plot too
-	if (!pTargetPlot->isVisible(getTeam(), false))
+	//Fuyu: AI-controlled units can strike even when tile is invisible
+	if (isHuman() && !isAutomated() && !pTargetPlot->isVisible(getTeam(), false))
 	{
 		return false;
 	}

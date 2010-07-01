@@ -14,6 +14,31 @@ Outstanding issues:
 
 Unofficial Patch Change List
 
+Version 1.6 changes:
+
+- CvPlayerAI::AI_commerceWeight - Standardized culture slider thresholds for detecting when human player is going for cultural victory
+- CvTeam::doTurn - Removed unnecessary code (thanks EF)
+- CvCityAI::AI_yieldValue - Resolved issues with rounding off small commerce amounts leading to working suboptimal tiles/specialists in some circumstances (reported by Caboose)
+- CvPlot::calculateImprovementYieldChange - Fixed AI valuation of improvements causing negative yields (for mods) (thanks Afforess)
+- CvGameTextMgr::assignFontIds - Removes an erroneous extra increment command that was breaking GameFont.tga files when using exactly 49 or 74 resource types in a mod (thanks LunarMongoose)
+- CvGameTextMgr::setPlotHelp - Can now handle plots with extra healing powers (thanks LunarMongoose)
+- CvGameTextMgr::setFeatureHelp - Now displays feature damage/healing (thanks LunarMongoose)
+- CvUnit::healTurns and CvUnit::canHeal - Now handles damage and healing from plot features (thanks LunarMongoose)
+- Added CIV4GameText_UnofficialPatch.xml to mod files
+- CvGame::doTurn - Fixed bug with simultaneous team turns when team 0 is dead (thanks snarko)
+- CvDLLWidgetData::parseActionHelp - Now displays that improvement will be destroyed when removing feature (thanks EF)
+- CvGameTextMgr::buildBuildingRequiresString - Adds text if building is required in city for wonder, like hospital for red cross (thanks EF)
+- CvCity::popOrder - Fix bug with production decay with multiple queued units (thanks jesusin and EF)
+- CvUnit::canLoad - Reinstated improved MongooseSDK fix to not show load button for unit already on transport if there is no other transport it could switch to (thanks LunarMongoose)
+- CvUnit::canPillage - Fix bug where all terrain units could pillage resources when on a transport (thanks LunarMongoose)
+- CvPlayerAI::AI_executiveValue - Fixed bug causing AI not to use executives it had produced in some circumstances (thanks denev)
+- CvPlayerAI::AI_cultureVictoryTechValue - Fixed bug where AI ignored buildings with obsolete safe commerce (thanks Fuyu)
+- CvInfo (8 places) - Added booleans to record if a building has a SpecialistYieldChange or BonusYieldModifier defined (for next change)
+- CvGameTextMgr::setBuildingHelp - Using above, improved response time of city screen (thanks Afforess)
+- CvPlayerAI::AI_bestTech - Fix bug where iTempValue never added to iValue for building maintenance
+- CvPlayerAI::AI_bestTech - AI now also counts ObsoleteSafeCommerce culture for cultural buildings
+
+
 Version 1.50 changes:
 
 - CvCityAI::AI_buildingValueThreshold - Fixed bug causing AI cities to over value buildings which unlock specialists in many circumstances when picking what to build
