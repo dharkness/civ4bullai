@@ -309,10 +309,10 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_BUG_OPT_MAININTERFACE__EVENTSWITHIMAGES_HOVER</Tag>
-		<English>When checked and the required dll and images are present, shows pictures on the random event screens.</English>
-		<French>When checked and the required dll and images are present, shows pictures on the random event screens.</French>
-		<German>When checked and the required dll and images are present, shows pictures on the random event screens.</German>
-		<Italian>When checked and the required dll and images are present, shows pictures on the random event screens.</Italian>
-		<Spanish>When checked and the required dll and images are present, shows pictures on the random event screens.</Spanish>
+		<English>When checked and the required images are present, shows pictures on the random event screens.</English>
+		<French>When checked and the required images are present, shows pictures on the random event screens.</French>
+		<German>Fügt den Nachrichten über Zufällige Ereignisse Bilder hinzu, sofern vorhanden.</German>
+		<Italian>When checked and the required images are present, shows pictures on the random event screens.</Italian>
+		<Spanish>When checked and the required images are present, shows pictures on the random event screens.</Spanish>
 	</TEXT>
 </Civ4GameText>

@@ -22773,8 +22773,8 @@ void CvPlayer::getUnitLayerColors(GlobeLayerUnitOptionTypes eOption, std::vector
 							if (eOption == SHOW_ENEMIES_IN_TERRITORY)
 							{
 								kIndicator.m_kColor.r = 1;
-								kIndicator.m_kColor.r = 0;
-								kIndicator.m_kColor.r = 0;
+								kIndicator.m_kColor.g = 0;
+								kIndicator.m_kColor.b = 0;
 							}
 							else
 							{
