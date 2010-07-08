@@ -5608,7 +5608,7 @@ void CvUnitAI::AI_barbAttackSeaMove()
 	{
 		// If trapped in small hole in ice or around tiny island, disband to allow other units to be generated
 		bool bScrap = true;
-		int iMaxRange = maxMoves() + 2;
+		int iMaxRange = baseMoves() + 2;
 		for (int iDX = -(iMaxRange); iDX <= iMaxRange; iDX++)
 		{
 			for (int iDY = -(iMaxRange); iDY <= iMaxRange; iDY++)
@@ -14416,6 +14416,7 @@ CvCity* CvUnitAI::AI_pickTargetCity(int iFlags, int iMaxPathTurns, bool bHuntBar
 									// already on the way, pick a different target
 									if( iPathTurns > 2 && pLoopCity->isVisible(getTeam(), false) )
 									{
+										/*
 										int iOurOffense = GET_TEAM(getTeam()).AI_getOurPlotStrength(pLoopCity->plot(),2,false,false,true);	
 										int iEnemyDefense = GET_PLAYER(getOwnerINLINE()).AI_getEnemyPlotStrength(pLoopCity->plot(),1,true,false);
 
@@ -14423,8 +14424,9 @@ CvCity* CvUnitAI::AI_pickTargetCity(int iFlags, int iMaxPathTurns, bool bHuntBar
 										{
 											continue;
 										}
+										*/
 
-										if( GET_PLAYER(getOwnerINLINE()).AI_cityTargetUnitsByPath(pLoopCity, getGroup(), iPathTurns) > 3 * pLoopCity->plot()->getNumVisibleEnemyDefenders(this) )
+										if( GET_PLAYER(getOwnerINLINE()).AI_cityTargetUnitsByPath(pLoopCity, getGroup(), iPathTurns) > std::max( 6, 3 * pLoopCity->plot()->getNumVisibleEnemyDefenders(this) ) )
 										{
 											continue;
 										}
@@ -15613,7 +15615,7 @@ bool CvUnitAI::AI_seaBombardRange(int iMaxRange)
 /* 	Naval AI																*/
 /********************************************************************************/
 						// Loop construction doesn't guarantee we can get there anytime soon, could be on other side of narrow continent
-						if( iPathTurns <= (1 + iMaxRange/maxMoves()) )
+						if( iPathTurns <= (1 + iMaxRange/std::max(1, baseMoves())) )
 						{
 							// Check only for supporting our own ground troops first, if none will look for another target
 							int iValue = (kPlayer.AI_plotTargetMissionAIs(pBombardCity->plot(), MISSIONAI_ASSAULT, NULL, 2) * 3);
@@ -15676,7 +15678,7 @@ bool CvUnitAI::AI_seaBombardRange(int iMaxRange)
 							if (generatePath(pLoopPlot, 0, true, &iPathTurns))
 							{	
 								// Loop construction doesn't guarantee we can get there anytime soon, could be on other side of narrow continent
-								if( iPathTurns <= 1 + iMaxRange/maxMoves() )
+								if( iPathTurns <= 1 + iMaxRange/std::max(1, baseMoves()) )
 								{
 									int iValue = std::min(20,pBombardCity->getDefenseModifier(false)/2); 
 
@@ -16654,7 +16656,7 @@ bool CvUnitAI::AI_assaultSeaReinforce(bool bBarbarian)
 	int iValue;
 
 	// Loop over nearby plots for groups in enemy territory to reinforce
-	int iRange = 2*maxMoves();
+	int iRange = 2*baseMoves();
 	int iDX, iDY;
 	for (iDX = -(iRange); iDX <= iRange; iDX++)
 	{

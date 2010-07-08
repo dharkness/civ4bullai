@@ -4883,7 +4883,7 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 /*                                                                                              */
 /************************************************************************************************/
 	// Add string showing version number
-	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 1.01f");
+	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 1.02a");
 	szBuffer.append(szTempBuffer);
 #ifdef LOG_AI
 	szTempBuffer.Format(NEWLINE L"%c", gDLL->getSymbolID(BULLET_CHAR));

@@ -1871,7 +1871,9 @@ void CvPlayerAI::AI_conquerCity(CvCity* pCity)
 					}
 				}
 
-				iRazeValue -= 15 * pCity->getNumActiveWorldWonders();
+				iRazeValue -= 25 * pCity->getNumActiveWorldWonders();
+
+				iRazeValue -= pCity->calculateTeamCulturePercent(getTeam());
 
 				CvPlot* pLoopPlot = NULL;
 				for (iI = 0; iI < NUM_CITY_PLOTS; iI++)
