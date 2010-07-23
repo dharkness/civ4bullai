@@ -773,7 +773,22 @@ void CvUnit::doTurn()
 
 		if (!isCargo())
 		{
+			//Fuyu: Sleep for Espionage - Start
+			bool bAwaken = false;
+			if (isSpy() && (getFortifyTurns() + 1) == GC.getDefineINT("MAX_FORTIFY_TURNS") && canEspionage(plot(), true))
+			{
+				bAwaken = true;
+			}
+			//Sleep for Espionage - End
+
 			changeFortifyTurns(1);
+
+			//Fuyu: Sleep for Espionage - Start
+			if (bAwaken && getGroup()->getActivityType() == ACTIVITY_SLEEP)
+			{
+				getGroup()->setActivityType(ACTIVITY_AWAKE);
+			}
+			//Sleep for Espionage - End
 		}
 	}
 

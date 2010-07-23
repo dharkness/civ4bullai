@@ -448,7 +448,7 @@ class MapConstants :
         #(Chance per starting position to allow 1 wonder bonus)
         self.allowWonderBonusChance = 0.05
 
-        #Randomly allows bonuses with continent limiter to be used to sweeting starting positions.
+        #Randomly allows bonuses with continent limiter to be used to sweeten starting positions.
         #(Chance per attempt to place an area-restricted resource in the wrong area)
         self.ignoreAreaRestrictionChance = 0.05
         
@@ -3694,11 +3694,14 @@ class BonusPlacer :
                     self.AddBonusType(eBonus,plotIndexList)                        
                 
 
-        #now check to see that all resources have been placed at least once, this
+        #now check to see that all resources have been placed at least once (Fuyu:per player), this
         #pass ignoring area rules
         for i in range(numBonuses):
             bonus = self.bonusList[i]
-            if bonus.currentBonusCount == 0 and bonus.desiredBonusCount > 0:
+#            if bonus.currentBonusCount == 0 and bonus.desiredBonusCount > 0:
+#                self.AddEmergencyBonus(bonus,False)
+            if bonus.currentBonusCount < gc.getGame().countCivPlayersEverAlive() and bonus.desiredBonusCount > bonus.currentBonusCount:
+                for ij in range((min(bonus.desiredBonusCount, gc.getGame().countCivPlayersEverAlive()) - bonus.currentBonusCount)):
                 self.AddEmergencyBonus(bonus,False)
 
         #now check again to see that all resources have been placed at least once,
@@ -3714,6 +3717,10 @@ class BonusPlacer :
             if bonus.currentBonusCount == 0 and bonus.desiredBonusCount > 0:
                 bonusInfo = gc.getBonusInfo(bonus.eBonus)
                 print "No room at all found for %(bt)s!!!" % {"bt":bonusInfo.getType()} 
+            elif bonus.currentBonusCount < bonus.desiredBonusCount:
+                bonusInfo = gc.getBonusInfo(bonus.eBonus)
+                print "Wanted to place %(db)d for %(bt)s, could only place %(cb)d" % {"db":bonus.desiredBonusCount, \
+                "bt":bonusInfo.getType(),"cb":bonus.currentBonusCount}    
         return
     def AddEmergencyBonus(self,bonus,ignoreClass):
         gc = CyGlobalContext()
@@ -4177,12 +4184,22 @@ class StartingPlotFinder :
             self.startingAreaList.sort(lambda x, y: cmp(x.rawValue, y.rawValue))
 
             #Get rid of areas that have less value than oldWorldValuePerPlayer
+            #(Fuyu change: less than 2*oldWorldValuePerPlayer)
             #as they are too small to put a player on, however leave at least
             #half as many continents as there are players, just in case the
             #continents are *all* quite small. 
-            numAreas = max(1,len(self.startingAreaList) - len(shuffledPlayers)/2)
-            for i in range(numAreas):
-                if self.startingAreaList[0].rawValue < oldWorldValuePerPlayer:
+            #(Fuyu change: at least half of total old world value)
+            #
+            #numAreas = max(1,len(self.startingAreaList) - len(shuffledPlayers)/3)
+
+            oldWorldRemovedValue = 0
+            for i in range(len(self.startingAreaList)):
+                if self.startingAreaList[0].rawValue < (2*oldWorldValuePerPlayer):
+                    oldWorldRemovedValue += self.startingAreaList[0].rawValue
+                    if oldWorldRemovedValue > oldWorldValue/2:
+                        oldWorldRemovedValue -= self.startingAreaList[0].rawValue
+                        break
+                    else:
                     del self.startingAreaList[0]
                 else:
                     break #All remaining should be big enough
@@ -4522,7 +4539,7 @@ class StartingPlotFinder :
                 if usablePlots <= (2*gc.getNUM_CITY_PLOTS())/3:
                     currentYield = YieldTypes.YIELD_FOOD
                     
-                if debugOut: print "value now at %(v)d" % {"v":value}
+                #if debugOut: print "value now at %(v)d" % {"v":value}
                 if bonusCount >= bonuses:
                     if debugOut: print "Placed all bonuses."
                     if debugOut: print "****************************************************"
@@ -4552,7 +4569,7 @@ class StartingPlotFinder :
                     if bonusInfo.getTechCityTrade() == TechTypes.NO_TECH or \
                     gc.getTechInfo(bonusInfo.getTechCityTrade()).getEra() <= game.getStartEra():
                         if bp.PlotCanHaveBonus(plot,bonusEnum,False,False) == False:
-                            if debugOut: print "Plot can't have %(b)s" % {"b":bonusInfo.getType()}
+                            #if debugOut: print "Plot can't have %(b)s" % {"b":bonusInfo.getType()}
                             if PRand.random() > mc.ignoreAreaRestrictionChance:
                                 continue
                             elif bp.PlotCanHaveBonus(plot,bonusEnum,False,True) == False:
