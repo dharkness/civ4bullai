@@ -831,8 +831,8 @@ void CvCity::kill(bool bUpdatePlotGroups)
 			//Fuyu: don't limit to riverside
 			/* 
 			if (GC.getFeatureInfo((FeatureTypes)iJ).isRequiresRiver())
-			{
 			*/
+			{
 				if (pPlot->canHaveFeature((FeatureTypes)iJ))
 				{
 					if (GC.getFeatureInfo((FeatureTypes)iJ).getAppearanceProbability() == 10000)
@@ -841,10 +841,7 @@ void CvCity::kill(bool bUpdatePlotGroups)
 						break;
 					}
 				}
-			/*
 			}
-			*/
-			//Fuyu END
 		}
 	}
 /************************************************************************************************/

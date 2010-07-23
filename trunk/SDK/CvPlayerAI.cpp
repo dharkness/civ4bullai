@@ -514,7 +514,16 @@ void CvPlayerAI::AI_doTurnUnitsPost()
 	{
 		for(pLoopUnit = firstUnit(&iLoop); pLoopUnit != NULL; pLoopUnit = nextUnit(&iLoop))
 		{
-			pLoopUnit->AI_promote();
+/************************************************************************************************/
+/* Afforess	                  Start		 06/24/10                                               */
+/*                                                                                              */
+/* Afforess Speed Tweak                                                                         */
+/************************************************************************************************/
+			if (pLoopUnit->isPromotionReady())
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
+				pLoopUnit->AI_promote();
 		}
 	}
 
@@ -3452,6 +3461,9 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 			}
 		}
 	}
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	pNearestCity = GC.getMapINLINE().findCity(pCity->getX_INLINE(), pCity->getY_INLINE(), getID());
 
@@ -3464,9 +3476,6 @@ int CvPlayerAI::AI_targetCityValue(CvCity* pCity, bool bRandomize, bool bIgnoreA
 	{
 		iValue += GC.getGameINLINE().getSorenRandNum(((pCity->getPopulation() / 2) + 1), "AI Target City Value");
 	}
-/************************************************************************************************/
-/* BETTER_BTS_AI_MOD                       END                                                  */
-/************************************************************************************************/
 
 	return iValue;
 }
@@ -4043,7 +4052,7 @@ int CvPlayerAI::AI_goldTarget() const
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                       02/24/10                                jdog5000      */
 /*                                                                                              */
-/* Bugfix                                                                                      */
+/* Bugfix                                                                                       */
 /************************************************************************************************/
 /* original bts code
 	if (GC.getGameINLINE().getElapsedGameTurns() >= 40)
@@ -4061,10 +4070,31 @@ int CvPlayerAI::AI_goldTarget() const
 
 		iGold += ((getNumCities() * 3) + (getTotalPopulation() / 3));
 
+/************************************************************************************************/
+/* Fuyu																		16.07.2010			*/
+/************************************************************************************************/
+/* original bts code
 		iGold += (GC.getGameINLINE().getElapsedGameTurns() / 2);
 
 		iGold *= iMultiplier;
 		iGold /= 100;
+*/
+		iGold *= iMultiplier;
+		iGold /= 100;
+
+		iGold += ( (iMultiplier * GC.getGameINLINE().getElapsedGameTurns()) / (((GC.getGameINLINE().isOption(GAMEOPTION_NO_EVENTS))? 10 : 6) * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getVictoryDelayPercent()) );
+/************************************************************************************************/
+/* Fuyu								END															*/
+/************************************************************************************************/
+
+/************************************************************************************************/
+/* Afforess	                  Start		 02/01/10                                               */
+/************************************************************************************************/	
+		iGold *= (100 + calculateInflationRate());
+		iGold /= 100;
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 		
 		bool bAnyWar = GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0;
 		if (bAnyWar)
@@ -4072,6 +4102,25 @@ int CvPlayerAI::AI_goldTarget() const
 			iGold *= 3;
 			iGold /= 2;
 		}
+
+/************************************************************************************************/
+/* Afforess	                  Start		 02/01/10                                               */
+/*                                                                                              */
+/*  Don't bother saving gold if we can't trade it for anything                                  */
+/************************************************************************************************/
+	if (!GET_TEAM(getTeam()).isGoldTrading() || !(GET_TEAM(getTeam()).isTechTrading()) || (GC.getGameINLINE().isOption(GAMEOPTION_NO_TECH_TRADING)))
+	{
+		iGold /= 3;
+	}
+	//Fuyu: Afforess says gold is also less useful without tech brokering, so why not add it
+	else if (GC.getGameINLINE().isOption(GAMEOPTION_NO_TECH_BROKERING))
+	{
+		iGold *= 3;
+		iGold /= 4;
+	}
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 
 		if (AI_avoidScience())
 		{
@@ -5068,7 +5117,16 @@ int CvPlayerAI::AI_techBuildingValue( TechTypes eTech, int iPathLength, bool &bE
 				{
 					iBuildingValue += (15 * kLoopBuilding.getFoodKept());
 				}
-
+/************************************************************************************************/
+/* Afforess & Fuyu            Start		 16.07.2010                                             */
+/************************************************************************************************/
+				if (kLoopBuilding.getAirlift() > 0)
+				{
+					iValue += 300;
+				}
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 				if (kLoopBuilding.getMaintenanceModifier() < 0)
 				{
 					int iLoop;
@@ -8256,6 +8314,17 @@ int CvPlayerAI::AI_maxGoldTrade(PlayerTypes ePlayer) const
         iResearchBuffer *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent();
         iResearchBuffer /= 100;
 
+/************************************************************************************************/
+/* Afforess	                  Start		 04/06/10                                               */
+/*                                                                                              */
+/*                                                                                              */
+/************************************************************************************************/
+		iMaxGold *= (100 + calculateInflationRate());
+		iMaxGold /= 100;
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
+
 		iMaxGold = std::min(iMaxGold, getGold() - iResearchBuffer);
 
 		iMaxGold = std::min(iMaxGold, getGold());
@@ -8486,6 +8555,25 @@ int CvPlayerAI::AI_baseBonusVal(BonusTypes eBonus) const
 							iTempValue += kLoopBuilding.getPowerYieldModifier(iJ);
 						}
 					}
+/************************************************************************************************/
+/* Afforess	                  Start		 03/2/10                                                */
+/*                                                                                              */
+/*  Better AI Resources Evalution                                                               */
+/************************************************************************************************/
+/* Fuyu: commented out for now, could make resource trading a bit less fun for humans. values?
+					//Remember, these are all divided by 10 at the end...
+					}
+					iValue += std::max(1, getBuildingClassCount((BuildingClassTypes)iI)) * kLoopBuilding.getBonusHappinessChanges(eBonus) * 120;
+					iValue += std::max(1, getBuildingClassCount((BuildingClassTypes)iI)) * kLoopBuilding.getBonusHealthChanges(eBonus) * 80;
+					//Special Wonder Considerations...
+					if (isLimitedWonderClass((BuildingClassTypes)iI) && canConstruct(eLoopBuilding, false, false, false))
+					{
+						iValue += kLoopBuilding.getBonusProductionModifier(eBonus) * 25;
+					}
+*/
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 					
 					{
 						// determine whether we have the tech for this building
@@ -8622,6 +8710,33 @@ int CvPlayerAI::AI_baseBonusVal(BonusTypes eBonus) const
 				}
 			}
 
+/************************************************************************************************/
+/* Afforess	                  Start		 01/18/10                                               */
+/*                                                                                              */
+/*                                                                                              */
+/************************************************************************************************/
+/* Fuyu: commented out again
+			//Resource scarcity. If there are only limited quantities of this resource, treasure it.
+			int iTotalBonusCount = 0;
+			for (int iI = 0; iI < MAX_PLAYERS; iI++)
+			{
+				if (GET_PLAYER((PlayerTypes)iI).isAlive())
+				{
+					if (GET_TEAM(getTeam()).isHasMet((GET_PLAYER((PlayerTypes)iI).getTeam())))
+					{
+						iTotalBonusCount += GET_PLAYER((PlayerTypes)iI).getNumAvailableBonuses(eBonus);
+					}
+				}
+			}
+			iTempValue = getNumAvailableBonuses(eBonus) * 300;
+			iTempValue /= std::max(1, iTotalBonusCount);
+			iValue += iTempValue;
+			
+			iValue += GC.getBonusInfo(eBonus).getAIObjective() * 10;
+*/
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 			//	int iCorporationValue = AI_corporationBonusVal(eBonus);
 			//	iValue += iCorporationValue;
 			//
@@ -8765,8 +8880,22 @@ DenialTypes CvPlayerAI::AI_bonusTrade(BonusTypes eBonus, PlayerTypes ePlayer) co
 
 	bStrategic = false;
 
+/************************************************************************************************/
+/* Fuyu                    Start		 22.07.2010                                             */
+/*                                                                                              */
+/*  Better AI: Strategic For Current Era                                                        */
+/************************************************************************************************/
+//disregard obsolete units
+	CvCity* pCapitalCity = getCapitalCity();
 	for (iI = 0; iI < GC.getNumUnitInfos(); iI++)
 	{
+		if (pCapitalCity->allUpgradesAvailable((UnitTypes)iI) != NO_UNIT)
+		{
+			continue;
+		}
+/************************************************************************************************/
+/* Fuyu                          END                                                            */
+/************************************************************************************************/
 		if (GC.getUnitInfo((UnitTypes) iI).getPrereqAndBonus() == eBonus)
 		{
 			bStrategic = true;
@@ -8783,6 +8912,22 @@ DenialTypes CvPlayerAI::AI_bonusTrade(BonusTypes eBonus, PlayerTypes ePlayer) co
 
 	for (iI = 0; iI < GC.getNumBuildingInfos(); iI++)
 	{
+/************************************************************************************************/
+/* Fuyu                    Start		 22.07.2010                                             */
+/*                                                                                              */
+/*  Better AI: Strategic For Current Era                                                        */
+/************************************************************************************************/
+//disregard obsolete buildings
+		if ((TechTypes)GC.getBuildingInfo((BuildingTypes)iI).getObsoleteTech() != NO_TECH)
+		{
+			if (GET_TEAM(getTeam()).isHasTech((TechTypes)(GC.getBuildingInfo((BuildingTypes)iI).getObsoleteTech())))
+			{
+				continue;
+			}
+		}
+/************************************************************************************************/
+/* Fuyu                          END                                                            */
+/************************************************************************************************/
 		if (GC.getBuildingInfo((BuildingTypes) iI).getPrereqAndBonus() == eBonus)
 		{
 			bStrategic = true;
@@ -9088,7 +9233,29 @@ DenialTypes CvPlayerAI::AI_stopTradingTrade(TeamTypes eTradeTeam, PlayerTypes eP
 			}
 		}
 	}
+/************************************************************************************************/
+/* Afforess	                  Start		 03/19/10                                               */
+/*                                                                                              */
+/* Ruthless AI: Don't cancel open borders, we may need those in war                             */
+/************************************************************************************************/
+//Fuyu: looks like a good idea, not just for ruthless AI
+/*
+	if (GC.getGameINLINE().isOption(GAMEOPTION_RUTHLESS_AI))
+*/
+	{
+		if (GET_TEAM(getTeam()).isOpenBorders(eTradeTeam))
+		{
+			if (GET_TEAM(getTeam()).getAnyWarPlanCount(true) > 0)
+			{
+				return DENIAL_MYSTERY;
+			}
+		}
 
+	}
+
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 	return NO_DENIAL;
 }
 
@@ -9899,7 +10066,7 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI, CvArea* pArea
 
 				int iNumOffensiveUnits = AI_totalUnitAIs(UNITAI_ATTACK_CITY) + AI_totalUnitAIs(UNITAI_ATTACK) + AI_totalUnitAIs(UNITAI_COUNTER)/2;
 				int iNumDefensiveUnits = AI_totalUnitAIs(UNITAI_CITY_DEFENSE) + AI_totalUnitAIs(UNITAI_RESERVE) + AI_totalUnitAIs(UNITAI_CITY_COUNTER)/2 + AI_totalUnitAIs(UNITAI_COLLATERAL)/2;
-				iSiegeUnits += (iSiegeImmune*iNumOffensiveUnits)/(iNumOffensiveUnits+iNumDefensiveUnits);
+				iSiegeUnits += (iSiegeImmune*iNumOffensiveUnits)/std::max(1,iNumOffensiveUnits+iNumDefensiveUnits);
 
 				int iMAX_HIT_POINTS = GC.getDefineINT("MAX_HIT_POINTS");
 
@@ -11859,6 +12026,13 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 	for (iI = 0; iI < GC.getNumBuildingClassInfos(); iI++)
 	{
 		iTempValue = kCivic.getBuildingHappinessChanges(iI);
+/************************************************************************************************/
+/* Afforess	                  Start		 01/17/10                                               */
+/************************************************************************************************/
+		iTempValue += kCivic.getBuildingHealthChanges(iI);
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 		if (iTempValue != 0)
 		{
 			// Nationalism
@@ -19490,14 +19664,22 @@ bool CvPlayerAI::AI_advancedStartPlaceCity(CvPlot* pPlot)
 			return false;
 		}
 	}
-	
-	if (pCity->getCultureLevel() <= 1)
+/************************************************************************************************/
+/* Afforess	                  Start		 06/07/10                                               */
+/************************************************************************************************/
+	//Only expand culture when we have lots to spare. Never expand for the capital, the palace works fine on it's own
+	if (pCity != getCapitalCity() && getAdvancedStartPoints() > getAdvancedStartCultureCost(true, pCity) * 50)
 	{
-		doAdvancedStartAction(ADVANCEDSTARTACTION_CULTURE, pPlot->getX(), pPlot->getY(), -1, true);
+		if (pCity->getCultureLevel() <= 1)
+		{
+			doAdvancedStartAction(ADVANCEDSTARTACTION_CULTURE, pPlot->getX(), pPlot->getY(), -1, true);
+			//to account for culture expansion.
+			pCity->AI_updateBestBuild();
+		}
 	}
-	
-	//to account for culture expansion.
-	pCity->AI_updateBestBuild();
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/	
 	
 	int iPlotsImproved = 0;
 	for (int iI = 0; iI < NUM_CITY_PLOTS; iI++)
@@ -19515,7 +19697,15 @@ bool CvPlayerAI::AI_advancedStartPlaceCity(CvPlot* pPlot)
 		}
 	}
 
+/************************************************************************************************/
+/* Afforess	                  Start		 06/07/10                                               */
+/************************************************************************************************/
+	int iDivisor = std::max(1, 2000 / std::max(1, getAdvancedStartPoints()));
 	int iTargetPopulation = pCity->happyLevel() + (getCurrentEra() / 2);
+	iTargetPopulation /= iDivisor;
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/	
 	
 	while (iPlotsImproved < iTargetPopulation)
 	{
@@ -20571,7 +20761,18 @@ void CvPlayerAI::AI_doEnemyUnitData()
 							}
 						}
 					}
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       07/16/10                                Maniac        */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
 					else if (pLoopUnit->getOwnerINLINE() != getID())
+*/
+					else if (pLoopUnit->getTeam() != getTeam())
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 					{
 						iUnitValue += pLoopUnit->canAttack() ? 4 : 1;
 						if (pLoopPlot->getCulture(getID()) > 0)
@@ -20641,14 +20842,37 @@ void CvPlayerAI::AI_doEnemyUnitData()
 		if (m_aiUnitClassWeights[iI] > 0)
 		{
 			UnitTypes eUnit = (UnitTypes)GC.getUnitClassInfo((UnitClassTypes)iI).getDefaultUnitIndex();
+/************************************************************************************************/
+/* Afforess	                  Start		 01/17/10                                               */
+/*                                                                                              */
+/*   TakBal Crash Fix when NO_UNITCOMBAT has a defense value                                    */
+/************************************************************************************************/
+/* original code
 			m_aiUnitCombatWeights[GC.getUnitInfo(eUnit).getUnitCombatType()] += m_aiUnitClassWeights[iI];
-
+*/
+            int ctype = GC.getUnitInfo(eUnit).getUnitCombatType();
+            if (ctype >= 0 && ctype < GC.getNumUnitCombatInfos())
+                m_aiUnitCombatWeights[ctype] += m_aiUnitClassWeights[iI];
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 		}
 	}
 	
 	for (iI = 0; iI < GC.getNumUnitCombatInfos(); iI++)
 	{
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       07/16/10                                Maniac        */
+/*                                                                                              */
+/* Bugfix                                                                                       */
+/************************************************************************************************/
+/* original bts code
 		if (m_aiUnitCombatWeights[iI] > 25)
+*/
+		if (m_aiUnitCombatWeights[iI] > 2500)
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 		{
 			m_aiUnitCombatWeights[iI] += 2500;
 		}
@@ -20675,6 +20899,9 @@ int CvPlayerAI::AI_calculateUnitAIViability(UnitAITypes eUnitAI, DomainTypes eDo
 /* original BTS code
 		CvUnitInfo& kUnitInfo = GC.getUnitInfo((UnitTypes)iI);
 */
+		//Afforess CTD Fix:
+		if (eLoopUnit == NO_UNIT)
+			continue;
 		CvUnitInfo& kUnitInfo = GC.getUnitInfo(eLoopUnit);
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */

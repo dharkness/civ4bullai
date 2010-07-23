@@ -564,6 +564,14 @@ int CvCityAI::AI_specialistValue(SpecialistTypes eSpecialist, bool bAvoidGrowth,
 		{
 			int iUnitClass = GC.getSpecialistInfo(eSpecialist).getGreatPeopleUnitClass();
 			FAssert(iUnitClass != NO_UNITCLASS);
+/************************************************************************************************/
+/* Afforess	                  Start		 01/18/10                                               */
+/************************************************************************************************/
+            if (iUnitClass != NO_UNITCLASS)
+			{
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 			
 			UnitTypes eGreatPeopleUnit = (UnitTypes)GC.getCivilizationInfo(getCivilizationType()).getCivilizationUnits(iUnitClass);
 			if (eGreatPeopleUnit != NO_UNIT)
@@ -574,6 +582,13 @@ int CvCityAI::AI_specialistValue(SpecialistTypes eSpecialist, bool bAvoidGrowth,
 					iTempValue += kUnitInfo.getGreatWorkCulture() / ((GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_CULTURE3)) ? 200 : 350);
 				}
 			}
+/************************************************************************************************/
+/* Afforess	                  Start		 01/18/10                                               */
+/************************************************************************************************/
+			}
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 		}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
@@ -597,7 +612,14 @@ int CvCityAI::AI_specialistValue(SpecialistTypes eSpecialist, bool bAvoidGrowth,
 					
 					int iUnitClass = GC.getSpecialistInfo(eSpecialist).getGreatPeopleUnitClass();
                     FAssert(iUnitClass != NO_UNITCLASS);
-                    
+/************************************************************************************************/
+/* Afforess	                  Start		 01/18/10                                               */
+/************************************************************************************************/
+                    if (iUnitClass != NO_UNITCLASS)
+					{
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 					UnitTypes eGreatPeopleUnit = (UnitTypes) pCivilizationInfo->getCivilizationUnits(iUnitClass);
 					if (eGreatPeopleUnit != NO_UNIT)
 					{
@@ -614,8 +636,14 @@ int CvCityAI::AI_specialistValue(SpecialistTypes eSpecialist, bool bAvoidGrowth,
 								iBestSpreadValue = std::max(iBestSpreadValue, GC.getGameINLINE().countReligionLevels(eReligion));
 							}
 						}
-				
 					}
+/************************************************************************************************/
+/* Afforess	                  Start		 01/18/10                                               */
+/************************************************************************************************/
+					}
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 				}
 			}
 
@@ -879,6 +907,26 @@ void CvCityAI::AI_chooseProduction()
      		iMaxSettlers = (iMaxSettlers + 2) / 3;
      	}
     }
+/************************************************************************************************/
+/* Fuyu                    Start		 07/23/10                                               */
+/*                                                                                              */
+/* Avoid Making Settlers Very Early Game                                                        */
+/************************************************************************************************/
+//Fuyu: should not be necessary with Better AI but it does no harm either
+	int iMinPop = 2;
+	bool bIsCityTooSmallForSettler = false;
+
+	if (getYieldRate(YIELD_FOOD) - foodConsumption(true) > 0)
+	{
+		if (getPopulation() < iMinPop)
+		{
+			bIsCityTooSmallForSettler = true;
+		}
+	}
+/************************************************************************************************/
+/* Fuyu 	                     END                                                            */
+/************************************************************************************************/
+
     
     bool bChooseWorker = false;
     
@@ -1822,8 +1870,24 @@ void CvCityAI::AI_chooseProduction()
 								return;
 							}
 						}
-						
-						return;
+
+/************************************************************************************************/
+/* Fuyu                    Start		 07/23/10                                               */
+/*                                                                                              */
+/* Avoid Making Settlers Very Early Game                                                        */
+/************************************************************************************************/
+//avoid settler 1 if pop is not 2 yet
+						if (!bIsCityTooSmallForSettler)
+						{
+							return;
+						}
+						else
+						{
+							if( gCityLogLevel >= 2 ) logBBAI("      City %S is too small for settler 1", getName().GetCString());
+						}
+/************************************************************************************************/
+/* Fuyu 	                     END                                                            */
+/************************************************************************************************/
 					}
 				}
 			}
@@ -6110,7 +6174,14 @@ int CvCityAI::AI_clearFeatureValue(int iIndex)
 	
 	FeatureTypes eFeature = pPlot->getFeatureType();
 	FAssert(eFeature != NO_FEATURE);
-	
+/************************************************************************************************/
+/* Afforess	                  Start		 12/7/09                                                */
+/************************************************************************************************/
+	if (eFeature == NO_FEATURE)
+		return 0;
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/	
 	CvFeatureInfo& kFeatureInfo = GC.getFeatureInfo(eFeature);
 	
 	int iValue = 0;
@@ -10311,13 +10382,31 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 /* original code
 			if (GC.getImprovementInfo(pPlot->getImprovementType()).isImprovementBonusTrade(eNonObsoleteBonus))
 */
+			if (GC.getImprovementInfo(pPlot->getImprovementType()).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(pPlot->getImprovementType()).isActsAsCity())
 /*************************************************************************************************/
 /**	Forts Connect Resources					END													**/
 /*************************************************************************************************/
-			if (GC.getImprovementInfo(pPlot->getImprovementType()).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(pPlot->getImprovementType()).isActsAsCity())
 			{
 				bHasBonusImprovement = true;
 			}
+/********************************************************************************/
+/* 	Bonus Improvement: Wait for Upgrade							Fuyu		    */
+/********************************************************************************/
+			//Fuyu: patience. We can wait 10 turns for upgrade
+			else if (GC.getImprovementInfo(pPlot->getImprovementType()).getImprovementUpgrade() != NO_IMPROVEMENT)
+			{
+				if (GC.getImprovementInfo((ImprovementTypes)(GC.getImprovementInfo(pPlot->getImprovementType()).getImprovementUpgrade())).isImprovementBonusTrade(eNonObsoleteBonus)
+					|| GC.getImprovementInfo((ImprovementTypes)(GC.getImprovementInfo(pPlot->getImprovementType()).getImprovementUpgrade())).isActsAsCity())
+				{
+					if (pPlot->getUpgradeTimeLeft(pPlot->getImprovementType(), getOwner()) <= 1 + ((9 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getImprovementPercent() * GC.getEraInfo(GC.getGameINLINE().getStartEra()).getImprovementPercent())/10000))
+					{
+						bHasBonusImprovement = true;
+					}
+				}
+			}
+/********************************************************************************/
+/* 	Bonus Improvement: Wait for Upgrade							END			    */
+/********************************************************************************/
 		}
 	}
 	
@@ -10570,16 +10659,32 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 /*************************************************************************************************/
 					if (eNonObsoleteBonus != NO_BONUS)
 					{
+						bool bTechCityTrade = (GET_TEAM(getTeam()).isHasTech((TechTypes)(GC.getBonusInfo(eNonObsoleteBonus).getTechCityTrade())));
+
 						if (!bHasBonusImprovement)
 						{
-							//Fuyu: taking this out again here because I fear the AI workers would spend too much time on forts for not yet enabled resources
-							if (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) /* || GC.getImprovementInfo(eFinalImprovement).isActsAsCity() */)
+							//if ( (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo(eFinalImprovement).isActsAsCity() && bTechCityTrade) )
+							//	&& (GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo(eImprovement).isActsAsCity() && bTechCityTrade)) )
+							if (GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || ((GC.getImprovementInfo(eImprovement).isActsAsCity() && bTechCityTrade)
+								/* && (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(eFinalImprovement).isActsAsCity()) */ ))
 							{
 								iValue += (GET_PLAYER(getOwnerINLINE()).AI_bonusVal(eNonObsoleteBonus) * 10);
 								iValue += 200;
+								if (!(GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo(eFinalImprovement).isActsAsCity() && bTechCityTrade)))
+								{
+									//reduce value for temporary solutions
+									iValue -= 150;
+									if (!bTechCityTrade)
+									{
+										//remove all value again
+										iValue -= (GET_PLAYER(getOwnerINLINE()).AI_bonusVal(eNonObsoleteBonus) * 10);
+										iValue -= 50;
+										iValue++;
+									}
+								}
 								if (eBestBuild != NO_BUILD)
 								{
-									if ((GC.getBuildInfo(eBestBuild).getImprovement() == NO_IMPROVEMENT) || !(GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isActsAsCity()))
+									if ((GC.getBuildInfo(eBestBuild).getImprovement() == NO_IMPROVEMENT) || !(GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isActsAsCity() && bTechCityTrade)))
 									{
 										//Always prefer improvements which connect bonuses.
 										eBestBuild = NO_BUILD;
@@ -10591,15 +10696,22 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 							{
 								if (eBestBuild != NO_BUILD)
 								{
-									if ((GC.getBuildInfo(eBestBuild).getImprovement() != NO_IMPROVEMENT) && (GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isActsAsCity()))
+									if ((GC.getBuildInfo(eBestBuild).getImprovement() != NO_IMPROVEMENT) && (GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isActsAsCity() && bTechCityTrade)))
 									{
 										iValue -= 1000;
 									}
 								}
+								if (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(eFinalImprovement).isActsAsCity())
+								{
+									//very small incentive to build improvements that could later connect the bonus resource
+									iValue++;
+								}
 							}
-
 						}
-						else if (!(GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(eFinalImprovement).isActsAsCity()))
+						//else if (!((GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo(eFinalImprovement).isActsAsCity() && bTechCityTrade))
+						//	&& (GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo(eImprovement).isActsAsCity() && bTechCityTrade)) ))
+						else if (!(GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || ((GC.getImprovementInfo(eImprovement).isActsAsCity() && bTechCityTrade)
+							/* && (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(eFinalImprovement).isActsAsCity()) */ )))
 						{
 							iValue -= 1000;
 						}
@@ -11919,7 +12031,15 @@ void CvCityAI::AI_updateSpecialYieldMultiplier()
 		int iExpenses = 1 + kPlayer.calculateInflatedCosts() - std::min(0, kPlayer.getGoldPerTurn());
 		FAssert(iIncome > 0);
 		
-		int iRatio = (100 * iExpenses) / iIncome;
+/************************************************************************************************/
+/* Afforess	                  Start		 12/7/09                                                */
+/*                                                                                              */
+/*       Divide By Zero Fix                                                                     */
+/************************************************************************************************/
+		int iRatio = (100 * iExpenses) / std::max(1, iIncome);
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 		//Gold -> Production Reduced To
 		// 40- -> 100%
 		// 60 -> 83%
@@ -12518,23 +12638,30 @@ void CvCityAI::AI_updateWorkersNeededHere()
 BuildingTypes CvCityAI::AI_bestAdvancedStartBuilding(int iPass)
 {
 	int iFocusFlags = 0;
+/************************************************************************************************/
+/* Afforess	                  Start		 06/07/10                                               */
+/************************************************************************************************/
 	if (iPass >= 0)
 	{
-		iFocusFlags |= BUILDINGFOCUS_FOOD;
+		iFocusFlags |= BUILDINGFOCUS_CULTURE;
 	}
 	if (iPass >= 1)
 	{
-		iFocusFlags |= BUILDINGFOCUS_PRODUCTION;
+		iFocusFlags |= BUILDINGFOCUS_FOOD;
 	}
 	if (iPass >= 2)
 	{
-		iFocusFlags |= BUILDINGFOCUS_EXPERIENCE;
+		iFocusFlags |= BUILDINGFOCUS_PRODUCTION;
 	}
 	if (iPass >= 3)
 	{
-		iFocusFlags |= (BUILDINGFOCUS_HAPPY | BUILDINGFOCUS_HEALTHY);
+		iFocusFlags |= BUILDINGFOCUS_EXPERIENCE;
 	}
 	if (iPass >= 4)
+	{
+		iFocusFlags |= (BUILDINGFOCUS_HAPPY | BUILDINGFOCUS_HEALTHY);
+	}
+	if (iPass >= 5)
 	{
 		iFocusFlags |= (BUILDINGFOCUS_GOLD | BUILDINGFOCUS_RESEARCH | BUILDINGFOCUS_MAINTENANCE);
 		if (!GC.getGameINLINE().isOption(GAMEOPTION_NO_ESPIONAGE))
@@ -12543,9 +12670,11 @@ BuildingTypes CvCityAI::AI_bestAdvancedStartBuilding(int iPass)
 		}
 	}
 			
-	return AI_bestBuildingThreshold(iFocusFlags, 0, std::max(0, 20 - iPass * 5));
+	return AI_bestBuildingThreshold(iFocusFlags, 0, std::max(0, 25 - iPass * 5));
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 }
-
 //
 //
 //

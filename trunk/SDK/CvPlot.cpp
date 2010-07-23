@@ -5508,6 +5508,23 @@ void CvPlot::setFeatureType(FeatureTypes eNewValue, int iVariety)
 				}
 			}
 		}
+		// Mongoose FeatureDamageFix BEGIN
+		//
+		else if (GC.getFeatureInfo(getFeatureType()).getTurnDamage() > 0)
+		{
+			CLLNode<IDInfo>* pUnitNode;
+			CvUnit* pLoopUnit;
+			pUnitNode = headUnitNode();
+			while (pUnitNode != NULL)
+			{
+				pLoopUnit = ::getUnit(pUnitNode->m_data);
+				pUnitNode = nextUnitNode(pUnitNode);
+				pLoopUnit->getGroup()->clearMissionQueue();
+				pLoopUnit->getGroup()->setActivityType(ACTIVITY_AWAKE);
+			}
+		}
+		//
+		// Mongoose FeatureDamageFix END
 	}
 }
 

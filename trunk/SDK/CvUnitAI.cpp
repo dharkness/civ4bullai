@@ -1325,7 +1325,9 @@ void CvUnitAI::AI_settleMove()
 	{
 		if( GET_PLAYER(getOwnerINLINE()).AI_isFinancialTrouble() )
 		{
-			iOtherBestFoundValue = 0;
+            // Thomas SG
+            //iOtherBestFoundValue = 0;
+            iOtherBestFoundValue /= 4;
 		}
 	}
 /************************************************************************************************/
@@ -4279,7 +4281,9 @@ void CvUnitAI::AI_exploreMove()
 
 	if (getDamage() > 0)
 	{
-		if ((plot()->getFeatureType() == NO_FEATURE) || (GC.getFeatureInfo(plot()->getFeatureType()).getTurnDamage() == 0))
+		// Mongoose FeatureDamageFix BEGIN
+		if ((plot()->getFeatureType() == NO_FEATURE) || (GC.getFeatureInfo(plot()->getFeatureType()).getTurnDamage() <= 0))
+		// Mongoose FeatureDamageFix END
 		{
 			getGroup()->pushMission(MISSION_HEAL);
 			return;
@@ -5789,7 +5793,7 @@ void CvUnitAI::AI_attackSeaMove()
 				return;
 			}
 
-			if (AI_shadow(UNITAI_ASSAULT_SEA, 4, 34, false, true, getMoves()))
+			if (AI_shadow(UNITAI_ASSAULT_SEA, 4, 34, false, true, 2))
 			{
 				return;
 			}
@@ -6105,7 +6109,7 @@ void CvUnitAI::AI_reserveSeaMove()
 				return;
 			}
 
-			if (AI_shadow(UNITAI_SETTLER_SEA, 2, -1, false, true, getMoves()))
+			if (AI_shadow(UNITAI_SETTLER_SEA, 2, -1, false, true, 4))
 			{
 				return;
 			}
@@ -6332,7 +6336,7 @@ void CvUnitAI::AI_escortSeaMove()
 				return;
 			}
 
-			if (AI_group(UNITAI_ASSAULT_SEA, -1, /*iMaxOwnUnitAI*/ 1, -1, /*bIgnoreFaster*/ true, false, false, /*iMaxPath*/ getMoves()))
+			if (AI_group(UNITAI_ASSAULT_SEA, -1, /*iMaxOwnUnitAI*/ 1, -1, /*bIgnoreFaster*/ true, false, false, /*iMaxPath*/ 1))
 			{
 				return;
 			}
@@ -6607,7 +6611,9 @@ void CvUnitAI::AI_exploreSeaMove()
 
 	if (getDamage() > 0)
 	{
-		if ((plot()->getFeatureType() == NO_FEATURE) || (GC.getFeatureInfo(plot()->getFeatureType()).getTurnDamage() == 0))
+		// Mongoose FeatureDamageFix BEGIN
+		if ((plot()->getFeatureType() == NO_FEATURE) || (GC.getFeatureInfo(plot()->getFeatureType()).getTurnDamage() <= 0))
+		// Mongoose FeatureDamageFix ÉND
 		{
 			getGroup()->pushMission(MISSION_HEAL);
 			return;
@@ -8097,7 +8103,7 @@ void CvUnitAI::AI_missileCarrierSeaMove()
 
 		if( iEnemyOffense > iOurDefense/4 || iOurDefense == 0 ) //prioritize getting outta there
 		{
-			if (AI_shadow(UNITAI_ASSAULT_SEA, 1, 50, false, true, getMoves()))
+			if (AI_shadow(UNITAI_ASSAULT_SEA, 1, 50, false, true, 1))
 			{
 				return;
 			}
@@ -11727,7 +11733,9 @@ bool CvUnitAI::AI_heal(int iDamagePercent, int iMaxPath)
 	
 	if (plot()->getFeatureType() != NO_FEATURE)
 	{
-		if (GC.getFeatureInfo(plot()->getFeatureType()).getTurnDamage() != 0)
+		// Mongoose FeatureDamageFix BEGIN
+		if (GC.getFeatureInfo(plot()->getFeatureType()).getTurnDamage() > 0)
+		// Mongoose FeatureDamageFix END
 		{
 			//Pass through
 			//(actively seeking a safe spot may result in unit getting stuck)
@@ -12230,7 +12238,18 @@ bool CvUnitAI::AI_spreadCorporation()
 	{
 		return false;
 	}
+/*************************************************************************************************/
+/**	Xienwolf Tweak							03/20/09											**/
+/**																								**/
+/**										Firaxis Typo Fix										**/
+/*************************************************************************************************/
+/**								---- Start Original Code ----									**
 	bool bHasHQ = (GET_TEAM(getTeam()).hasHeadquarters((CorporationTypes)iI));
+/**								----  End Original Code  ----									**/
+	bool bHasHQ = (GET_TEAM(getTeam()).hasHeadquarters(eCorporation));
+/*************************************************************************************************/
+/**	Tweak									END													**/
+/*************************************************************************************************/
 
 	int iBestValue = 0;
 	CvPlot* pBestPlot = NULL;
@@ -13629,7 +13648,18 @@ bool CvUnitAI::AI_patrol()
 				{
 					if (generatePath(pAdjacentPlot, 0, true))
 					{
+/*************************************************************************************************/
+/**	Xienwolf Tweak							12/13/08											**/
+/**																								**/
+/**					Reduction in massive Random Spam in Logger files by using Map				**/
+/*************************************************************************************************/
+/**								---- Start Original Code ----									**
 						iValue = (1 + GC.getGameINLINE().getSorenRandNum(10000, "AI Patrol"));
+/**								----  End Original Code  ----									**/
+						iValue = (1 + GC.getGameINLINE().getMapRandNum(10000, "AI Patrol"));
+/*************************************************************************************************/
+/**	Tweak									END													**/
+/*************************************************************************************************/
 
 						if (isBarbarian())
 						{
@@ -14119,8 +14149,18 @@ bool CvUnitAI::AI_explore()
 			{
 				iValue += 100000;
 			}
-
+/*************************************************************************************************/
+/**	Xienwolf Tweak							12/13/08											**/
+/**																								**/
+/**					Reduction in massive Random Spam in Logger files by using Map				**/
+/*************************************************************************************************/
+/**								---- Start Original Code ----									**
 			if (iValue > 0 || GC.getGameINLINE().getSorenRandNum(4, "AI make explore faster ;)") == 0)
+/**								----  End Original Code  ----									**/
+			if (iValue > 0 || GC.getGameINLINE().getMapRandNum(4, "AI make explore faster ;)") == 0)
+/*************************************************************************************************/
+/**	Tweak									END													**/
+/*************************************************************************************************/
 			{
 				if (!(pLoopPlot->isRevealed(getTeam(), false)))
 				{
@@ -14157,7 +14197,18 @@ bool CvUnitAI::AI_explore()
 						{
 							if (!atPlot(pLoopPlot) && generatePath(pLoopPlot, MOVE_NO_ENEMY_TERRITORY, true, &iPathTurns))
 							{
+/*************************************************************************************************/
+/**	Xienwolf Tweak							12/13/08											**/
+/**																								**/
+/**					Reduction in massive Random Spam in Logger files by using Map				**/
+/*************************************************************************************************/
+/**								---- Start Original Code ----									**
 								iValue += GC.getGameINLINE().getSorenRandNum(250 * abs(xDistance(getX_INLINE(), pLoopPlot->getX_INLINE())) + abs(yDistance(getY_INLINE(), pLoopPlot->getY_INLINE())), "AI explore");
+/**								----  End Original Code  ----									**/
+								iValue += GC.getGameINLINE().getMapRandNum(250 * abs(xDistance(getX_INLINE(), pLoopPlot->getX_INLINE())) + abs(yDistance(getY_INLINE(), pLoopPlot->getY_INLINE())), "AI explore");
+/*************************************************************************************************/
+/**	Tweak									END													**/
+/*************************************************************************************************/
 
 								if (pLoopPlot->isAdjacentToLand())
 								{
@@ -14273,7 +14324,18 @@ bool CvUnitAI::AI_exploreRange(int iRange)
 								{
 									if (iPathTurns <= iRange)
 									{
+/*************************************************************************************************/
+/**	Xienwolf Tweak							12/13/08											**/
+/**																								**/
+/**					Reduction in massive Random Spam in Logger files by using Map				**/
+/*************************************************************************************************/
+/**								---- Start Original Code ----									**
 										iValue += GC.getGameINLINE().getSorenRandNum(10000, "AI Explore");
+/**								----  End Original Code  ----									**/
+										iValue += GC.getGameINLINE().getMapRandNum(10000, "AI Explore");
+/*************************************************************************************************/
+/**	Tweak									END													**/
+/*************************************************************************************************/
 
 										if (pLoopPlot->isAdjacentToLand())
 										{
@@ -15328,7 +15390,8 @@ bool CvUnitAI::AI_pirateBlockade()
 							{
 								if (pLoopUnit->currEffectiveStr(NULL, NULL, NULL) > currEffectiveStr(pLoopPlot, pLoopUnit, NULL))
 								{
-									iBestHostileMoves = std::max(iBestHostileMoves, pLoopUnit->getMoves());									
+									//Fuyu: No (rail)roads on water, always movement cost 1. Rounding up of course
+									iBestHostileMoves = std::max(iBestHostileMoves, (pLoopUnit->getMoves() + GC.getMOVE_DENOMINATOR() - 1) / GC.getMOVE_DENOMINATOR());									
 								}
 							}
 						}
