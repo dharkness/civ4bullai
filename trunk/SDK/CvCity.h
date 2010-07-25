@@ -997,7 +997,14 @@ public:
 	virtual int AI_specialistValue(SpecialistTypes eSpecialist, bool bAvoidGrowth, bool bRemove) = 0;
 	virtual void AI_chooseProduction() = 0;
 	virtual UnitTypes AI_bestUnit(bool bAsync = false, AdvisorTypes eIgnoreAdvisor = NO_ADVISOR, UnitAITypes* peBestUnitAI = NULL) = 0;
-	virtual UnitTypes AI_bestUnitAI(UnitAITypes eUnitAI, bool bAsync = false, AdvisorTypes eIgnoreAdvisor = NO_ADVISOR) = 0;
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bIgnoreNotUnitAIs
+	virtual UnitTypes AI_bestUnitAI(UnitAITypes eUnitAI, bool bAsync = false, AdvisorTypes eIgnoreAdvisor = NO_ADVISOR, bool bIgnoreNotUnitAIs = false) = 0;
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 	virtual BuildingTypes AI_bestBuilding(int iFocusFlags = 0, int iMaxTurns = MAX_INT, bool bAsync = false, AdvisorTypes eIgnoreAdvisor = NO_ADVISOR) = 0;
 	virtual int AI_buildingValue(BuildingTypes eBuilding, int iFocusFlags = 0) = 0;
 	virtual int AI_projectValue(ProjectTypes eProject) = 0;

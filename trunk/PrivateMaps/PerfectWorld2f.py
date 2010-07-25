@@ -3702,7 +3702,7 @@ class BonusPlacer :
 #                self.AddEmergencyBonus(bonus,False)
             if bonus.currentBonusCount < gc.getGame().countCivPlayersEverAlive() and bonus.desiredBonusCount > bonus.currentBonusCount:
                 for ij in range((min(bonus.desiredBonusCount, gc.getGame().countCivPlayersEverAlive()) - bonus.currentBonusCount)):
-                self.AddEmergencyBonus(bonus,False)
+                    self.AddEmergencyBonus(bonus,False)
 
         #now check again to see that all resources have been placed at least once,
         #this time ignoring area rules and also class spacing
@@ -4187,7 +4187,7 @@ class StartingPlotFinder :
             #(Fuyu change: less than 2*oldWorldValuePerPlayer)
             #as they are too small to put a player on, however leave at least
             #half as many continents as there are players, just in case the
-            #continents are *all* quite small. 
+            #continents are *all* quite small.
             #(Fuyu change: at least half of total old world value)
             #
             #numAreas = max(1,len(self.startingAreaList) - len(shuffledPlayers)/3)
@@ -4200,7 +4200,7 @@ class StartingPlotFinder :
                         oldWorldRemovedValue -= self.startingAreaList[0].rawValue
                         break
                     else:
-                    del self.startingAreaList[0]
+                        del self.startingAreaList[0]
                 else:
                     break #All remaining should be big enough
                 

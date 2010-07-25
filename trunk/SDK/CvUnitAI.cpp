@@ -19613,7 +19613,9 @@ bool CvUnitAI::AI_retreatToCity(bool bPrimary, bool bAirlift, int iMaxPath)
 									if( !bCheck )
 									{
 										int iLoopDanger = GET_PLAYER(getOwnerINLINE()).AI_getPlotDanger(pLoopCity->plot());
-										bCheck = (iLoopDanger == 0) || (iLoopDanger < iCurrentDanger);
+										bCheck = (iLoopDanger == 0) || (iLoopDanger < iCurrentDanger
+											//Fuyu: try to avoid doomed cities
+											&& iLoopDanger < 2*(pLoopCity->plot()->getNumDefenders(getOwnerINLINE())) );
 									}
 									
 									if( bCheck )

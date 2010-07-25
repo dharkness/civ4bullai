@@ -1,4 +1,4 @@
-Better BUG AI 1.01f (2010-07-08)
+Better BUG AI 1.02a (2010-07-25)
 --------------------------
 http://forums.civfanatics.com/showthread.php?t=354019
 
@@ -24,6 +24,7 @@ my own changes:
      and less hamlets/villages/towns get turned to workshops.
     * Considering currently constructed building and checking Health level against happy level
      for the BULL feature 'Health Effects from Removing Features'.
+	* Early defender logic: Warriors blocking a unitai no longer causes troubles
  * PlayerAI:
     * Using a sightly different valuation of siege units for UNITAI_ATTACK_CITY.
     * Using a sightly different values for targetCityValue.
