@@ -9448,9 +9448,14 @@ int CvPlayerAI::AI_unitImpassableCount(UnitTypes eUnit) const
 
 	return iCount;
 }
-
-
-int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI, CvArea* pArea) const
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bIgnoreNotUnitAIs
+int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI, CvArea* pArea, bool bIgnoreNotUnitAIs) const
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 {
 	PROFILE_FUNC();
 
@@ -9471,11 +9476,17 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI, CvArea* pArea
 			return 0;
 		}
 	}
-
-	if (GC.getUnitInfo(eUnit).getNotUnitAIType(eUnitAI))
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bIgnoreNotUnitAIs
+	if (GC.getUnitInfo(eUnit).getNotUnitAIType(eUnitAI) && !bIgnoreNotUnitAIs)
 	{
 		return 0;
 	}
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 
 	bValid = GC.getUnitInfo(eUnit).getUnitAIType(eUnitAI);
 

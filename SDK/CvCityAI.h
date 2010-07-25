@@ -33,7 +33,14 @@ public:
 	void AI_chooseProduction();
 
 	UnitTypes AI_bestUnit(bool bAsync = false, AdvisorTypes eIgnoreAdvisor = NO_ADVISOR, UnitAITypes* peBestUnitAI = NULL);
-	UnitTypes AI_bestUnitAI(UnitAITypes eUnitAI, bool bAsync = false, AdvisorTypes eIgnoreAdvisor = NO_ADVISOR);
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bIgnoreNotUnitAIs
+	UnitTypes AI_bestUnitAI(UnitAITypes eUnitAI, bool bAsync = false, AdvisorTypes eIgnoreAdvisor = NO_ADVISOR, bool bIgnoreNotUnitAIs = false);
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 
 	BuildingTypes AI_bestBuilding(int iFocusFlags = 0, int iMaxTurns = 0, bool bAsync = false, AdvisorTypes eIgnoreAdvisor = NO_ADVISOR);
 	BuildingTypes AI_bestBuildingThreshold(int iFocusFlags = 0, int iMaxTurns = 0, int iMinThreshold = 0, bool bAsync = false, AdvisorTypes eIgnoreAdvisor = NO_ADVISOR);
@@ -198,7 +205,14 @@ protected:
 /*                                                                                              */
 /* City AI                                                                                      */
 /************************************************************************************************/
-	bool AI_chooseUnit(UnitAITypes eUnitAI = NO_UNITAI, int iOdds = -1);
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bIgnoreNotUnitAIs
+	bool AI_chooseUnit(UnitAITypes eUnitAI = NO_UNITAI, int iOdds = -1, bool bIgnoreNotUnitAIs = false);
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 	bool AI_chooseUnit(UnitTypes eUnit, UnitAITypes eUnitAI);
 	
 	bool AI_chooseDefender();

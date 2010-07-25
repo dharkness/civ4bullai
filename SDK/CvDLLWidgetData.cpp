@@ -4883,7 +4883,7 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 /*                                                                                              */
 /************************************************************************************************/
 	// Add string showing version number
-	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 1.02a");
+	szTempBuffer.Format(NEWLINE SETCOLR L"%S" ENDCOLR, TEXT_COLOR("COLOR_POSITIVE_TEXT"), "Better BTS AI 1.02a [Build 595]");
 	szBuffer.append(szTempBuffer);
 #ifdef LOG_AI
 	szTempBuffer.Format(NEWLINE L"%c", gDLL->getSymbolID(BULLET_CHAR));
@@ -4938,6 +4938,7 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 	szBuffer.append(szTempBuffer);
 	szBuffer.append(gDLL->getText("TXT_KEY_MOD_SHAM_SPOILER"));
 #endif
+	szBuffer.append(NEWLINE L"===== BULLAI [Build 101] =====");
 	// separator line
 	szBuffer.append(NEWLINE L"==============================" NEWLINE);
 // BUG - Version Info - end

@@ -907,25 +907,6 @@ void CvCityAI::AI_chooseProduction()
      		iMaxSettlers = (iMaxSettlers + 2) / 3;
      	}
     }
-/************************************************************************************************/
-/* Fuyu                    Start		 07/23/10                                               */
-/*                                                                                              */
-/* Avoid Making Settlers Very Early Game                                                        */
-/************************************************************************************************/
-//Fuyu: should not be necessary with Better AI but it does no harm either
-	int iMinPop = 2;
-	bool bIsCityTooSmallForSettler = false;
-
-	if (getYieldRate(YIELD_FOOD) - foodConsumption(true) > 0)
-	{
-		if (getPopulation() < iMinPop)
-		{
-			bIsCityTooSmallForSettler = true;
-		}
-	}
-/************************************************************************************************/
-/* Fuyu 	                     END                                                            */
-/************************************************************************************************/
 
     
     bool bChooseWorker = false;
@@ -1182,6 +1163,20 @@ void CvCityAI::AI_chooseProduction()
 		{
 			return;
 		}
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bIgnoreNotUnitAIs
+		if (kPlayer.getNumCities() <= 3)
+		{
+			if (AI_chooseUnit(UNITAI_CITY_DEFENSE, -1, true))
+			{
+				return;
+			}
+		}
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 
 		if (AI_chooseUnit(UNITAI_CITY_COUNTER))
 		{
@@ -1192,6 +1187,26 @@ void CvCityAI::AI_chooseProduction()
 		{
 			return;
 		}
+
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+		if (AI_chooseUnit(UNITAI_RESERVE))
+		{
+			return;
+		}
+
+//Fuyu bIgnoreNotUnitAIs
+		if (kPlayer.getNumCities() > 3 && iNumCitiesInArea <= 3)
+		{
+			if (AI_chooseUnit(UNITAI_CITY_DEFENSE, -1, true))
+			{
+				return;
+			}
+		}
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 
 		if (AI_chooseUnit(UNITAI_ATTACK))
 		{
@@ -1225,19 +1240,33 @@ void CvCityAI::AI_chooseProduction()
 	}
 
 	// So what's the right detection of defense which works in early game too?
+	// Fuyu: The right way is to 1) queue the warriors with UNITAI_CITY_DEFENCE or UNITAI_RESERVE,
+	// then 2) to detect defenders with plot()->plotCount(PUF_canDefendGroupHead, -1, -1, getOwnerINLINE(), NO_TEAM, PUF_isCityAIType) - compare AI_isDefended()
 	int iPlotSettlerCount = (iNumSettlers == 0) ? 0 : plot()->plotCount(PUF_isUnitAIType, UNITAI_SETTLE, -1, getOwnerINLINE());
 	int iPlotCityDefenderCount = plot()->plotCount(PUF_isUnitAIType, UNITAI_CITY_DEFENSE, -1, getOwnerINLINE());
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+	int iPlotOtherCityAICount = plot()->plotCount(PUF_canDefendGroupHead, -1, -1, getOwnerINLINE(), NO_TEAM, PUF_isCityAIType) - iPlotCityDefenderCount;
 	if( kPlayer.getCurrentEra() == 0 )
 	{
 		// Warriors are blocked from UNITAI_CITY_DEFENSE, in early game this confuses AI city building
-		if( kPlayer.AI_totalUnitAIs(UNITAI_CITY_DEFENSE) <= kPlayer.getNumCities() )
+		if( kPlayer.AI_totalUnitAIs(UNITAI_CITY_DEFENSE) <= kPlayer.getNumCities() + iNumSettlers )
 		{
 			if( kPlayer.AI_bestCityUnitAIValue(UNITAI_CITY_DEFENSE, this) == 0 )
 			{
-				iPlotCityDefenderCount = plot()->plotCount(PUF_canDefend, -1, -1, getOwnerINLINE(), NO_TEAM, PUF_isDomainType, DOMAIN_LAND);
+				iPlotCityDefenderCount += iPlotOtherCityAICount;
+				iPlotOtherCityAICount = 0;
+				if (iPlotCityDefenderCount == 0)
+				{
+					iPlotCityDefenderCount = plot()->plotCount(PUF_canDefend, -1, -1, getOwnerINLINE(), NO_TEAM, PUF_isDomainType, DOMAIN_LAND);
+				}
 			}
 		}
 	}
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 
 	//minimal defense.
 	if (iPlotCityDefenderCount <= iPlotSettlerCount)
@@ -1250,11 +1279,51 @@ void CvCityAI::AI_chooseProduction()
 			return;
 		}
 
-		if (AI_chooseUnit(UNITAI_ATTACK))
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bIgnoreNotUnitAIs
+		if (iNumCitiesInArea <= 3)
 		{
-			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses escort existing settler 1 attack", getName().GetCString());
-			return;
+			if (AI_chooseUnit(UNITAI_CITY_DEFENSE, -1, true))
+			{
+				// Yes it probably works but it should never happen in the first place
+				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses escort existing settler 1 defense (IgnoreNotUnitAIs)", getName().GetCString());
+				return;
+			}
 		}
+
+		if (iPlotCityDefenderCount + iPlotOtherCityAICount <= iPlotSettlerCount)
+		{
+
+			if (AI_chooseUnit(UNITAI_ATTACK))
+			{
+				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses escort existing settler 1 attack", getName().GetCString());
+				return;
+			}
+
+			if (AI_chooseUnit(UNITAI_CITY_COUNTER))
+			{
+				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses escort existing settler 1 city counter", getName().GetCString());
+				return;
+			}
+
+			if (AI_chooseUnit(UNITAI_CITY_SPECIAL))
+			{
+				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses escort existing settler 1 city special", getName().GetCString());
+				return;
+			}
+
+			if (AI_chooseUnit(UNITAI_RESERVE))
+			{
+				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses escort existing settler 1 reserve", getName().GetCString());
+				return;
+			}
+
+		}
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 	}
     
 	if (((iTargetCulturePerTurn > 0) || (getPopulation() > 5)) && (getCommerceRate(COMMERCE_CULTURE) == 0))
@@ -1373,7 +1442,13 @@ void CvCityAI::AI_chooseProduction()
     if (bDanger) 
     {
 		int iAttackNeeded = 4;
-		iAttackNeeded += std::max(0, AI_neededDefenders() - plot()->plotCount(PUF_isUnitAIType, UNITAI_CITY_DEFENSE, -1, getOwnerINLINE()));
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+		iAttackNeeded += std::max(0, AI_neededDefenders() - (iPlotCityDefenderCount + iPlotOtherCityAICount));
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 
 		if( kPlayer.AI_totalAreaUnitAIs(pArea, UNITAI_ATTACK) <  iAttackNeeded)
 		{
@@ -1673,7 +1748,7 @@ void CvCityAI::AI_chooseProduction()
 		}
 	}
 
-	//oppurunistic wonder build (1)
+	//opportunistic wonder build (1)
 	if (!bDanger && (!hasActiveWorldWonder()) && (kPlayer.getNumCities() <= 3))
 	{
 		// For small civ at war, don't build wonders unless winning
@@ -1759,11 +1834,32 @@ void CvCityAI::AI_chooseProduction()
 	}
 	
 	//minimal defense.
-	if (iPlotCityDefenderCount < (AI_minDefenders() + iPlotSettlerCount))
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+	if (iPlotCityDefenderCount + iPlotOtherCityAICount < (AI_minDefenders() + iPlotSettlerCount))
 	{
 		if (AI_chooseUnit(UNITAI_CITY_DEFENSE))
 		{
 			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose min defender", getName().GetCString());
+			return;
+		}
+
+		if (AI_chooseUnit(UNITAI_CITY_COUNTER))
+		{
+			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose min defender (city counter ai)", getName().GetCString());
+			return;
+		}
+
+		if (AI_chooseUnit(UNITAI_CITY_SPECIAL))
+		{
+			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose min defender (city special ai)", getName().GetCString());
+			return;
+		}
+
+		if (AI_chooseUnit(UNITAI_RESERVE))
+		{
+			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose min defender (reserve ai)", getName().GetCString());
 			return;
 		}
 
@@ -1772,7 +1868,20 @@ void CvCityAI::AI_chooseProduction()
 			if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose min defender (attack ai)", getName().GetCString());
 			return;
 		}
+
+//Fuyu bIgnoreNotUnitAIs
+		if (iNumCitiesInArea <= 3)
+		{
+			if (AI_chooseUnit(UNITAI_CITY_DEFENSE, -1, true))
+			{
+				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose min defender (IgnoreNotUnitAIs)", getName().GetCString());
+				return;
+			}
+		}
 	}
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 
 	if( !(bDefenseWar && iWarSuccessRatio < -50) )
 	{
@@ -1825,7 +1934,7 @@ void CvCityAI::AI_chooseProduction()
 							}
 						}
 /********************************************************************************/
-/* 	Build more workers #1.1											END		    */
+/* 	Build more workers #1.1										END			    */
 /********************************************************************************/
 						return;
 					}
@@ -1859,35 +1968,50 @@ void CvCityAI::AI_chooseProduction()
 							}
 						}
 /********************************************************************************/
-/* 	Build more workers #1.2											END		    */
-/********************************************************************************/	
-
-						if (kPlayer.getNumMilitaryUnits() <= kPlayer.getNumCities() + 1)
+/* 	Build more workers #1.2										END			    */
+/********************************************************************************/
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+						if (kPlayer.getNumMilitaryUnits() <= kPlayer.getNumCities() + iNumSettlers + 1
+							//Fuyu: in the beginning, don't count on other cities to build the escorts
+							|| (kPlayer.getNumCities() <= 7 && iNumCitiesInArea <= 3 && (plot()->plotCount(PUF_canDefendGroupHead, -1, -1, getOwnerINLINE(), NO_TEAM, PUF_isCityAIType) <= 1)))
 						{
 							if (AI_chooseUnit(UNITAI_CITY_DEFENSE))
 							{
 								if( gCityLogLevel >= 2 ) logBBAI("      City %S uses build settler 1 extra quick defense", getName().GetCString());
 								return;
 							}
-						}
+//Fuyu bIgnoreNotUnitAIs
+							if (iNumCitiesInArea <= 3)
+							{
+								if (AI_chooseUnit(UNITAI_CITY_DEFENSE, -1, true))
+								{
+									if( gCityLogLevel >= 2 ) logBBAI("      City %S uses build settler 1 extra quick defense (IgnoreNotUnitAIs)", getName().GetCString());
+									return;
+								}
+							}
 
-/************************************************************************************************/
-/* Fuyu                    Start		 07/23/10                                               */
-/*                                                                                              */
-/* Avoid Making Settlers Very Early Game                                                        */
-/************************************************************************************************/
-//avoid settler 1 if pop is not 2 yet
-						if (!bIsCityTooSmallForSettler)
-						{
-							return;
+							if (AI_chooseUnit(UNITAI_CITY_COUNTER))
+							{
+								if( gCityLogLevel >= 2 ) logBBAI("      City %S uses build settler 1 extra quick defense (city counter ai)", getName().GetCString());
+								return;
+							}
+							if (AI_chooseUnit(UNITAI_CITY_SPECIAL))
+							{
+								if( gCityLogLevel >= 2 ) logBBAI("      City %S uses build settler 1 extra quick defense (city special ai)", getName().GetCString());
+								return;
+							}
+
+							if (AI_chooseUnit(UNITAI_RESERVE))
+							{
+								if( gCityLogLevel >= 2 ) logBBAI("      City %S uses build settler 1 extra quick defense (reserve ai)", getName().GetCString());
+								return;
+							}
 						}
-						else
-						{
-							if( gCityLogLevel >= 2 ) logBBAI("      City %S is too small for settler 1", getName().GetCString());
-						}
-/************************************************************************************************/
-/* Fuyu 	                     END                                                            */
-/************************************************************************************************/
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 					}
 				}
 			}
@@ -1907,20 +2031,43 @@ void CvCityAI::AI_chooseProduction()
 		{
 			if ((AI_getWorkersNeeded() > 0) && (AI_getWorkersHave() == 0))
 			{
-				if( getPopulation() > 1 || (GC.getGameINLINE().getGameTurn() - getGameTurnAcquired() > (15 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent())/100) )
+				if( getPopulation() > 2 || (GC.getGameINLINE().getGameTurn() - getGameTurnAcquired() > (15 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent())/100) )
 				{
 					if (!bChooseWorker && AI_chooseUnit(UNITAI_WORKER))
 					{
-						if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker 6b", getName().GetCString());
-						return;
+						if (!isFoodProduction() && ((happyLevel() - unhappyLevel()) <= 0)
+							&& getProductionUnit() != NO_UNIT && getUnitProduction(getProductionUnit()) == 0)
+						{
+							popOrder(0);
+							bChooseWorker = true;
+
+							//Already set by chooseUnit but I'm not taking any chances
+							if ((getTeam() == GC.getGameINLINE().getActiveTeam()) || GC.getGameINLINE().isDebugMode())
+							{
+								setInfoDirty(true);
+
+								if (isCitySelected())
+								{
+									gDLL->getInterfaceIFace()->setDirty(InfoPane_DIRTY_BIT, true );
+									gDLL->getInterfaceIFace()->setDirty(SelectionButtons_DIRTY_BIT, true);
+									gDLL->getInterfaceIFace()->setDirty(CityScreen_DIRTY_BIT, true);
+									gDLL->getInterfaceIFace()->setDirty(PlotListButtons_DIRTY_BIT, true);
+								}
+							}
+						}
+						else
+						{
+							if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker 6b", getName().GetCString());
+							return;
+						}
 					}
-					bChooseWorker = true;
+					bChooseWorker = !bChooseWorker;
 				}
 			}
 		}
 	}
 /********************************************************************************/
-/* 	Build more workers #2											END		    */
+/* 	Build more workers #2										END			   */
 /********************************************************************************/
 
 
@@ -3152,8 +3299,14 @@ UnitTypes CvCityAI::AI_bestUnit(bool bAsync, AdvisorTypes eIgnoreAdvisor, UnitAI
 	return eBestUnit;
 }
 
-
-UnitTypes CvCityAI::AI_bestUnitAI(UnitAITypes eUnitAI, bool bAsync, AdvisorTypes eIgnoreAdvisor)
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bIgnoreNotUnitAIs
+UnitTypes CvCityAI::AI_bestUnitAI(UnitAITypes eUnitAI, bool bAsync, AdvisorTypes eIgnoreAdvisor, bool bIgnoreNotUnitAIs)
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 {
 	UnitTypes eLoopUnit;
 	UnitTypes eBestUnit;
@@ -3208,7 +3361,14 @@ UnitTypes CvCityAI::AI_bestUnitAI(UnitAITypes eUnitAI, bool bAsync, AdvisorTypes
 					{
 						if (canTrain(eLoopUnit))
 						{
-							iOriginalValue = GET_PLAYER(getOwnerINLINE()).AI_unitValue(eLoopUnit, eUnitAI, area());
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bIgnoreNotUnitAIs
+							iOriginalValue = GET_PLAYER(getOwnerINLINE()).AI_unitValue(eLoopUnit, eUnitAI, area(), bIgnoreNotUnitAIs);
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 
 							if (iOriginalValue > iBestOriginalValue)
 							{
@@ -3239,7 +3399,14 @@ UnitTypes CvCityAI::AI_bestUnitAI(UnitAITypes eUnitAI, bool bAsync, AdvisorTypes
 					{
 						if (canTrain(eLoopUnit))
 						{
-							iValue = GET_PLAYER(getOwnerINLINE()).AI_unitValue(eLoopUnit, eUnitAI, area());
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bIgnoreNotUnitAIs
+							iValue = GET_PLAYER(getOwnerINLINE()).AI_unitValue(eLoopUnit, eUnitAI, area(), bIgnoreNotUnitAIs);
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 
 							if ((iValue > ((iBestOriginalValue * 2) / 3)) && ((eUnitAI != UNITAI_EXPLORE) || (iValue >= iBestOriginalValue)))
 							{
@@ -5817,7 +5984,17 @@ int CvCityAI::AI_minDefenders()
 	{
 		iDefenders++;
 	}
-	
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+	if (getProductionUnitAI() == UNITAI_SETTLE)
+	{
+		iDefenders++;
+	}
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
+
 	return iDefenders;
 }
 	
@@ -8815,13 +8992,17 @@ void CvCityAI::AI_doEmphasize()
 /*                                                                                              */
 /* City AI                                                                                      */
 /************************************************************************************************/
-bool CvCityAI::AI_chooseUnit(UnitAITypes eUnitAI, int iOdds)
+/********************************************************************************/
+/* 	City Defenders						24.07.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bIgnoreNotUnitAIs
+bool CvCityAI::AI_chooseUnit(UnitAITypes eUnitAI, int iOdds, bool bIgnoreNotUnitAIs)
 {
 	UnitTypes eBestUnit;
 
 	if (eUnitAI != NO_UNITAI)
 	{
-		eBestUnit = AI_bestUnitAI(eUnitAI);
+		eBestUnit = AI_bestUnitAI(eUnitAI, false, NO_ADVISOR, bIgnoreNotUnitAIs);
 	}
 	else
 	{
@@ -8841,6 +9022,9 @@ bool CvCityAI::AI_chooseUnit(UnitAITypes eUnitAI, int iOdds)
 
 	return false;
 }
+/********************************************************************************/
+/* 	City Defenders												END 			*/
+/********************************************************************************/
 
 bool CvCityAI::AI_chooseUnit(UnitTypes eUnit, UnitAITypes eUnitAI)
 {
@@ -10659,7 +10843,8 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 /*************************************************************************************************/
 					if (eNonObsoleteBonus != NO_BONUS)
 					{
-						bool bTechCityTrade = (GET_TEAM(getTeam()).isHasTech((TechTypes)(GC.getBonusInfo(eNonObsoleteBonus).getTechCityTrade())));
+						//bool bTechCityTrade = (GET_TEAM(getTeam()).isHasTech((TechTypes)(GC.getBonusInfo(eNonObsoleteBonus).getTechCityTrade())));
+						bool bTechCityTrade = false; //don't build forts in city radius, that's ALWAYS a bad idea.
 
 						if (!bHasBonusImprovement)
 						{
@@ -10668,20 +10853,26 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 							if (GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || ((GC.getImprovementInfo(eImprovement).isActsAsCity() && bTechCityTrade)
 								/* && (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(eFinalImprovement).isActsAsCity()) */ ))
 							{
-								iValue += (GET_PLAYER(getOwnerINLINE()).AI_bonusVal(eNonObsoleteBonus) * 10);
-								iValue += 200;
 								if (!(GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo(eFinalImprovement).isActsAsCity() && bTechCityTrade)))
 								{
-									//reduce value for temporary solutions
-									iValue -= 150;
+									//reduced value for temporary solutions
 									if (!bTechCityTrade)
 									{
-										//remove all value again
-										iValue -= (GET_PLAYER(getOwnerINLINE()).AI_bonusVal(eNonObsoleteBonus) * 10);
-										iValue -= 50;
 										iValue++;
 									}
+									else
+									{
+										iValue += (GET_PLAYER(getOwnerINLINE()).AI_bonusVal(eNonObsoleteBonus) * 10);
+										iValue += 150;
+									}
 								}
+								else
+								{
+									//full value for permanent solutions
+									iValue += (GET_PLAYER(getOwnerINLINE()).AI_bonusVal(eNonObsoleteBonus) * 10);
+									iValue += 200;
+								}
+
 								if (eBestBuild != NO_BUILD)
 								{
 									if ((GC.getBuildInfo(eBestBuild).getImprovement() == NO_IMPROVEMENT) || !(GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isActsAsCity() && bTechCityTrade)))
@@ -10710,8 +10901,8 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 						}
 						//else if (!((GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo(eFinalImprovement).isActsAsCity() && bTechCityTrade))
 						//	&& (GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo(eImprovement).isActsAsCity() && bTechCityTrade)) ))
-						else if (!(GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || ((GC.getImprovementInfo(eImprovement).isActsAsCity() && bTechCityTrade)
-							/* && (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(eFinalImprovement).isActsAsCity()) */ )))
+						else if (!(GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus) /* || ((GC.getImprovementInfo(eImprovement).isActsAsCity() && bTechCityTrade )
+							 && (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(eFinalImprovement).isActsAsCity())  )*/))
 						{
 							iValue -= 1000;
 						}
