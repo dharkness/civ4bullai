@@ -2106,6 +2106,7 @@ void CvUnitAI::AI_attackMove()
 		if( !(plot()->isOwned()) )
 		{
 			// Group with settler after naval drop
+			//Fuyu: could result in endless loop (at least it does in AND)
 			if( AI_groupMergeRange(UNITAI_SETTLE, 2, true, false, false) )
 			{
 				return;
@@ -3788,6 +3789,7 @@ void CvUnitAI::AI_counterMove()
 
 	if( !(plot()->isOwned()) )
 	{
+		 //Fuyu: could result in endless loop (at least it does in AND)
 		if( AI_groupMergeRange(UNITAI_SETTLE, 2, true, false, false) )
 		{
 			return;
@@ -10256,7 +10258,7 @@ bool CvUnitAI::AI_groupMergeRange(UnitAITypes eUnitAI, int iMaxRange, bool bBigg
 					{
 						if (!bIgnoreFaster || (pLoopUnit->getGroup()->baseMoves() <= baseMoves()))
 						{
-							if (!bBiggerOnly || (pLoopGroup->getNumUnits() >= pGroup->getNumUnits()))
+							if (!bBiggerOnly || (pLoopGroup->getNumUnits() > pGroup->getNumUnits()))
 							{
 								int iPathTurns;
 								if (generatePath(pLoopPlot, 0, true, &iPathTurns))
