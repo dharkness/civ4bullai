@@ -260,6 +260,13 @@ void CvSelectionGroup::doTurn()
 		{
 			pLoopUnit = ::getUnit(pUnitNode->m_data);
 			pUnitNode = nextUnitNode(pUnitNode);
+/************************************************************************************************/
+/* Afforess	                  Start		 07/30/10                                               */
+/************************************************************************************************/
+			FAssertMsg((pLoopUnit->plot() == plot()), "Selectiongroup is not on the same tile!");
+/************************************************************************************************/
+/* Afforess	                     END                                                            */
+/************************************************************************************************/
 
 			pLoopUnit->doTurn();
 
@@ -1364,7 +1371,7 @@ void CvSelectionGroup::startMission()
 				pLoopUnit = ::getUnit(pUnitNode->m_data);
 				pUnitNode = nextUnitNode(pUnitNode);
 
-				if( pLoopUnit->canMove() && pLoopUnit->canPillage(plot()) )
+				if( pLoopUnit->canMove() && pLoopUnit->canPillage(pLoopUnit->plot()) )
 				{
 					int iMovesLeft = pLoopUnit->movesLeft();
 					if( pLoopUnit->bombardRate() > 0 )
@@ -1389,7 +1396,7 @@ void CvSelectionGroup::startMission()
 					pLoopUnit = ::getUnit(pUnitNode->m_data);
 					pUnitNode = nextUnitNode(pUnitNode);
 
-					if( pLoopUnit->canMove() && pLoopUnit->canPillage(plot()) )
+					if( pLoopUnit->canMove() && pLoopUnit->canPillage(pLoopUnit->plot()) )
 					{
 						int iMovesLeft = pLoopUnit->movesLeft();
 						if( pLoopUnit->bombardRate() > 0 )

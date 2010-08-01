@@ -3393,6 +3393,33 @@ void CvPlayer::doTurn()
 		pLoopCity->doTurn();
 	}
 
+//Fuyu WorkersHave check
+#ifdef _DEBUG
+	int iTotalWorkersHave = 0;
+	int iTotalWorkersFinishedSoon = 0;
+	int iNumWorkerAIUnits = AI_getNumAIUnits(UNITAI_WORKER);
+
+	for (pLoopCity = firstCity(&iLoop); pLoopCity != NULL; pLoopCity = nextCity(&iLoop))
+	{
+		iTotalWorkersHave += pLoopCity->AI_getWorkersHave();
+
+		//From AI_updateWorkersNeededHere
+		if (pLoopCity->getProductionUnit() != NO_UNIT)
+		{
+			if (pLoopCity->getProductionUnitAI() == UNITAI_WORKER)
+			{
+				if (pLoopCity->getProductionTurnsLeft() <= 2)
+				{
+					iTotalWorkersFinishedSoon++;
+				}
+			}
+		}
+	}
+
+	FAssertMsg(iTotalWorkersHave <= (iNumWorkerAIUnits + iTotalWorkersFinishedSoon), "Player has less workers than he thinks he has");
+#endif
+//Fuyu WorkersHave check - END
+
 	if (getGoldenAgeTurns() > 0)
 	{
 		changeGoldenAgeTurns(-1);

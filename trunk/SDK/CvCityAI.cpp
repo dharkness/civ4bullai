@@ -10839,24 +10839,18 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 				if (eBonus != NO_BONUS)
 				{
 /*************************************************************************************************/
-/**	Forts Connect Resources									02/12/10			Xienwolf & Fuyu	**/
+/**	Forts Connect Resources but should never be built					30.07.2010		Fuyu	**/
 /*************************************************************************************************/
 					if (eNonObsoleteBonus != NO_BONUS)
 					{
-						//bool bTechCityTrade = (GET_TEAM(getTeam()).isHasTech((TechTypes)(GC.getBonusInfo(eNonObsoleteBonus).getTechCityTrade())));
-						bool bTechCityTrade = false; //don't build forts in city radius, that's ALWAYS a bad idea.
-
 						if (!bHasBonusImprovement)
 						{
-							//if ( (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo(eFinalImprovement).isActsAsCity() && bTechCityTrade) )
-							//	&& (GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo(eImprovement).isActsAsCity() && bTechCityTrade)) )
-							if (GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || ((GC.getImprovementInfo(eImprovement).isActsAsCity() && bTechCityTrade)
-								/* && (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(eFinalImprovement).isActsAsCity()) */ ))
+							if (GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus))
 							{
-								if (!(GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo(eFinalImprovement).isActsAsCity() && bTechCityTrade)))
+								if (!(GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus)))
 								{
 									//reduced value for temporary solutions
-									if (!bTechCityTrade)
+									if (!(GET_TEAM(getTeam()).isHasTech((TechTypes)(GC.getBonusInfo(eNonObsoleteBonus).getTechCityTrade()))))
 									{
 										iValue++;
 									}
@@ -10875,7 +10869,7 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 
 								if (eBestBuild != NO_BUILD)
 								{
-									if ((GC.getBuildInfo(eBestBuild).getImprovement() == NO_IMPROVEMENT) || !(GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isActsAsCity() && bTechCityTrade)))
+									if ((GC.getBuildInfo(eBestBuild).getImprovement() == NO_IMPROVEMENT) || !(GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus)))
 									{
 										//Always prefer improvements which connect bonuses.
 										eBestBuild = NO_BUILD;
@@ -10887,27 +10881,24 @@ void CvCityAI::AI_bestPlotBuild(CvPlot* pPlot, int* piBestValue, BuildTypes* peB
 							{
 								if (eBestBuild != NO_BUILD)
 								{
-									if ((GC.getBuildInfo(eBestBuild).getImprovement() != NO_IMPROVEMENT) && (GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isActsAsCity() && bTechCityTrade)))
+									if ((GC.getBuildInfo(eBestBuild).getImprovement() != NO_IMPROVEMENT) && (GC.getImprovementInfo((ImprovementTypes)GC.getBuildInfo(eBestBuild).getImprovement()).isImprovementBonusTrade(eNonObsoleteBonus)))
 									{
 										iValue -= 1000;
 									}
 								}
-								if (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(eFinalImprovement).isActsAsCity())
+								if (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus))
 								{
 									//very small incentive to build improvements that could later connect the bonus resource
 									iValue++;
 								}
 							}
 						}
-						//else if (!((GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo(eFinalImprovement).isActsAsCity() && bTechCityTrade))
-						//	&& (GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || (GC.getImprovementInfo(eImprovement).isActsAsCity() && bTechCityTrade)) ))
-						else if (!(GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus) /* || ((GC.getImprovementInfo(eImprovement).isActsAsCity() && bTechCityTrade )
-							 && (GC.getImprovementInfo(eFinalImprovement).isImprovementBonusTrade(eNonObsoleteBonus) || GC.getImprovementInfo(eFinalImprovement).isActsAsCity())  )*/))
+						else if (!(GC.getImprovementInfo(eImprovement).isImprovementBonusTrade(eNonObsoleteBonus)))
 						{
 							iValue -= 1000;
 						}
 /*************************************************************************************************/
-/**	Forts Connect Resources					END													**/
+/**	Forts Connect Resources but should never be built					END						**/
 /*************************************************************************************************/
 					}
 				}
