@@ -1021,7 +1021,7 @@
 		<Tag>TXT_KEY_BUG_TECH_PREFS_ALL</Tag>
 		<English>Research Preference Order</English>
 		<French>Research Preference Order</French>
-		<German>Forschungspreferenzen</German>
+		<German>Forschungspräferenzen</German>
 		<Italian>Research Preference Order</Italian>
 		<Spanish>Research Preference Order</Spanish>
 	</TEXT>
@@ -1479,6 +1479,17 @@
 			<Gender>Male</Gender>
 			<Plural>1</Plural>
 		</Spanish>
+	</TEXT>
+	
+	<!-- Trigger Event -->
+	
+	<TEXT>
+		<Tag>TXT_KEY_POPUP_SELECT_EVENT</Tag>
+		<English>Choose an event which should be triggered.</English>
+		<French>Choose an event which should be triggered.</French>
+		<German>Event aussuchen, das gestartet werden soll.</German>
+		<Italian>Choose an event which should be triggered.</Italian>
+		<Spanish>Choose an event which should be triggered.</Spanish>
 	</TEXT>
 	
 	<!-- BULL -->

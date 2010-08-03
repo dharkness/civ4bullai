@@ -380,17 +380,6 @@
 		<Spanish>W</Spanish>
 	</TEXT>
 
-<!-- Feature Damage -->
-
-	<TEXT>
-		<Tag>TXT_KEY_TERRAIN_TURN_DAMAGE</Tag>
-		<English>[NEWLINE][ICON_BULLET]%D1%% Damage/Turn</English>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_TERRAIN_TURN_HEALING</Tag>
-		<English>[NEWLINE][ICON_BULLET]%D1%% Healing/Turn</English>
-	</TEXT>
-
 <!-- City Screen -->
 	
 	<!-- Yield Hovers -->
