@@ -5329,7 +5329,21 @@ m_paiFeatureHappinessChanges(NULL),
 m_pabHurry(NULL),
 m_pabSpecialBuildingNotRequired(NULL),
 m_pabSpecialistValid(NULL),
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+/* original code
 m_ppiImprovementYieldChanges(NULL)
+*/
+m_ppiImprovementYieldChanges(NULL),
+m_bAnyBuildingHappinessChange(false),
+m_bAnyBuildingHealthChange(false),
+m_bAnyFeatureHappinessChange(false),
+m_bAnySpecialistValid(false),
+m_bAnyImprovementYieldChange(false)
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 {
 }
 
@@ -5721,6 +5735,33 @@ int CvCivicInfo::getImprovementYieldChanges(int i, int j) const
 	return m_ppiImprovementYieldChanges[i][j];
 }
 
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+bool CvCivicInfo::isAnyBuildingHappinessChange() const
+{
+	return m_bAnyBuildingHappinessChange;
+}
+bool CvCivicInfo::isAnyBuildingHealthChange() const
+{
+	return m_bAnyBuildingHealthChange;
+}
+bool CvCivicInfo::isAnyFeatureHappinessChange() const
+{
+	return m_bAnyFeatureHappinessChange;
+}
+bool CvCivicInfo::isAnySpecialistValid() const
+{
+	return m_bAnySpecialistValid;
+}
+bool CvCivicInfo::isAnyImprovementYieldChange() const
+{
+	return m_bAnyImprovementYieldChange;
+}
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
+
 void CvCivicInfo::read(FDataStreamBase* stream)
 {
 	CvInfoBase::read(stream);
@@ -5803,14 +5844,48 @@ void CvCivicInfo::read(FDataStreamBase* stream)
 	SAFE_DELETE_ARRAY(m_paiBuildingHappinessChanges);
 	m_paiBuildingHappinessChanges = new int[GC.getNumBuildingClassInfos()];
 	stream->Read(GC.getNumBuildingClassInfos(), m_paiBuildingHappinessChanges);
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+	//m_bAnyBuildingHappinessChange
+	int i;
+	m_bAnyBuildingHappinessChange = false;
+	for(i=0;i<GC.getNumBuildingClassInfos();i++)
+	{
+		if( m_paiBuildingHappinessChanges[i] != 0 )
+		{
+			m_bAnyBuildingHappinessChange = true;
+			break;
+		}
+	}
 
 	SAFE_DELETE_ARRAY(m_paiBuildingHealthChanges);
 	m_paiBuildingHealthChanges = new int[GC.getNumBuildingClassInfos()];
 	stream->Read(GC.getNumBuildingClassInfos(), m_paiBuildingHealthChanges);
+	//m_bAnyBuildingHealthChange
+	m_bAnyBuildingHealthChange = false;
+	for(i=0;i<GC.getNumBuildingClassInfos();i++)
+	{
+		if( m_paiBuildingHealthChanges[i] != 0 )
+		{
+			m_bAnyBuildingHealthChange = true;
+			break;
+		}
+	}
 
 	SAFE_DELETE_ARRAY(m_paiFeatureHappinessChanges);
 	m_paiFeatureHappinessChanges = new int[GC.getNumFeatureInfos()];
 	stream->Read(GC.getNumFeatureInfos(), m_paiFeatureHappinessChanges);
+	//m_bAnyFeatureHappinessChange
+	m_bAnyFeatureHappinessChange = false;
+	for(i=0;i<GC.getNumFeatureInfos();i++)
+	{
+		if( m_paiFeatureHappinessChanges[i] != 0 )
+		{
+			m_bAnyFeatureHappinessChange = true;
+			break;
+		}
+	}
 
 	SAFE_DELETE_ARRAY(m_pabHurry);
 	m_pabHurry = new bool[GC.getNumHurryInfos()];
@@ -5823,8 +5898,18 @@ void CvCivicInfo::read(FDataStreamBase* stream)
 	SAFE_DELETE_ARRAY(m_pabSpecialistValid);
 	m_pabSpecialistValid = new bool[GC.getNumSpecialistInfos()];
 	stream->Read(GC.getNumSpecialistInfos(), m_pabSpecialistValid);
+	//m_bAnySpecialistValid
+	m_bAnySpecialistValid = false;
+	for(i=0;i<GC.getNumSpecialistInfos();i++)
+	{
+		if( m_pabSpecialistValid[i] != 0 )
+		{
+			m_bAnySpecialistValid = true;
+			break;
+		}
+	}
 	
-	int i;
+	//int i;
 	if (m_ppiImprovementYieldChanges != NULL)
 	{
 		for(i=0;i<GC.getNumImprovementInfos();i++)
@@ -5839,6 +5924,22 @@ void CvCivicInfo::read(FDataStreamBase* stream)
 		m_ppiImprovementYieldChanges[i]  = new int[NUM_YIELD_TYPES];
 		stream->Read(NUM_YIELD_TYPES, m_ppiImprovementYieldChanges[i]);
 	}
+	//m_bAnyImprovementYieldChange
+	m_bAnyImprovementYieldChange = false;
+	for(i=0;(!m_bAnyImprovementYieldChange) && i<GC.getNumImprovementInfos();i++)
+	{
+		for(int j=0; j < NUM_YIELD_TYPES; j++ )
+		{
+			if( m_ppiImprovementYieldChanges[i][j] != 0 )
+			{
+				m_bAnyImprovementYieldChange = true;
+				break;
+			}
+		}
+	}
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 	stream->ReadString(m_szWeLoveTheKingKey);
 }
@@ -6046,14 +6147,59 @@ bool CvCivicInfo::read(CvXMLLoadUtility* pXML)
 
 	pXML->SetVariableListTagPair(&m_pabHurry, "Hurrys", sizeof(GC.getHurryInfo((HurryTypes)0)), GC.getNumHurryInfos());
 	pXML->SetVariableListTagPair(&m_pabSpecialBuildingNotRequired, "SpecialBuildingNotRequireds", sizeof(GC.getSpecialBuildingInfo((SpecialBuildingTypes)0)), GC.getNumSpecialBuildingInfos());
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
 	pXML->SetVariableListTagPair(&m_pabSpecialistValid, "SpecialistValids", sizeof(GC.getSpecialistInfo((SpecialistTypes)0)), GC.getNumSpecialistInfos());
+	int i;
+	m_bAnySpecialistValid = false;
+	for(i=0;i<GC.getNumSpecialistInfos();i++)
+	{
+		if( m_pabSpecialistValid[i] != 0 )
+		{
+			m_bAnySpecialistValid = true;
+			break;
+		}
+	}
 
 	pXML->SetVariableListTagPair(&m_paiBuildingHappinessChanges, "BuildingHappinessChanges", sizeof(GC.getBuildingClassInfo((BuildingClassTypes)0)), GC.getNumBuildingClassInfos());
 	pXML->SetVariableListTagPair(&m_paiBuildingHealthChanges, "BuildingHealthChanges", sizeof(GC.getBuildingClassInfo((BuildingClassTypes)0)), GC.getNumBuildingClassInfos());
+	m_bAnyBuildingHappinessChange = false;
+	m_bAnyBuildingHealthChange = false;
+	for(i=0;i<GC.getNumBuildingClassInfos();i++)
+	{
+		if( m_paiBuildingHappinessChanges[i] != 0 )
+		{
+			m_bAnyBuildingHappinessChange = true;
+			if (m_bAnyBuildingHealthChange)
+			{
+				break;
+			}
+		}
+		if( m_paiBuildingHealthChanges[i] != 0 )
+		{
+			m_bAnyBuildingHealthChange = true;
+			if (m_bAnyBuildingHappinessChange)
+			{
+				break;
+			}
+		}
+	}
+
 	pXML->SetVariableListTagPair(&m_paiFeatureHappinessChanges, "FeatureHappinessChanges", sizeof(GC.getFeatureInfo((FeatureTypes)0)), GC.getNumFeatureInfos());
+	m_bAnyFeatureHappinessChange = false;
+	for(i=0;i<GC.getNumFeatureInfos();i++)
+	{
+		if( m_paiFeatureHappinessChanges[i] != 0 )
+		{
+			m_bAnyFeatureHappinessChange = true;
+			break;
+		}
+	}
 
 	// initialize the boolean list to the correct size and all the booleans to false
 	FAssertMsg((GC.getNumImprovementInfos() > 0) && (NUM_YIELD_TYPES) > 0,"either the number of improvement infos is zero or less or the number of yield types is zero or less");
+	m_bAnyImprovementYieldChange = false;
 	pXML->Init2DIntList(&m_ppiImprovementYieldChanges, GC.getNumImprovementInfos(), NUM_YIELD_TYPES);
 	if (gDLL->getXMLIFace()->SetToChildByTagName(pXML->GetXML(),"ImprovementYieldChanges"))
 	{
@@ -6091,6 +6237,18 @@ bool CvCivicInfo::read(CvXMLLoadUtility* pXML)
 							break;
 						}
 					}
+
+					for(int ii=0;(!m_bAnyImprovementYieldChange) && ii<GC.getNumImprovementInfos();ii++)
+					{
+						for(int ij=0; ij < NUM_YIELD_TYPES; ij++ )
+						{
+							if( m_ppiImprovementYieldChanges[ii][ij] != 0 )
+							{
+								m_bAnyImprovementYieldChange = true;
+								break;
+							}
+						}
+					}
 				}
 
 				gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
@@ -6099,6 +6257,9 @@ bool CvCivicInfo::read(CvXMLLoadUtility* pXML)
 
 		gDLL->getXMLIFace()->SetToParent(pXML->GetXML());
 	}
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 	pXML->GetChildXmlValByName(szTextVal, "WeLoveTheKing");
 	setWeLoveTheKingKey(szTextVal);

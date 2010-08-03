@@ -3627,52 +3627,62 @@ void CvPlayer::updatePowerHealth()
 }
 
 
-void CvPlayer::updateExtraBuildingHappiness()
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::updateExtraBuildingHappiness(bool bLimited)
 {
 	CvCity* pLoopCity;
 	int iLoop;
 
 	for (pLoopCity = firstCity(&iLoop); pLoopCity != NULL; pLoopCity = nextCity(&iLoop))
 	{
-		pLoopCity->updateExtraBuildingHappiness();
+		pLoopCity->updateExtraBuildingHappiness(bLimited);
 	}
 }
 
 
-void CvPlayer::updateExtraBuildingHealth()
+//Fuyu bLimited
+void CvPlayer::updateExtraBuildingHealth(bool bLimited)
 {
 	CvCity* pLoopCity;
 	int iLoop;
 
 	for (pLoopCity = firstCity(&iLoop); pLoopCity != NULL; pLoopCity = nextCity(&iLoop))
 	{
-		pLoopCity->updateExtraBuildingHealth();
+		pLoopCity->updateExtraBuildingHealth(bLimited);
 	}
 }
 
 
-void CvPlayer::updateFeatureHappiness()
+//Fuyu bLimited
+void CvPlayer::updateFeatureHappiness(bool bLimited)
 {
 	CvCity* pLoopCity;
 	int iLoop;
 
 	for (pLoopCity = firstCity(&iLoop); pLoopCity != NULL; pLoopCity = nextCity(&iLoop))
 	{
-		pLoopCity->updateFeatureHappiness();
+		pLoopCity->updateFeatureHappiness(bLimited);
 	}
 }
 
 
-void CvPlayer::updateReligionHappiness()
+//Fuyu bLimited
+void CvPlayer::updateReligionHappiness(bool bLimited)
 {
 	CvCity* pLoopCity;
 	int iLoop;
 
 	for (pLoopCity = firstCity(&iLoop); pLoopCity != NULL; pLoopCity = nextCity(&iLoop))
 	{
-		pLoopCity->updateReligionHappiness();
+		pLoopCity->updateReligionHappiness(bLimited);
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 void CvPlayer::updateExtraSpecialistYield()
@@ -9600,15 +9610,25 @@ int CvPlayer::getHappyPerMilitaryUnit() const
 }
 
 
-void CvPlayer::changeHappyPerMilitaryUnit(int iChange)
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeHappyPerMilitaryUnit(int iChange, bool bLimited)
 {
 	if (iChange != 0)
 	{
 		m_iHappyPerMilitaryUnit = (m_iHappyPerMilitaryUnit + iChange);
 
-		AI_makeAssignWorkDirty();
+		if (!bLimited)
+		{
+			AI_makeAssignWorkDirty();
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getMilitaryFoodProductionCount() const														
@@ -9714,16 +9734,26 @@ bool CvPlayer::isNoUnhealthyPopulation() const
 }
 
 
-void CvPlayer::changeNoUnhealthyPopulationCount(int iChange)
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeNoUnhealthyPopulationCount(int iChange, bool bLimited)
 {
 	if (iChange != 0)
 	{
 		m_iNoUnhealthyPopulationCount = (m_iNoUnhealthyPopulationCount + iChange);
 		FAssert(getNoUnhealthyPopulationCount() >= 0);
 
-		AI_makeAssignWorkDirty();
+		if (!bLimited)
+		{
+			AI_makeAssignWorkDirty();
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getExpInBorderModifier() const
@@ -9754,16 +9784,26 @@ bool CvPlayer::isBuildingOnlyHealthy() const
 }
 
 
-void CvPlayer::changeBuildingOnlyHealthyCount(int iChange)
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeBuildingOnlyHealthyCount(int iChange, bool bLimited)
 {
 	if (iChange != 0)
 	{
 		m_iBuildingOnlyHealthyCount = (m_iBuildingOnlyHealthyCount + iChange);
 		FAssert(getBuildingOnlyHealthyCount() >= 0);
 
-		AI_makeAssignWorkDirty();
+		if (!bLimited)
+		{
+			AI_makeAssignWorkDirty();
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getDistanceMaintenanceModifier() const
@@ -9860,15 +9900,25 @@ int CvPlayer::getExtraHealth() const
 }
 
 
-void CvPlayer::changeExtraHealth(int iChange)
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeExtraHealth(int iChange, bool bLimited)
 {
 	if (iChange != 0)
 	{
 		m_iExtraHealth = (m_iExtraHealth + iChange);
 
-		AI_makeAssignWorkDirty();
+		if (!bLimited)
+		{
+			AI_makeAssignWorkDirty();
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getBuildingGoodHealth() const	
@@ -9947,15 +9997,25 @@ int CvPlayer::getLargestCityHappiness() const
 }
 
 
-void CvPlayer::changeLargestCityHappiness(int iChange)
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeLargestCityHappiness(int iChange, bool bLimited)
 {
 	if (iChange != 0)
 	{
 		m_iLargestCityHappiness = (m_iLargestCityHappiness + iChange);
 
-		AI_makeAssignWorkDirty();
+		if (!bLimited)
+		{
+			AI_makeAssignWorkDirty();
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getWarWearinessPercentAnger() const																 
@@ -10034,15 +10094,25 @@ int CvPlayer::getWarWearinessModifier() const
 }
 
 
-void CvPlayer::changeWarWearinessModifier(int iChange)
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeWarWearinessModifier(int iChange, bool bLimited)
 {
 	if (iChange != 0)
 	{
 		m_iWarWearinessModifier = (m_iWarWearinessModifier + iChange);
 
-		AI_makeAssignWorkDirty();
+		if (!bLimited)
+		{
+			AI_makeAssignWorkDirty();
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getFreeSpecialist() const	
@@ -10237,7 +10307,11 @@ bool CvPlayer::isStateReligion() const
 }
 
 
-void CvPlayer::changeStateReligionCount(int iChange)
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeStateReligionCount(int iChange, bool bLimited)
 {
 	if (iChange != 0)
 	{
@@ -10250,15 +10324,26 @@ void CvPlayer::changeStateReligionCount(int iChange)
 		// religion visibility now part of espionage
 		//GC.getGameINLINE().updateCitySight(true, true);
 
-		updateMaintenance();
-		updateReligionHappiness();
-		updateReligionCommerce();
+		if (!bLimited)
+		{
+			updateMaintenance();
+		}
 
-		GC.getGameINLINE().AI_makeAssignWorkDirty();
+		updateReligionHappiness(bLimited);
 
-		gDLL->getInterfaceIFace()->setDirty(Score_DIRTY_BIT, true);
+		if (!bLimited)
+		{
+			updateReligionCommerce();
+
+			GC.getGameINLINE().AI_makeAssignWorkDirty();
+
+			gDLL->getInterfaceIFace()->setDirty(Score_DIRTY_BIT, true);
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getNoNonStateReligionSpreadCount() const
@@ -10286,13 +10371,17 @@ int CvPlayer::getStateReligionHappiness() const
 }
 
 
-void CvPlayer::changeStateReligionHappiness(int iChange)
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeStateReligionHappiness(int iChange, bool bLimited)
 {
 	if (iChange != 0)
 	{
 		m_iStateReligionHappiness = (m_iStateReligionHappiness + iChange);
 
-		updateReligionHappiness();
+		updateReligionHappiness(bLimited);
 	}
 }
 
@@ -10303,15 +10392,19 @@ int CvPlayer::getNonStateReligionHappiness() const
 }
 
 
-void CvPlayer::changeNonStateReligionHappiness(int iChange)
+//Fuyu bLimited
+void CvPlayer::changeNonStateReligionHappiness(int iChange, bool bLimited)
 {
 	if (iChange != 0)
 	{
 		m_iNonStateReligionHappiness = (m_iNonStateReligionHappiness + iChange);
 
-		updateReligionHappiness();
+		updateReligionHappiness(bLimited);
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getStateReligionUnitProductionModifier() const	 
@@ -12366,7 +12459,11 @@ int CvPlayer::getExtraBuildingHappiness(BuildingTypes eIndex) const
 }
 
 
-void CvPlayer::changeExtraBuildingHappiness(BuildingTypes eIndex, int iChange)
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeExtraBuildingHappiness(BuildingTypes eIndex, int iChange, bool bLimited)
 {
 	FAssertMsg(eIndex >= 0, "eIndex is expected to be non-negative (invalid Index)");
 	FAssertMsg(eIndex < GC.getNumBuildingInfos(), "eIndex is expected to be within maximum bounds (invalid Index)");
@@ -12375,7 +12472,7 @@ void CvPlayer::changeExtraBuildingHappiness(BuildingTypes eIndex, int iChange)
 	{
 		m_paiExtraBuildingHappiness[eIndex] += iChange;
 
-		updateExtraBuildingHappiness();
+		updateExtraBuildingHappiness(bLimited);
 	}
 }
 
@@ -12387,7 +12484,8 @@ int CvPlayer::getExtraBuildingHealth(BuildingTypes eIndex) const
 }
 
 
-void CvPlayer::changeExtraBuildingHealth(BuildingTypes eIndex, int iChange)
+//Fuyu bLimited
+void CvPlayer::changeExtraBuildingHealth(BuildingTypes eIndex, int iChange, bool bLimited)
 {
 	FAssertMsg(eIndex >= 0, "eIndex is expected to be non-negative (invalid Index)");
 	FAssertMsg(eIndex < GC.getNumBuildingInfos(), "eIndex is expected to be within maximum bounds (invalid Index)");
@@ -12396,9 +12494,12 @@ void CvPlayer::changeExtraBuildingHealth(BuildingTypes eIndex, int iChange)
 	{
 		m_paiExtraBuildingHealth[eIndex] += iChange;
 
-		updateExtraBuildingHealth();
+		updateExtraBuildingHealth(bLimited);
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getFeatureHappiness(FeatureTypes eIndex) const 
@@ -12409,7 +12510,11 @@ int CvPlayer::getFeatureHappiness(FeatureTypes eIndex) const
 }
 
 
-void CvPlayer::changeFeatureHappiness(FeatureTypes eIndex, int iChange)
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeFeatureHappiness(FeatureTypes eIndex, int iChange, bool bLimited)
 {
 	FAssertMsg(eIndex >= 0, "eIndex is expected to be non-negative (invalid Index)");
 	FAssertMsg(eIndex < GC.getNumFeatureInfos(), "eIndex is expected to be within maximum bounds (invalid Index)");
@@ -12418,9 +12523,12 @@ void CvPlayer::changeFeatureHappiness(FeatureTypes eIndex, int iChange)
 	{
 		m_paiFeatureHappiness[eIndex] = (m_paiFeatureHappiness[eIndex] + iChange);
 
-		updateFeatureHappiness();
+		updateFeatureHappiness(bLimited);
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getUnitClassCount(UnitClassTypes eIndex) const 
@@ -16964,101 +17072,219 @@ void CvPlayer::verifyGoldCommercePercent()
 }
 
 
-void CvPlayer::processCivics(CivicTypes eCivic, int iChange)
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::processCivics(CivicTypes eCivic, int iChange, bool bLimited)
 {
 	int iI, iJ;
 
-	changeGreatPeopleRateModifier(GC.getCivicInfo(eCivic).getGreatPeopleRateModifier() * iChange);
-	changeGreatGeneralRateModifier(GC.getCivicInfo(eCivic).getGreatGeneralRateModifier() * iChange);
-	changeDomesticGreatGeneralRateModifier(GC.getCivicInfo(eCivic).getDomesticGreatGeneralRateModifier() * iChange);
-	changeStateReligionGreatPeopleRateModifier(GC.getCivicInfo(eCivic).getStateReligionGreatPeopleRateModifier() * iChange);
-	changeDistanceMaintenanceModifier(GC.getCivicInfo(eCivic).getDistanceMaintenanceModifier() * iChange);
-	changeNumCitiesMaintenanceModifier(GC.getCivicInfo(eCivic).getNumCitiesMaintenanceModifier() * iChange);
-	changeCorporationMaintenanceModifier(GC.getCivicInfo(eCivic).getCorporationMaintenanceModifier() * iChange);
-	changeExtraHealth(GC.getCivicInfo(eCivic).getExtraHealth() * iChange);
-	changeFreeExperience(GC.getCivicInfo(eCivic).getFreeExperience() * iChange);
-	changeWorkerSpeedModifier(GC.getCivicInfo(eCivic).getWorkerSpeedModifier() * iChange);
-	changeImprovementUpgradeRateModifier(GC.getCivicInfo(eCivic).getImprovementUpgradeRateModifier() * iChange);
-	changeMilitaryProductionModifier(GC.getCivicInfo(eCivic).getMilitaryProductionModifier() * iChange);
-	changeBaseFreeUnits(GC.getCivicInfo(eCivic).getBaseFreeUnits() * iChange);
-	changeBaseFreeMilitaryUnits(GC.getCivicInfo(eCivic).getBaseFreeMilitaryUnits() * iChange);
-	changeFreeUnitsPopulationPercent(GC.getCivicInfo(eCivic).getFreeUnitsPopulationPercent() * iChange);
-	changeFreeMilitaryUnitsPopulationPercent(GC.getCivicInfo(eCivic).getFreeMilitaryUnitsPopulationPercent() * iChange);
-	changeGoldPerUnit(GC.getCivicInfo(eCivic).getGoldPerUnit() * iChange);
-	changeGoldPerMilitaryUnit(GC.getCivicInfo(eCivic).getGoldPerMilitaryUnit() * iChange);
-	changeHappyPerMilitaryUnit(GC.getCivicInfo(eCivic).getHappyPerMilitaryUnit() * iChange);
-	changeMilitaryFoodProductionCount((GC.getCivicInfo(eCivic).isMilitaryFoodProduction()) ? iChange : 0);
-	changeMaxConscript(getWorldSizeMaxConscript(eCivic) * iChange);
-	changeNoUnhealthyPopulationCount((GC.getCivicInfo(eCivic).isNoUnhealthyPopulation()) ? iChange : 0);
-	changeBuildingOnlyHealthyCount((GC.getCivicInfo(eCivic).isBuildingOnlyHealthy()) ? iChange : 0);
-	changeLargestCityHappiness(GC.getCivicInfo(eCivic).getLargestCityHappiness() * iChange);
-	changeWarWearinessModifier(GC.getCivicInfo(eCivic).getWarWearinessModifier() * iChange);
-	changeFreeSpecialist(GC.getCivicInfo(eCivic).getFreeSpecialist() * iChange);
-	changeTradeRoutes(GC.getCivicInfo(eCivic).getTradeRoutes() * iChange);
-	changeNoForeignTradeCount(GC.getCivicInfo(eCivic).isNoForeignTrade() * iChange);
-	changeNoCorporationsCount(GC.getCivicInfo(eCivic).isNoCorporations() * iChange);
-	changeNoForeignCorporationsCount(GC.getCivicInfo(eCivic).isNoForeignCorporations() * iChange);
-	changeStateReligionCount((GC.getCivicInfo(eCivic).isStateReligion()) ? iChange : 0);
-	changeNoNonStateReligionSpreadCount((GC.getCivicInfo(eCivic).isNoNonStateReligionSpread()) ? iChange : 0);
-	changeStateReligionHappiness(GC.getCivicInfo(eCivic).getStateReligionHappiness() * iChange);
-	changeNonStateReligionHappiness(GC.getCivicInfo(eCivic).getNonStateReligionHappiness() * iChange);
-	changeStateReligionUnitProductionModifier(GC.getCivicInfo(eCivic).getStateReligionUnitProductionModifier() * iChange);
-	changeStateReligionBuildingProductionModifier(GC.getCivicInfo(eCivic).getStateReligionBuildingProductionModifier() * iChange);
-	changeStateReligionFreeExperience(GC.getCivicInfo(eCivic).getStateReligionFreeExperience() * iChange);
-	changeExpInBorderModifier(GC.getCivicInfo(eCivic).getExpInBorderModifier() * iChange);
-
-	for (iI = 0; iI < NUM_YIELD_TYPES; iI++)
+	if (bLimited)
 	{
-		changeYieldRateModifier(((YieldTypes)iI), (GC.getCivicInfo(eCivic).getYieldModifier(iI) * iChange));
-		changeCapitalYieldRateModifier(((YieldTypes)iI), (GC.getCivicInfo(eCivic).getCapitalYieldModifier(iI) * iChange));
-		changeTradeYieldModifier(((YieldTypes)iI), (GC.getCivicInfo(eCivic).getTradeYieldModifier(iI) * iChange));
-	}
+		CvCivicInfo& kCivic = GC.getCivicInfo(eCivic);
 
-	for (iI = 0; iI < NUM_COMMERCE_TYPES; iI++)
-	{
-		changeCommerceRateModifier(((CommerceTypes)iI), (GC.getCivicInfo(eCivic).getCommerceModifier(iI) * iChange));
-		changeCapitalCommerceRateModifier(((CommerceTypes)iI), (GC.getCivicInfo(eCivic).getCapitalCommerceModifier(iI) * iChange));
-		changeSpecialistExtraCommerce(((CommerceTypes)iI), (GC.getCivicInfo(eCivic).getSpecialistExtraCommerce(iI) * iChange));
-	}
-
-	for (iI = 0; iI < GC.getNumBuildingClassInfos(); iI++)
-	{
-		BuildingTypes eOurBuilding = (BuildingTypes)GC.getCivilizationInfo(getCivilizationType()).getCivilizationBuildings(iI);
-		if (NO_BUILDING != eOurBuilding)
+		//+: doesn't change values of other civics but maybe should
+		//changeGreatPeopleRateModifier(kCivic.getGreatPeopleRateModifier() * iChange);
+		//changeGreatGeneralRateModifier(kCivic.getGreatGeneralRateModifier() * iChange);
+		//changeDomesticGreatGeneralRateModifier(kCivic.getDomesticGreatGeneralRateModifier() * iChange);
+		//changeStateReligionGreatPeopleRateModifier(kCivic.getStateReligionGreatPeopleRateModifier() * iChange);
+		//changeDistanceMaintenanceModifier(kCivic.getDistanceMaintenanceModifier() * iChange);
+		//changeNumCitiesMaintenanceModifier(kCivic.getNumCitiesMaintenanceModifier() * iChange);
+		//changeCorporationMaintenanceModifier(kCivic.getCorporationMaintenanceModifier() * iChange);
+		changeExtraHealth(kCivic.getExtraHealth() * iChange, bLimited);
+		//changeFreeExperience(kCivic.getFreeExperience() * iChange);
+		//changeWorkerSpeedModifier(kCivic.getWorkerSpeedModifier() * iChange);
+		//changeImprovementUpgradeRateModifier(kCivic.getImprovementUpgradeRateModifier() * iChange);
+		//changeMilitaryProductionModifier(kCivic.getMilitaryProductionModifier() * iChange);
+		//changeBaseFreeUnits(kCivic.getBaseFreeUnits() * iChange);
+		//changeBaseFreeMilitaryUnits(kCivic.getBaseFreeMilitaryUnits() * iChange);
+		//changeFreeUnitsPopulationPercent(kCivic.getFreeUnitsPopulationPercent() * iChange);
+		//changeFreeMilitaryUnitsPopulationPercent(kCivic.getFreeMilitaryUnitsPopulationPercent() * iChange);
+		//changeGoldPerUnit(kCivic.getGoldPerUnit() * iChange);
+		//changeGoldPerMilitaryUnit(kCivic.getGoldPerMilitaryUnit() * iChange);
+		changeHappyPerMilitaryUnit(kCivic.getHappyPerMilitaryUnit() * iChange,  bLimited);
+		//+changeMilitaryFoodProductionCount((kCivic.isMilitaryFoodProduction()) ? iChange : 0);
+		//changeMaxConscript(getWorldSizeMaxConscript(eCivic) * iChange);
+		changeNoUnhealthyPopulationCount(((kCivic.isNoUnhealthyPopulation()) ? iChange : 0), bLimited);
+		changeBuildingOnlyHealthyCount(((kCivic.isBuildingOnlyHealthy()) ? iChange : 0), bLimited);
+		changeLargestCityHappiness((kCivic.getLargestCityHappiness() * iChange), bLimited);
+		if (getWarWearinessPercentAnger() != 0)
 		{
-			changeExtraBuildingHappiness(eOurBuilding, (GC.getCivicInfo(eCivic).getBuildingHappinessChanges(iI) * iChange));
-			changeExtraBuildingHealth(eOurBuilding, (GC.getCivicInfo(eCivic).getBuildingHealthChanges(iI) * iChange));
+			changeWarWearinessModifier((kCivic.getWarWearinessModifier() * iChange), bLimited);
 		}
-	}
+		//changeFreeSpecialist(kCivic.getFreeSpecialist() * iChange);
+		//changeTradeRoutes(kCivic.getTradeRoutes() * iChange);
+		//+changeNoForeignTradeCount(kCivic.isNoForeignTrade() * iChange);
+		//+changeNoCorporationsCount(kCivic.isNoCorporations() * iChange);
+		//+changeNoForeignCorporationsCount(kCivic.isNoForeignCorporations() * iChange);
+		changeStateReligionCount(((kCivic.isStateReligion()) ? iChange : 0), bLimited);
+		//+changeNoNonStateReligionSpreadCount((kCivic.isNoNonStateReligionSpread()) ? iChange : 0);
+		changeStateReligionHappiness(kCivic.getStateReligionHappiness() * iChange, bLimited);
+		changeNonStateReligionHappiness(kCivic.getNonStateReligionHappiness() * iChange, bLimited);
+		//changeStateReligionUnitProductionModifier(kCivic.getStateReligionUnitProductionModifier() * iChange);
+		//changeStateReligionBuildingProductionModifier(kCivic.getStateReligionBuildingProductionModifier() * iChange);
+		//changeStateReligionFreeExperience(kCivic.getStateReligionFreeExperience() * iChange);
+		//changeExpInBorderModifier(kCivic.getExpInBorderModifier() * iChange);
 
-	for (iI = 0; iI < GC.getNumFeatureInfos(); iI++)
-	{
-		changeFeatureHappiness(((FeatureTypes)iI), (GC.getCivicInfo(eCivic).getFeatureHappinessChanges(iI) * iChange));
-	}
+		//for (iI = 0; iI < NUM_YIELD_TYPES; iI++)
+		//{
+		//	changeYieldRateModifier(((YieldTypes)iI), (kCivic.getYieldModifier(iI) * iChange));
+		//	changeCapitalYieldRateModifier(((YieldTypes)iI), (kCivic.getCapitalYieldModifier(iI) * iChange));
+		//	changeTradeYieldModifier(((YieldTypes)iI), (kCivic.getTradeYieldModifier(iI) * iChange));
+		//}
 
-	for (iI = 0; iI < GC.getNumHurryInfos(); iI++)
-	{
-		changeHurryCount(((HurryTypes)iI), ((GC.getCivicInfo(eCivic).isHurry(iI)) ? iChange : 0));
-	}
+		//for (iI = 0; iI < NUM_COMMERCE_TYPES; iI++)
+		//{
+		//	changeCommerceRateModifier(((CommerceTypes)iI), (kCivic.getCommerceModifier(iI) * iChange));
+		//	changeCapitalCommerceRateModifier(((CommerceTypes)iI), (kCivic.getCapitalCommerceModifier(iI) * iChange));
+		//	changeSpecialistExtraCommerce(((CommerceTypes)iI), (kCivic.getSpecialistExtraCommerce(iI) * iChange));
+		//}
 
-	for (iI = 0; iI < GC.getNumSpecialBuildingInfos(); iI++)
-	{
-		changeSpecialBuildingNotRequiredCount(((SpecialBuildingTypes)iI), ((GC.getCivicInfo(eCivic).isSpecialBuildingNotRequired(iI)) ? iChange : 0));
-	}
-
-	for (iI = 0; iI < GC.getNumSpecialistInfos(); iI++)
-	{
-		changeSpecialistValidCount(((SpecialistTypes)iI), ((GC.getCivicInfo(eCivic).isSpecialistValid(iI)) ? iChange : 0));
-	}
-
-	for (iI = 0; iI < GC.getNumImprovementInfos(); iI++)
-	{
-		for (iJ = 0; iJ < NUM_YIELD_TYPES; iJ++)
+		if (kCivic.isAnyBuildingHappinessChange() || kCivic.isAnyBuildingHealthChange())
 		{
-			changeImprovementYieldChange(((ImprovementTypes)iI), ((YieldTypes)iJ), (GC.getCivicInfo(eCivic).getImprovementYieldChanges(iI, iJ) * iChange));
+			for (iI = 0; iI < GC.getNumBuildingClassInfos(); iI++)
+			{
+				BuildingTypes eOurBuilding = (BuildingTypes)GC.getCivilizationInfo(getCivilizationType()).getCivilizationBuildings(iI);
+				if (NO_BUILDING != eOurBuilding)
+				{
+					changeExtraBuildingHappiness(eOurBuilding, (kCivic.getBuildingHappinessChanges(iI) * iChange), bLimited);
+					changeExtraBuildingHealth(eOurBuilding, (kCivic.getBuildingHealthChanges(iI) * iChange), bLimited);
+				}
+			}
+		}
+
+		if (kCivic.isAnyFeatureHappinessChange())
+		{
+			for (iI = 0; iI < GC.getNumFeatureInfos(); iI++)
+			{
+				changeFeatureHappiness(((FeatureTypes)iI), (kCivic.getFeatureHappinessChanges(iI) * iChange), bLimited);
+			}
+		}
+
+		//for (iI = 0; iI < GC.getNumHurryInfos(); iI++)
+		//{
+		//+	changeHurryCount(((HurryTypes)iI), ((kCivic.isHurry(iI)) ? iChange : 0));
+		//}
+
+		//for (iI = 0; iI < GC.getNumSpecialBuildingInfos(); iI++)
+		//{
+		//+	changeSpecialBuildingNotRequiredCount(((SpecialBuildingTypes)iI), ((kCivic.isSpecialBuildingNotRequired(iI)) ? iChange : 0));
+		//}
+
+		//for (iI = 0; iI < GC.getNumSpecialistInfos(); iI++)
+		//{
+		//+	changeSpecialistValidCount(((SpecialistTypes)iI), ((kCivic.isSpecialistValid(iI)) ? iChange : 0));
+		//}
+
+		//for (iI = 0; iI < GC.getNumImprovementInfos(); iI++)
+		//{
+		//	for (iJ = 0; iJ < NUM_YIELD_TYPES; iJ++)
+		//	{
+		//		changeImprovementYieldChange(((ImprovementTypes)iI), ((YieldTypes)iJ), (kCivic.getImprovementYieldChanges(iI, iJ) * iChange));
+		//	}
+		//}
+
+
+	}
+	else
+	{
+		//original code:
+		changeGreatPeopleRateModifier(GC.getCivicInfo(eCivic).getGreatPeopleRateModifier() * iChange);
+		changeGreatGeneralRateModifier(GC.getCivicInfo(eCivic).getGreatGeneralRateModifier() * iChange);
+		changeDomesticGreatGeneralRateModifier(GC.getCivicInfo(eCivic).getDomesticGreatGeneralRateModifier() * iChange);
+		changeStateReligionGreatPeopleRateModifier(GC.getCivicInfo(eCivic).getStateReligionGreatPeopleRateModifier() * iChange);
+		changeDistanceMaintenanceModifier(GC.getCivicInfo(eCivic).getDistanceMaintenanceModifier() * iChange);
+		changeNumCitiesMaintenanceModifier(GC.getCivicInfo(eCivic).getNumCitiesMaintenanceModifier() * iChange);
+		changeCorporationMaintenanceModifier(GC.getCivicInfo(eCivic).getCorporationMaintenanceModifier() * iChange);
+		changeExtraHealth(GC.getCivicInfo(eCivic).getExtraHealth() * iChange);
+		changeFreeExperience(GC.getCivicInfo(eCivic).getFreeExperience() * iChange);
+		changeWorkerSpeedModifier(GC.getCivicInfo(eCivic).getWorkerSpeedModifier() * iChange);
+		changeImprovementUpgradeRateModifier(GC.getCivicInfo(eCivic).getImprovementUpgradeRateModifier() * iChange);
+		changeMilitaryProductionModifier(GC.getCivicInfo(eCivic).getMilitaryProductionModifier() * iChange);
+		changeBaseFreeUnits(GC.getCivicInfo(eCivic).getBaseFreeUnits() * iChange);
+		changeBaseFreeMilitaryUnits(GC.getCivicInfo(eCivic).getBaseFreeMilitaryUnits() * iChange);
+		changeFreeUnitsPopulationPercent(GC.getCivicInfo(eCivic).getFreeUnitsPopulationPercent() * iChange);
+		changeFreeMilitaryUnitsPopulationPercent(GC.getCivicInfo(eCivic).getFreeMilitaryUnitsPopulationPercent() * iChange);
+		changeGoldPerUnit(GC.getCivicInfo(eCivic).getGoldPerUnit() * iChange);
+		changeGoldPerMilitaryUnit(GC.getCivicInfo(eCivic).getGoldPerMilitaryUnit() * iChange);
+		changeHappyPerMilitaryUnit(GC.getCivicInfo(eCivic).getHappyPerMilitaryUnit() * iChange);
+		changeMilitaryFoodProductionCount((GC.getCivicInfo(eCivic).isMilitaryFoodProduction()) ? iChange : 0);
+		changeMaxConscript(getWorldSizeMaxConscript(eCivic) * iChange);
+		changeNoUnhealthyPopulationCount((GC.getCivicInfo(eCivic).isNoUnhealthyPopulation()) ? iChange : 0);
+		changeBuildingOnlyHealthyCount((GC.getCivicInfo(eCivic).isBuildingOnlyHealthy()) ? iChange : 0);
+		changeLargestCityHappiness(GC.getCivicInfo(eCivic).getLargestCityHappiness() * iChange);
+		changeWarWearinessModifier(GC.getCivicInfo(eCivic).getWarWearinessModifier() * iChange);
+		changeFreeSpecialist(GC.getCivicInfo(eCivic).getFreeSpecialist() * iChange);
+		changeTradeRoutes(GC.getCivicInfo(eCivic).getTradeRoutes() * iChange);
+		changeNoForeignTradeCount(GC.getCivicInfo(eCivic).isNoForeignTrade() * iChange);
+		changeNoCorporationsCount(GC.getCivicInfo(eCivic).isNoCorporations() * iChange);
+		changeNoForeignCorporationsCount(GC.getCivicInfo(eCivic).isNoForeignCorporations() * iChange);
+		changeStateReligionCount((GC.getCivicInfo(eCivic).isStateReligion()) ? iChange : 0);
+		changeNoNonStateReligionSpreadCount((GC.getCivicInfo(eCivic).isNoNonStateReligionSpread()) ? iChange : 0);
+		changeStateReligionHappiness(GC.getCivicInfo(eCivic).getStateReligionHappiness() * iChange);
+		changeNonStateReligionHappiness(GC.getCivicInfo(eCivic).getNonStateReligionHappiness() * iChange);
+		changeStateReligionUnitProductionModifier(GC.getCivicInfo(eCivic).getStateReligionUnitProductionModifier() * iChange);
+		changeStateReligionBuildingProductionModifier(GC.getCivicInfo(eCivic).getStateReligionBuildingProductionModifier() * iChange);
+		changeStateReligionFreeExperience(GC.getCivicInfo(eCivic).getStateReligionFreeExperience() * iChange);
+		changeExpInBorderModifier(GC.getCivicInfo(eCivic).getExpInBorderModifier() * iChange);
+
+		for (iI = 0; iI < NUM_YIELD_TYPES; iI++)
+		{
+			changeYieldRateModifier(((YieldTypes)iI), (GC.getCivicInfo(eCivic).getYieldModifier(iI) * iChange));
+			changeCapitalYieldRateModifier(((YieldTypes)iI), (GC.getCivicInfo(eCivic).getCapitalYieldModifier(iI) * iChange));
+			changeTradeYieldModifier(((YieldTypes)iI), (GC.getCivicInfo(eCivic).getTradeYieldModifier(iI) * iChange));
+		}
+
+		for (iI = 0; iI < NUM_COMMERCE_TYPES; iI++)
+		{
+			changeCommerceRateModifier(((CommerceTypes)iI), (GC.getCivicInfo(eCivic).getCommerceModifier(iI) * iChange));
+			changeCapitalCommerceRateModifier(((CommerceTypes)iI), (GC.getCivicInfo(eCivic).getCapitalCommerceModifier(iI) * iChange));
+			changeSpecialistExtraCommerce(((CommerceTypes)iI), (GC.getCivicInfo(eCivic).getSpecialistExtraCommerce(iI) * iChange));
+		}
+
+		for (iI = 0; iI < GC.getNumBuildingClassInfos(); iI++)
+		{
+			BuildingTypes eOurBuilding = (BuildingTypes)GC.getCivilizationInfo(getCivilizationType()).getCivilizationBuildings(iI);
+			if (NO_BUILDING != eOurBuilding)
+			{
+				changeExtraBuildingHappiness(eOurBuilding, (GC.getCivicInfo(eCivic).getBuildingHappinessChanges(iI) * iChange));
+				changeExtraBuildingHealth(eOurBuilding, (GC.getCivicInfo(eCivic).getBuildingHealthChanges(iI) * iChange));
+			}
+		}
+
+		for (iI = 0; iI < GC.getNumFeatureInfos(); iI++)
+		{
+			changeFeatureHappiness(((FeatureTypes)iI), (GC.getCivicInfo(eCivic).getFeatureHappinessChanges(iI) * iChange));
+		}
+
+		for (iI = 0; iI < GC.getNumHurryInfos(); iI++)
+		{
+			changeHurryCount(((HurryTypes)iI), ((GC.getCivicInfo(eCivic).isHurry(iI)) ? iChange : 0));
+		}
+
+		for (iI = 0; iI < GC.getNumSpecialBuildingInfos(); iI++)
+		{
+			changeSpecialBuildingNotRequiredCount(((SpecialBuildingTypes)iI), ((GC.getCivicInfo(eCivic).isSpecialBuildingNotRequired(iI)) ? iChange : 0));
+		}
+
+		for (iI = 0; iI < GC.getNumSpecialistInfos(); iI++)
+		{
+			changeSpecialistValidCount(((SpecialistTypes)iI), ((GC.getCivicInfo(eCivic).isSpecialistValid(iI)) ? iChange : 0));
+		}
+
+		for (iI = 0; iI < GC.getNumImprovementInfos(); iI++)
+		{
+			for (iJ = 0; iJ < NUM_YIELD_TYPES; iJ++)
+			{
+				changeImprovementYieldChange(((ImprovementTypes)iI), ((YieldTypes)iJ), (GC.getCivicInfo(eCivic).getImprovementYieldChanges(iI, iJ) * iChange));
+			}
 		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 void CvPlayer::showMissedMessages()
 {

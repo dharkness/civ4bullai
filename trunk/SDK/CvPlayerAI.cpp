@@ -21177,6 +21177,90 @@ int CvPlayerAI::AI_getPlotCanalValue(CvPlot* pPlot) const
 	return 10 * std::min(0, pSecondWaterArea->getNumTiles() - 2);
 }
 
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+bool CvPlayerAI::AI_isCivicCanChangeOtherValues(CivicTypes eCivicSelected, ReligionTypes eAssumedReligion)
+{
+	if (eCivicSelected == NO_CIVIC)
+	{
+		return false;
+	}
+	
+	CvCivicInfo& kCivicSelected = GC.getCivicInfo(eCivicSelected);
+
+	//happiness
+	if (kCivicSelected.getCivicPercentAnger() != 0 || kCivicSelected.getHappyPerMilitaryUnit() != 0 || kCivicSelected.getLargestCityHappiness() != 0
+		|| (kCivicSelected.getWarWearinessModifier() != 0 && getWarWearinessPercentAnger() != 0)
+		|| kCivicSelected.isAnyBuildingHappinessChange() || kCivicSelected.isAnyFeatureHappinessChange()
+		|| kCivicSelected.getNonStateReligionHappiness() != 0
+		|| (kCivicSelected.getStateReligionHappiness() != 0 && (kCivicSelected.isStateReligion() || eAssumedReligion != NO_RELIGION)) )
+	{
+		return true;
+	}
+
+	//health
+	if ( kCivicSelected.getExtraHealth() != 0 || kCivicSelected.isNoUnhealthyPopulation() || kCivicSelected.isBuildingOnlyHealthy() || kCivicSelected.isAnyBuildingHealthChange() )
+	{
+		return true;
+	}
+
+	//religion?
+	//trade?
+	//corporation?
+	//maintenance?
+
+	return false;
+
+}
+
+bool CvPlayerAI::AI_isCivicValueRecalculationRequired(CivicTypes eCivic, CivicTypes eCivicSelected, ReligionTypes eAssumedReligion)
+{
+	if (eCivicSelected == NO_CIVIC || eCivic == NO_CIVIC)
+	{
+		return false;
+	}
+
+	CvCivicInfo& kCivic = GC.getCivicInfo(eCivic);
+	CvCivicInfo& kCivicSelected = GC.getCivicInfo(eCivicSelected);
+
+	//happiness
+	if ( kCivic.getCivicPercentAnger() != 0 || kCivic.getHappyPerMilitaryUnit() != 0 || kCivic.getLargestCityHappiness() != 0
+		|| (kCivic.getWarWearinessModifier() != 0 && getWarWearinessPercentAnger() != 0)
+		|| kCivic.isAnyBuildingHappinessChange() || kCivic.isAnyFeatureHappinessChange()
+		|| kCivic.getNonStateReligionHappiness() != 0
+		|| (kCivic.getStateReligionHappiness() != 0 && (kCivic.isStateReligion() || eAssumedReligion != NO_RELIGION)) )
+	{
+		if (kCivicSelected.getCivicPercentAnger() != 0 || kCivicSelected.getHappyPerMilitaryUnit() != 0 || kCivicSelected.getLargestCityHappiness() != 0
+			|| (kCivicSelected.getWarWearinessModifier() != 0 && getWarWearinessPercentAnger() != 0)
+			|| kCivicSelected.isAnyBuildingHappinessChange() || kCivicSelected.isAnyFeatureHappinessChange()
+			|| kCivicSelected.getNonStateReligionHappiness() != 0
+			|| (kCivicSelected.getStateReligionHappiness() != 0 && (kCivicSelected.isStateReligion() || eAssumedReligion != NO_RELIGION)) )
+		{
+			return true;
+		}
+	}
+
+	//health
+	if ( kCivic.getExtraHealth() != 0 || kCivic.isNoUnhealthyPopulation() || kCivic.isBuildingOnlyHealthy() || kCivic.isAnyBuildingHealthChange() )
+	{
+		if ( kCivicSelected.getExtraHealth() != 0 || kCivicSelected.isNoUnhealthyPopulation() || kCivicSelected.isBuildingOnlyHealthy() || kCivicSelected.isAnyBuildingHealthChange() )
+		{
+			return true;
+		}
+	}
+
+	//religion?
+	//trade?
+	//corporation?
+	//maintenance?
+
+	return false;
+}
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
+
 //This returns a positive number equal approximately to the sum
 //of the percentage values of each unit (there is no need to scale the output by iHappy)
 //100 * iHappy means a high value.

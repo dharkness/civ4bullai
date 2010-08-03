@@ -528,7 +528,16 @@ protected:
 	
 	int AI_getStrategyHash() const;
 	void AI_calculateAverages() const;
-	
+
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+	bool AI_isCivicCanChangeOtherValues(CivicTypes eCivicSelected, ReligionTypes eAssumedReligion = NO_RELIGION);
+	bool AI_isCivicValueRecalculationRequired(CivicTypes eCivic, CivicTypes eCivicSelected, ReligionTypes eAssumedReligion = NO_RELIGION);
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
+
 	int AI_getHappinessWeight(int iHappy, int iExtraPop) const;
 	int AI_getHealthWeight(int iHealth, int iExtraPop) const;
 	
