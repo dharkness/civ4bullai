@@ -5,22 +5,7 @@
 <!-- -->
 <!-- Game Text - New -->
 <Civ4GameText xmlns="http://www.firaxis.com">
-	<TEXT>
-		<Tag>TXT_KEY_TERRAIN_TURN_DAMAGE</Tag>
-		<English>[NEWLINE][ICON_BULLET]%D1%% damage/turn</English>
-		<French>NEWLINE][ICON_BULLET]%D1%% dommage/tour</French>
-		<German>NEWLINE][ICON_BULLET]%D1%% schaden/runde</German>
-		<Italian>NEWLINE][ICON_BULLET]%D1%% danni/turno</Italian>
-		<Spanish>NEWLINE][ICON_BULLET]%D1%% da&#241;o/turno</Spanish>
-	</TEXT>
-	<TEXT>
-		<Tag>TXT_KEY_TERRAIN_TURN_HEALING</Tag>
-		<English>[NEWLINE][ICON_BULLET]%D1%% healing/turn</English>
-		<French>NEWLINE][ICON_BULLET]%D1%% soigner/tour</French>
-		<German>NEWLINE][ICON_BULLET]%D1%% heilen/runde</German>
-		<Italian>NEWLINE][ICON_BULLET]%D1%% cura/turno</Italian>
-		<Spanish>NEWLINE][ICON_BULLET]%D1%% cura/turno</Spanish>
-	</TEXT>
+
 	<TEXT>
 		<Tag>TXT_KEY_BUILDING_REQUIRES_NUM_SPECIAL_BUILDINGS</Tag>
 		<!-- %s1_Name = Can be Buildings, Units, etc -->
@@ -39,4 +24,24 @@
 		<Italian>[COLOR_WARNING_TEXT]Richiede [LINK=literal]%s1_Name[\LINK] (%d2_NumTotal totali)[COLOR_REVERT]</Italian>
 		<Spanish>[COLOR_WARNING_TEXT]Requiere [LINK=literal]%s1_Name[\LINK] (%d2_NumTotal en total)[COLOR_REVERT]</Spanish>
 	</TEXT>
+
+	<!-- Feature Damage -->
+
+	<TEXT>
+		<Tag>TXT_KEY_TERRAIN_TURN_DAMAGE</Tag>
+		<English>[NEWLINE][ICON_BULLET]%D1%% damage/turn</English>
+		<French>[NEWLINE][ICON_BULLET]%D1%% dommage/tour</French>
+		<German>[NEWLINE][ICON_BULLET]%D1%% Schaden/Runde</German>
+		<Italian>[NEWLINE][ICON_BULLET]%D1%% danni/turno</Italian>
+		<Spanish>[NEWLINE][ICON_BULLET]%D1%% da&#241;o/turno</Spanish>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_TERRAIN_TURN_HEALING</Tag>
+		<English>[NEWLINE][ICON_BULLET]%D1%% healing/turn</English>
+		<French>[NEWLINE][ICON_BULLET]%D1%% guérison/tour</French>
+		<German>[NEWLINE][ICON_BULLET]%D1%% Heilung/Runde</German>
+		<Italian>[NEWLINE][ICON_BULLET]%D1%% guarigione/turno</Italian>
+		<Spanish>[NEWLINE][ICON_BULLET]%D1%% curación/turno</Spanish>
+	</TEXT>
+	
 </Civ4GameText>
