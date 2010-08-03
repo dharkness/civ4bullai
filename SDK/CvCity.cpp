@@ -6753,7 +6753,11 @@ int CvCity::getExtraBuildingBadHappiness() const
 }
 
 
-void CvCity::updateExtraBuildingHappiness()
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvCity::updateExtraBuildingHappiness(bool bLimited)
 {
 	int iNewExtraBuildingGoodHappiness;
 	int iNewExtraBuildingBadHappiness;
@@ -6782,7 +6786,10 @@ void CvCity::updateExtraBuildingHappiness()
 		m_iExtraBuildingGoodHappiness = iNewExtraBuildingGoodHappiness;
 		FAssert(getExtraBuildingGoodHappiness() >= 0);
 
-		AI_setAssignWorkDirty(true);
+		if (!bLimited)
+		{
+			AI_setAssignWorkDirty(true);
+		}
 	}
 
 	if (getExtraBuildingBadHappiness() != iNewExtraBuildingBadHappiness)
@@ -6790,9 +6797,15 @@ void CvCity::updateExtraBuildingHappiness()
 		m_iExtraBuildingBadHappiness = iNewExtraBuildingBadHappiness;
 		FAssert(getExtraBuildingBadHappiness() <= 0);
 
-		AI_setAssignWorkDirty(true);
+		if (!bLimited)
+		{
+			AI_setAssignWorkDirty(true);
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 // BUG - Building Additional Happiness - start
 /*
@@ -7056,7 +7069,11 @@ int CvCity::getExtraBuildingBadHealth() const
 }
 
 
-void CvCity::updateExtraBuildingHealth()
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvCity::updateExtraBuildingHealth(bool bLimited)
 {
 	int iNewExtraBuildingGoodHealth = 0;
 	int iNewExtraBuildingBadHealth = 0;
@@ -7082,7 +7099,10 @@ void CvCity::updateExtraBuildingHealth()
 		m_iExtraBuildingGoodHealth = iNewExtraBuildingGoodHealth;
 		FAssert(getExtraBuildingGoodHealth() >= 0);
 
-		AI_setAssignWorkDirty(true);
+		if (!bLimited)
+		{
+			AI_setAssignWorkDirty(true);
+		}
 	}
 
 	if (getExtraBuildingBadHealth() != iNewExtraBuildingBadHealth)
@@ -7090,9 +7110,15 @@ void CvCity::updateExtraBuildingHealth()
 		m_iExtraBuildingBadHealth = iNewExtraBuildingBadHealth;
 		FAssert(getExtraBuildingBadHealth() <= 0);
 
-		AI_setAssignWorkDirty(true);
+		if (!bLimited)
+		{
+			AI_setAssignWorkDirty(true);
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvCity::getFeatureGoodHappiness() const
@@ -7107,7 +7133,11 @@ int CvCity::getFeatureBadHappiness() const
 }
 
 
-void CvCity::updateFeatureHappiness()
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvCity::updateFeatureHappiness(bool bLimited)
 {
 	int iNewFeatureGoodHappiness = 0;
 	int iNewFeatureBadHappiness = 0;
@@ -7155,7 +7185,10 @@ void CvCity::updateFeatureHappiness()
 		m_iFeatureGoodHappiness = iNewFeatureGoodHappiness;
 		FAssert(getFeatureGoodHappiness() >= 0);
 
-		AI_setAssignWorkDirty(true);
+		if (!bLimited)
+		{
+			AI_setAssignWorkDirty(true);
+		}
 	}
 
 	if (getFeatureBadHappiness() != iNewFeatureBadHappiness)
@@ -7163,9 +7196,15 @@ void CvCity::updateFeatureHappiness()
 		m_iFeatureBadHappiness = iNewFeatureBadHappiness;
 		FAssert(getFeatureBadHappiness() <= 0);
 
-		AI_setAssignWorkDirty(true);
+		if (!bLimited)
+		{
+			AI_setAssignWorkDirty(true);
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvCity::getBonusGoodHappiness() const
@@ -7238,7 +7277,11 @@ int CvCity::getReligionHappiness(ReligionTypes eReligion) const
 }
 
 
-void CvCity::updateReligionHappiness()
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvCity::updateReligionHappiness(bool bLimited)
 {
 	int iNewReligionGoodHappiness;
 	int iNewReligionBadHappiness;
@@ -7267,7 +7310,10 @@ void CvCity::updateReligionHappiness()
 		m_iReligionGoodHappiness = iNewReligionGoodHappiness;
 		FAssert(getReligionGoodHappiness() >= 0);
 
-		AI_setAssignWorkDirty(true);
+		if (!bLimited)
+		{
+			AI_setAssignWorkDirty(true);
+		}
 	}
 
 	if (getReligionBadHappiness() != iNewReligionBadHappiness)
@@ -7275,9 +7321,15 @@ void CvCity::updateReligionHappiness()
 		m_iReligionBadHappiness = iNewReligionBadHappiness;
 		FAssert(getReligionBadHappiness() <= 0);
 
-		AI_setAssignWorkDirty(true);
+		if (!bLimited)
+		{
+			AI_setAssignWorkDirty(true);
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvCity::getExtraHappiness() const

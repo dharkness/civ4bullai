@@ -427,7 +427,11 @@ public:
 
 	int getExtraBuildingGoodHappiness() const;														// Exposed to Python
 	int getExtraBuildingBadHappiness() const;															// Exposed to Python
-	void updateExtraBuildingHappiness();
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+	void updateExtraBuildingHappiness(bool bLimited = false);
 
 // BUG - Building Additional Happiness - start
 	int getAdditionalHappinessByBuilding(BuildingTypes eBuilding) const;									// Exposed to Python
@@ -436,7 +440,8 @@ public:
 
 	int getExtraBuildingGoodHealth() const;														// Exposed to Python
 	int getExtraBuildingBadHealth() const;															// Exposed to Python
-	void updateExtraBuildingHealth();
+//Fuyu bLimited
+	void updateExtraBuildingHealth(bool bLimited = false);
 
 // BUG - Building Additional Health - start
 	int getAdditionalHealthByBuilding(BuildingTypes eBuilding) const;										// Exposed to Python
@@ -445,7 +450,8 @@ public:
 
 	int getFeatureGoodHappiness() const;																	// Exposed to Python
 	int getFeatureBadHappiness() const;																		// Exposed to Python
-	void updateFeatureHappiness();
+//Fuyu bLimited
+	void updateFeatureHappiness(bool bLimited = false);
 
 	int getBonusGoodHappiness() const;																		// Exposed to Python  
 	int getBonusBadHappiness() const;																			// Exposed to Python  
@@ -455,7 +461,11 @@ public:
 	int getReligionGoodHappiness() const;																	// Exposed to Python
 	int getReligionBadHappiness() const;																	// Exposed to Python
 	int getReligionHappiness(ReligionTypes eReligion) const;							// Exposed to Python
-	void updateReligionHappiness();
+//Fuyu bLimited
+	void updateReligionHappiness(bool bLimited = false);
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 	int getExtraHappiness() const;																				// Exposed to Python
 	void changeExtraHappiness(int iChange);													// Exposed to Python

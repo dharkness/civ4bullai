@@ -1376,6 +1376,18 @@ public:
 
 	int getImprovementYieldChanges(int i, int j) const;				// Exposed to Python
 
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+	bool isAnyBuildingHappinessChange() const;
+	bool isAnyBuildingHealthChange() const;
+	bool isAnyFeatureHappinessChange() const;
+	bool isAnySpecialistValid() const;
+	bool isAnyImprovementYieldChange() const;
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
+
 	void read(FDataStreamBase* stream);
 	void write(FDataStreamBase* stream);
 
@@ -1429,6 +1441,17 @@ protected:
 	bool m_bNoForeignCorporations;
 	bool m_bStateReligion;
 	bool m_bNoNonStateReligionSpread;
+/********************************************************************************/
+/* 	New Civic AI						02.08.2010				Fuyu			*/
+/********************************************************************************/
+	bool m_bAnyBuildingHappinessChange;
+	bool m_bAnyBuildingHealthChange;
+	bool m_bAnyFeatureHappinessChange;
+	bool m_bAnySpecialistValid;
+	bool m_bAnyImprovementYieldChange;
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 	CvWString m_szWeLoveTheKingKey;
 
