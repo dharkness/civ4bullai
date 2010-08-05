@@ -4691,17 +4691,31 @@ int CvPlayerAI::AI_techValue( TechTypes eTech, int iPathLength, bool bIgnoreCost
             iBuildValue += 100;
 
 /********************************************************************************/
-/* 	Tech Value for Feature Remove		04.08.2010				Fuyu			*/
+/* 	Tech Value for Feature Remove		05.08.2010				Fuyu			*/
 /********************************************************************************/
 			//Fuyu: bonus for early worker logic
             if ((GC.getFeatureInfo(FeatureTypes(iJ)).getHealthPercent() < 0) ||
                 ((GC.getFeatureInfo(FeatureTypes(iJ)).getYieldChange(YIELD_FOOD) + GC.getFeatureInfo(FeatureTypes(iJ)).getYieldChange(YIELD_PRODUCTION) + GC.getFeatureInfo(FeatureTypes(iJ)).getYieldChange(YIELD_COMMERCE)) < 0))
             {
-				iBuildValue += 25 * countCityFeatures((FeatureTypes)iJ) * (std::max(1, (3 - getNumCities()/2)));
+				if (getNumCities() <= 3)
+				{
+					iBuildValue += 25 * countCityFeatures((FeatureTypes)iJ) * (3 - getNumCities()/2);
+				}
+				else
+				{
+					iBuildValue += 25 * countCityFeatures((FeatureTypes)iJ);
+				}
             }
 			else
 			{
-				iBuildValue += 5 * countCityFeatures((FeatureTypes)iJ) * (std::max(1, (3 - getNumCities()/2)));
+				if (getNumCities() <= 3)
+				{
+					iBuildValue += 5 * countCityFeatures((FeatureTypes)iJ) * (3 - getNumCities()/2);
+				}
+				else
+				{
+					iBuildValue += 5 * countCityFeatures((FeatureTypes)iJ);
+				}
 			}
 /********************************************************************************/
 /* 	Tech Value for Feature Remove								END 			*/
@@ -11730,7 +11744,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 
 	iValue += (GC.getCivicInfo(eCivic).getAIWeight() * getNumCities());
 
-	iValue += (getCivicPercentAnger(eCivic) / 10);
+	iValue += (getCivicPercentAnger(eCivic, /*Fuyu fix: bIgnore */ true) / 10);
 
 	iValue += -(GC.getCivicInfo(eCivic).getAnarchyLength() * getNumCities());
 
@@ -21217,7 +21231,7 @@ int CvPlayerAI::AI_getPlotCanalValue(CvPlot* pPlot) const
 }
 
 /********************************************************************************/
-/* 	New Civic AI						02.08.2010				Fuyu			*/
+/* 	New Civic AI						05.08.2010				Fuyu			*/
 /********************************************************************************/
 bool CvPlayerAI::AI_isCivicCanChangeOtherValues(CivicTypes eCivicSelected, ReligionTypes eAssumedReligion)
 {
@@ -21229,7 +21243,8 @@ bool CvPlayerAI::AI_isCivicCanChangeOtherValues(CivicTypes eCivicSelected, Relig
 	CvCivicInfo& kCivicSelected = GC.getCivicInfo(eCivicSelected);
 
 	//happiness
-	if (kCivicSelected.getCivicPercentAnger() != 0 || kCivicSelected.getHappyPerMilitaryUnit() != 0 || kCivicSelected.getLargestCityHappiness() != 0
+	if ( (kCivicSelected.getCivicPercentAnger() != 0 && getCivicPercentAnger(eCivicSelected, true) != 0)
+		|| kCivicSelected.getHappyPerMilitaryUnit() != 0 || kCivicSelected.getLargestCityHappiness() != 0
 		|| (kCivicSelected.getWarWearinessModifier() != 0 && getWarWearinessPercentAnger() != 0)
 		|| kCivicSelected.isAnyBuildingHappinessChange() || kCivicSelected.isAnyFeatureHappinessChange()
 		|| kCivicSelected.getNonStateReligionHappiness() != 0
@@ -21264,13 +21279,15 @@ bool CvPlayerAI::AI_isCivicValueRecalculationRequired(CivicTypes eCivic, CivicTy
 	CvCivicInfo& kCivicSelected = GC.getCivicInfo(eCivicSelected);
 
 	//happiness
-	if ( kCivic.getCivicPercentAnger() != 0 || kCivic.getHappyPerMilitaryUnit() != 0 || kCivic.getLargestCityHappiness() != 0
+	if ( (kCivic.getCivicPercentAnger() != 0 && getCivicPercentAnger(eCivic, true) != 0)
+		|| kCivic.getHappyPerMilitaryUnit() != 0 || kCivic.getLargestCityHappiness() != 0
 		|| (kCivic.getWarWearinessModifier() != 0 && getWarWearinessPercentAnger() != 0)
 		|| kCivic.isAnyBuildingHappinessChange() || kCivic.isAnyFeatureHappinessChange()
 		|| kCivic.getNonStateReligionHappiness() != 0
 		|| (kCivic.getStateReligionHappiness() != 0 && (kCivic.isStateReligion() || eAssumedReligion != NO_RELIGION)) )
 	{
-		if (kCivicSelected.getCivicPercentAnger() != 0 || kCivicSelected.getHappyPerMilitaryUnit() != 0 || kCivicSelected.getLargestCityHappiness() != 0
+		if ( (kCivicSelected.getCivicPercentAnger() != 0 && getCivicPercentAnger(eCivicSelected, true) != 0)
+			|| kCivicSelected.getHappyPerMilitaryUnit() != 0 || kCivicSelected.getLargestCityHappiness() != 0
 			|| (kCivicSelected.getWarWearinessModifier() != 0 && getWarWearinessPercentAnger() != 0)
 			|| kCivicSelected.isAnyBuildingHappinessChange() || kCivicSelected.isAnyFeatureHappinessChange()
 			|| kCivicSelected.getNonStateReligionHappiness() != 0

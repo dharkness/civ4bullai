@@ -3392,7 +3392,9 @@ void CvPlayer::doTurn()
 	{
 		pLoopCity->doTurn();
 	}
-
+/********************************************************************************/
+/* 	Worker Counting						04.08.2010				Fuyu			*/
+/********************************************************************************/
 //Fuyu WorkersHave check
 #ifdef _DEBUG
 	int iTotalWorkersHave = 0;
@@ -3425,7 +3427,9 @@ void CvPlayer::doTurn()
 		FAssertMsg(iTotalWorkersHave <= (iNumWorkerAIUnits + iTotalWorkersFinishedSoon), "Player has less workers than he thinks he has");
 	}
 #endif
-//Fuyu WorkersHave check - END
+/********************************************************************************/
+/* 	Worker Counting 											END 			*/
+/********************************************************************************/
 
 	if (getGoldenAgeTurns() > 0)
 	{

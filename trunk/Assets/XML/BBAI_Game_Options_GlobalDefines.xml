@@ -54,4 +54,16 @@
 		<DefineName>BBAI_HUMAN_AS_VASSAL_OPTION</DefineName>
 		<iDefineIntVal>0</iDefineIntVal>
 	</Define>
+	
+	<Define>
+		<!-- Fuyu: Changes behavior of unit capturing for AI players (Def: 1) :
+			0 : Default BTS: Workers are mostly destroyed if an AI player captures them.
+			1 : Workers are only destroyed if an AI player captures them from a human player, 
+				only rare worker destruction in AI vs AI wars.
+			2 : AI always captures workers, never kills them.
+		 -->
+		<DefineName>BBAI_UNIT_CAPTURE</DefineName>
+		<iDefineIntVal>1</iDefineIntVal>
+	</Define>
+	<Define>
 </Civ4Defines>

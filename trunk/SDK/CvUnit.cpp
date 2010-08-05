@@ -668,7 +668,12 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer)
 
 	if ((eCapturingPlayer != NO_PLAYER) && (eCaptureUnitType != NO_UNIT) && !(GET_PLAYER(eCapturingPlayer).isBarbarian()))
 	{
-		if (GET_PLAYER(eCapturingPlayer).isHuman() || GET_PLAYER(eCapturingPlayer).AI_captureUnit(eCaptureUnitType, pPlot) || 0 == GC.getDefineINT("AI_CAN_DISBAND_UNITS"))
+/********************************************************************************/
+/* 	Worker Capturing					05.08.2010				Fuyu			*/
+/********************************************************************************/
+		if (GET_PLAYER(eCapturingPlayer).isHuman() || GET_PLAYER(eCapturingPlayer).AI_captureUnit(eCaptureUnitType, pPlot) || 0 == GC.getDefineINT("AI_CAN_DISBAND_UNITS")
+			//Fuyu: AI shouldn't kill all workers
+			|| ((GC.getDefineINT("BBAI_UNIT_CAPTURE") + ((GET_PLAYER(eOwner).isHuman())? 0 : 1)) >= 2))
 		{
 			CvUnit* pkCapturedUnit = GET_PLAYER(eCapturingPlayer).initUnit(eCaptureUnitType, pPlot->getX_INLINE(), pPlot->getY_INLINE());
 
@@ -699,12 +704,26 @@ void CvUnit::kill(bool bDelay, PlayerTypes ePlayer)
 					{
 						if (GET_PLAYER(eCapturingPlayer).AI_getPlotDanger(pPlot) && GC.getDefineINT("AI_CAN_DISBAND_UNITS"))
 						{
-							pkCapturedUnit->kill(false);
+							if ( (GC.getDefineINT("BBAI_UNIT_CAPTURE") >= 2) ||
+								//Fuyu: AI shouldn't kill workers that could easily retreat to own territory
+								( ((GC.getDefineINT("BBAI_UNIT_CAPTURE") + ((GET_PLAYER(eOwner).isHuman())? 0 : 1)) == 2)
+								&& (pPlot->getOwner() == eCapturingPlayer || pPlot->isAdjacentPlayer(eCapturingPlayer, (pkCapturedUnit->getDomainType() == DOMAIN_LAND && !pkCapturedUnit->canMoveAllTerrain()))) ) )
+							{
+								//probably doesn't work here, but it will be done automatically next turn
+								//AI_retreatToCity();
+							}
+							else
+							{
+								pkCapturedUnit->kill(false);
+							}
 						}
 					}
 				}
 			}
 		}
+/********************************************************************************/
+/* 	Worker Capturing 											END 			*/
+/********************************************************************************/
 	}
 }
 

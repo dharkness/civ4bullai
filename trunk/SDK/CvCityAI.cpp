@@ -12941,10 +12941,6 @@ int CvCityAI::AI_workingCityPlotTargetMissionAIs(PlayerTypes ePlayer, MissionAIT
 								}
 							}
 						}
-						else
-						{
-							continue;
-						}
 					}
 				}
 			}
