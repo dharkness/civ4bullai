@@ -1481,6 +1481,17 @@ bool PUF_isNoMission(const CvUnit* pUnit, int iData1, int iData2)
 	return (pUnit->getGroup()->getActivityType() != ACTIVITY_MISSION);
 }
 
+/********************************************************************************/
+/* 	Worker Counting						03.08.2010				Fuyu			*/
+/********************************************************************************/
+bool PUF_isNoMissionAI(const CvUnit* pUnit, int iData1, int iData2)
+{
+	return (pUnit->getGroup()->AI_getMissionAIType() == NO_MISSIONAI);
+}
+/********************************************************************************/
+/* 	Worker Counting												END 			*/
+/********************************************************************************/
+
 bool PUF_isFiniteRange(const CvUnit* pUnit, int iData1, int iData2)
 {
 	return ((pUnit->getDomainType() != DOMAIN_AIR) || (pUnit->getUnitInfo().getAirRange() > 0));

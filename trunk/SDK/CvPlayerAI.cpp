@@ -1775,7 +1775,8 @@ void CvPlayerAI::AI_conquerCity(CvCity* pCity)
 								{
 									if (GET_TEAM(GET_PLAYER(pCity->getPreviousOwner()).getTeam()).countNumCitiesByArea(pCity->area()) > 3)
 									{
-										iRazeValue += GC.getLeaderHeadInfo(getPersonalityType()).getRazeCityProb();
+										//Fuyu: not so much
+										iRazeValue += std::max(0, (GC.getLeaderHeadInfo(getPersonalityType()).getRazeCityProb() - iCloseness));
 									}
 								}
 							}
@@ -1835,7 +1836,9 @@ void CvPlayerAI::AI_conquerCity(CvCity* pCity)
 					}
 
 					// Non-distance related aspects
-					iRazeValue += GC.getLeaderHeadInfo(getPersonalityType()).getRazeCityProb();
+
+					//Fuyu: not so much
+					iRazeValue += std::max(0, ((GC.getLeaderHeadInfo(getPersonalityType()).getRazeCityProb() / 2) - iCloseness));
 		                
 					if (getStateReligion() != NO_RELIGION)
 					{
@@ -1935,8 +1938,10 @@ void CvPlayerAI::AI_conquerCity(CvCity* pCity)
 
 	if( bRaze )
 	{
-		pCity->doTask(TASK_RAZE);
+		//Fuyu fix
 		logBBAI("    Player %d (%S) decides to to raze city %S!!!", getID(), getCivilizationDescription(0), pCity->getName().GetCString() );
+		pCity->doTask(TASK_RAZE);
+		//logBBAI("    Player %d (%S) decides to to raze city %S!!!", getID(), getCivilizationDescription(0), pCity->getName().GetCString() );
 	}
 	else
 	{
@@ -4565,7 +4570,7 @@ int CvPlayerAI::AI_techValue( TechTypes eTech, int iPathLength, bool bIgnoreCost
 							iTempValue += (kImprovement.getImprovementBonusYield(iK, iL) * 300);
 							iTempValue += (kImprovement.getIrrigatedYieldChange(iL) * 200);
 
-							// food bonuses are more valueble
+							// food bonuses are more valuable
 							if (iL == YIELD_FOOD)
 							{
 								iTempValue *= 2;
@@ -4598,6 +4603,29 @@ int CvPlayerAI::AI_techValue( TechTypes eTech, int iPathLength, bool bIgnoreCost
 						if (iNumBonuses > 0)
 						{
 							iBonusValue *= (iNumBonuses + 2);
+/********************************************************************************/
+/* 	Tech Value for Bonus Yields			04.08.2010				Fuyu			*/
+/********************************************************************************/
+							//Fuyu: massive bonus for early worker logic
+							int iCityRadiusBonusCount = 0;
+							if (getNumCities() <= 3 && (GC.getGame().getElapsedGameTurns() < ((30 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent()) / 100)))
+							{
+								CvCity* pLoopCity;
+								int iLoop;
+
+								//count bonuses inside city radius or easily claimed
+								for (pLoopCity = firstCity(&iLoop); pLoopCity != NULL; pLoopCity = nextCity(&iLoop))
+								{
+									iCityRadiusBonusCount += pLoopCity->AI_countNumBonuses((BonusTypes)iK, true, pLoopCity->getCommerceRate(COMMERCE_CULTURE) > 0, -1);
+								}
+							}
+							if (iCityRadiusBonusCount > 1)
+							{
+								iTempValue *= 3 + iCityRadiusBonusCount - getNumCities();
+							}
+/********************************************************************************/
+/* 	Tech Value for Bonus Yields									END 			*/
+/********************************************************************************/
 							iBonusValue /= kImprovement.isWater() ? 4 : 3;	// water resources are worth less
 
 							iImprovementValue += iBonusValue;
@@ -4662,11 +4690,22 @@ int CvPlayerAI::AI_techValue( TechTypes eTech, int iPathLength, bool bIgnoreCost
         {
             iBuildValue += 100;
 
+/********************************************************************************/
+/* 	Tech Value for Feature Remove		04.08.2010				Fuyu			*/
+/********************************************************************************/
+			//Fuyu: bonus for early worker logic
             if ((GC.getFeatureInfo(FeatureTypes(iJ)).getHealthPercent() < 0) ||
                 ((GC.getFeatureInfo(FeatureTypes(iJ)).getYieldChange(YIELD_FOOD) + GC.getFeatureInfo(FeatureTypes(iJ)).getYieldChange(YIELD_PRODUCTION) + GC.getFeatureInfo(FeatureTypes(iJ)).getYieldChange(YIELD_COMMERCE)) < 0))
             {
-                iBuildValue += 25 * countCityFeatures((FeatureTypes)iJ);
+				iBuildValue += 25 * countCityFeatures((FeatureTypes)iJ) * (std::max(1, (3 - getNumCities()/2)));
             }
+			else
+			{
+				iBuildValue += 5 * countCityFeatures((FeatureTypes)iJ) * (std::max(1, (3 - getNumCities()/2)));
+			}
+/********************************************************************************/
+/* 	Tech Value for Feature Remove								END 			*/
+/********************************************************************************/
         }
     }
 

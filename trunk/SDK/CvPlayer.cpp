@@ -3408,7 +3408,9 @@ void CvPlayer::doTurn()
 		{
 			if (pLoopCity->getProductionUnitAI() == UNITAI_WORKER)
 			{
-				if (pLoopCity->getProductionTurnsLeft() <= 2)
+				//if (pLoopCity->getProductionTurnsLeft() <= 2)
+				// doProduction has already happened
+				if (pLoopCity->getProductionTurnsLeft() <= 1)
 				{
 					iTotalWorkersFinishedSoon++;
 				}
@@ -3416,7 +3418,12 @@ void CvPlayer::doTurn()
 		}
 	}
 
-	FAssertMsg(iTotalWorkersHave <= (iNumWorkerAIUnits + iTotalWorkersFinishedSoon), "Player has less workers than he thinks he has");
+	if (iTotalWorkersHave != (iNumWorkerAIUnits + iTotalWorkersFinishedSoon))
+	{
+		if( gPlayerLogLevel >= 1 ) logBBAI("  Player %d (%S) thinks he has %d workers but actually has %d (%d)", getID(), getCivilizationDescription(0), iTotalWorkersHave, (iNumWorkerAIUnits + iTotalWorkersFinishedSoon), iTotalWorkersFinishedSoon);
+
+		FAssertMsg(iTotalWorkersHave <= (iNumWorkerAIUnits + iTotalWorkersFinishedSoon), "Player has less workers than he thinks he has");
+	}
 #endif
 //Fuyu WorkersHave check - END
 

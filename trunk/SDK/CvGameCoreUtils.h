@@ -322,6 +322,13 @@ bool PUF_isNotCityAIType( const CvUnit* pUnit, int iData1, int iData2 = -1);
 bool PUF_isSelected( const CvUnit* pUnit, int iData1 = -1, int iData2 = -1);
 bool PUF_makeInfoBarDirty(CvUnit* pUnit, int iData1 = -1, int iData2 = -1);
 bool PUF_isNoMission(const CvUnit* pUnit, int iData1 = -1, int iData2 = -1);
+/********************************************************************************/
+/* 	Worker Counting						03.08.2010				Fuyu			*/
+/********************************************************************************/
+bool PUF_isNoMissionAI(const CvUnit* pUnit, int iData1 = -1, int iData2 = -1);
+/********************************************************************************/
+/* 	Worker Counting												END 			*/
+/********************************************************************************/
 bool PUF_isFiniteRange(const CvUnit* pUnit, int iData1 = -1, int iData2 = -1);
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                      01/15/09                                jdog5000      */
