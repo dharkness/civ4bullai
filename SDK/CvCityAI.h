@@ -152,6 +152,13 @@ public:
 	int AI_getWorkersHave();
 	int AI_getWorkersNeeded();
 	void AI_changeWorkersHave(int iChange);
+/********************************************************************************/
+/* 	Worker Counting						03.08.2010				Fuyu			*/
+/********************************************************************************/
+	int AI_workingCityPlotTargetMissionAIs(PlayerTypes ePlayer, MissionAITypes eMissionAI, UnitAITypes eUnitAI = NO_UNITAI, bool bSameAreaOnly = false) const;
+/********************************************************************************/
+/* 	Worker Counting 											END 			*/
+/********************************************************************************/
 	BuildingTypes AI_bestAdvancedStartBuilding(int iPass);
 	
 	void read(FDataStreamBase* pStream);

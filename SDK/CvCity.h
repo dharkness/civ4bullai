@@ -1075,6 +1075,13 @@ public:
 	virtual int AI_getWorkersHave() = 0;
 	virtual int AI_getWorkersNeeded() = 0;
 	virtual void AI_changeWorkersHave(int iChange) = 0;
+/********************************************************************************/
+/* 	Worker Counting						03.08.2010				Fuyu			*/
+/********************************************************************************/
+	virtual int AI_workingCityPlotTargetMissionAIs(PlayerTypes ePlayer, MissionAITypes eMissionAI, UnitAITypes eUnitAI = NO_UNITAI, bool bSameAreaOnly = false) const = 0;
+/********************************************************************************/
+/* 	Worker Counting 											END 			*/
+/********************************************************************************/
 
 	bool hasShrine(ReligionTypes eReligion);
 	void processVoteSourceBonus(VoteSourceTypes eVoteSource, bool bActive);

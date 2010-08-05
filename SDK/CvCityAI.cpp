@@ -1342,7 +1342,7 @@ void CvCityAI::AI_chooseProduction()
 	{
 		if( !bDanger && !(kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE)) )
 		{	
-			if (!bWaterDanger && (getPopulation() < 3) && (iNeededSeaWorkers > 0))
+			if (!bWaterDanger && (getPopulation() <= 2) && (iNeededSeaWorkers > 0))
 			{
 				if (iExistingSeaWorkers == 0)
 				{
@@ -1364,6 +1364,26 @@ void CvCityAI::AI_chooseProduction()
 				}
 				bChooseWorker = true;
 			}
+/********************************************************************************/
+/* 	Build more early sea workers								Fuyu		    */
+/********************************************************************************/
+			else
+			{
+				if (!bWaterDanger && (getPopulation() <= 4) && (iNeededSeaWorkers > 0) && (happyLevel() - unhappyLevel(1)) > 0)
+				{
+					if (iExistingSeaWorkers == 0)
+					{
+						if (AI_chooseUnit(UNITAI_WORKER_SEA))
+						{
+							if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker sea 1b", getName().GetCString());
+							return;
+						}
+					}
+				}
+			}
+/********************************************************************************/
+/* 	Build more early sea workers								END			    */
+/********************************************************************************/
 		}
 	}
 
@@ -1973,7 +1993,7 @@ void CvCityAI::AI_chooseProduction()
 /********************************************************************************/
 /* 	City Defenders						24.07.2010				Fuyu			*/
 /********************************************************************************/
-						if (kPlayer.getNumMilitaryUnits() <= kPlayer.getNumCities() + iNumSettlers + 1
+						if ((kPlayer.getNumMilitaryUnits() <= (kPlayer.getNumCities() + iNumSettlers + 1))
 							//Fuyu: in the beginning, don't count on other cities to build the escorts
 							|| (kPlayer.getNumCities() <= 7 && iNumCitiesInArea <= 3 && (plot()->plotCount(PUF_canDefendGroupHead, -1, -1, getOwnerINLINE(), NO_TEAM, PUF_isCityAIType) <= 1)))
 						{
@@ -2012,6 +2032,8 @@ void CvCityAI::AI_chooseProduction()
 /********************************************************************************/
 /* 	City Defenders												END 			*/
 /********************************************************************************/
+						//if( gCityLogLevel >= 2 ) logBBAI("      City %S uses build settler 1 NOW with %d defenders already in place", getName().GetCString(), (plot()->plotCount(PUF_canDefendGroupHead, -1, -1, getOwnerINLINE(), NO_TEAM, PUF_isCityAIType)));
+						return;
 					}
 				}
 			}
@@ -12651,6 +12673,17 @@ void CvCityAI::AI_updateWorkersNeededHere()
 			}
 		}
 	}
+
+/********************************************************************************/
+/* 	Worker Counting						03.08.2010				Fuyu			*/
+/********************************************************************************/
+	//iWorkersHave += iWorkersHaveByPlotTargetMissionAI;
+	int iWorkersHaveByPlotTargetMissionAI = AI_workingCityPlotTargetMissionAIs(getOwnerINLINE(), MISSIONAI_BUILD, UNITAI_WORKER, true);
+	int iWorkersHaveNewlyBuilt = 0;
+/********************************************************************************/
+/* 	Worker Counting 											END 			*/
+/********************************************************************************/
+
 	for (int iI = 0; iI < NUM_CITY_PLOTS; iI++)
 	{
 		pLoopPlot = getCityIndexPlot(iI);
@@ -12664,9 +12697,26 @@ void CvCityAI::AI_updateWorkersNeededHere()
 				//How slow is this? It could be almost NUM_CITY_PLOT times faster
 				//by iterating groups and seeing if the plot target lands in this city
 				//but since this is only called once/turn i'm not sure it matters.
+
+/********************************************************************************/
+/* 	Worker Counting							03.08.2010			Fuyu			*/
+/********************************************************************************/
+//Fuyu: it might matter, so if we can make it NUM_CITY_PLOT times faster
+//then lets do it. Moved to before the loop
+/* original code
 				iWorkersHave += (GET_PLAYER(getOwnerINLINE()).AI_plotTargetMissionAIs(pLoopPlot, MISSIONAI_BUILD));
-				
+*/
+
+//was counting workers twice because missionais are never reset
+/* original code
 				iWorkersHave += pLoopPlot->plotCount(PUF_isUnitAIType, UNITAI_WORKER, -1, getOwner(), getTeam(), PUF_isNoMission, -1, -1);
+*/
+				//iWorkersHave += pLoopPlot->plotCount(PUF_isUnitAIType, UNITAI_WORKER, -1, getOwner(), getTeam(), PUF_isNoMissionAI, -1, -1);
+				iWorkersHaveNewlyBuilt += pLoopPlot->plotCount(PUF_isUnitAIType, UNITAI_WORKER, -1, getOwner(), getTeam(), PUF_isNoMissionAI, -1, -1);
+/********************************************************************************/
+/* 	Worker Counting 											END 			*/
+/********************************************************************************/
+
 				if (iI != CITY_HOME_PLOT)
 				{
 					if (pLoopPlot->getImprovementType() == NO_IMPROVEMENT)
@@ -12812,10 +12862,100 @@ void CvCityAI::AI_updateWorkersNeededHere()
 	iWorkersNeeded += (iSpecialCount + 1) / 2;
 	
 	iWorkersNeeded = std::max((iUnimprovedWorkedPlotCount + 1) / 2, iWorkersNeeded);
-	
+/********************************************************************************/
+/* 	Worker Counting						03.08.2010				Fuyu			*/
+/********************************************************************************/
+	//if( gCityLogLevel >= 3 ) logBBAI("      City %S has %d workers: %d from plotTarget, %d newly built, %d finished soon", getName().GetCString(), (iWorkersHave + iWorkersHaveNewlyBuilt + iWorkersHaveByPlotTargetMissionAI), iWorkersHaveByPlotTargetMissionAI, iWorkersHaveNewlyBuilt, iWorkersHave);
+	iWorkersHave += iWorkersHaveNewlyBuilt;
+	iWorkersHave += iWorkersHaveByPlotTargetMissionAI;
+/********************************************************************************/
+/* 	Worker Counting 											END 			*/
+/********************************************************************************/
+
 	m_iWorkersNeeded = iWorkersNeeded;
 	m_iWorkersHave = iWorkersHave;
 }
+/********************************************************************************/
+/* 	Worker Counting						03.08.2010				Fuyu			*/
+/********************************************************************************/
+int CvCityAI::AI_workingCityPlotTargetMissionAIs(PlayerTypes ePlayer, MissionAITypes eMissionAI, UnitAITypes eUnitAI, bool bSameAreaOnly) const
+{
+	PROFILE_FUNC();
+
+	if (this == NULL)
+	{
+		return 0;
+	}
+
+	CvPlayer& kPlayer = GET_PLAYER(ePlayer);
+	bool bCanMoveAllTerrain = bSameAreaOnly; //only check if bSameAreaOnly
+	int iCorrectUnitAICount;
+	int iCount = 0;
+
+	int iLoop;
+	for(CvSelectionGroup* pLoopSelectionGroup = kPlayer.firstSelectionGroup(&iLoop); pLoopSelectionGroup; pLoopSelectionGroup = kPlayer.nextSelectionGroup(&iLoop))
+	{
+		CvPlot* pMissionPlot = pLoopSelectionGroup->AI_getMissionAIPlot();
+
+		if (pMissionPlot != NULL)
+		{
+			if (eMissionAI == NO_MISSIONAI || pLoopSelectionGroup->AI_getMissionAIType() == eMissionAI)
+			{
+				if (pMissionPlot->getWorkingCity() == this)
+				{
+					if (eUnitAI == NO_UNITAI && !bSameAreaOnly)
+					{
+						iCount += pLoopSelectionGroup->getNumUnits();
+					}
+					else
+					{
+						CLLNode<IDInfo>* pUnitNode;
+						CvUnit* pLoopUnit;
+
+						pUnitNode = pLoopSelectionGroup->headUnitNode();
+						if (pUnitNode != NULL)
+						{
+							CvUnit* pHeadUnit = ::getUnit(pUnitNode->m_data);
+							iCorrectUnitAICount = 0;
+
+							if (pHeadUnit != NULL)
+							{
+								while (pUnitNode != NULL)
+								{
+									pLoopUnit = ::getUnit(pUnitNode->m_data);
+									pUnitNode = pLoopSelectionGroup->nextUnitNode(pUnitNode);
+
+									if (bCanMoveAllTerrain && !(pLoopUnit->canMoveAllTerrain()))
+									{
+										bCanMoveAllTerrain = false;
+									}
+									if (eUnitAI == NO_UNITAI || pLoopUnit->AI_getUnitAIType() == eUnitAI)
+									{
+										iCorrectUnitAICount++;
+									}
+								}
+
+								if (!bSameAreaOnly || bCanMoveAllTerrain || pHeadUnit->getArea() == pMissionPlot->getArea())
+								{
+									iCount += iCorrectUnitAICount;
+								}
+							}
+						}
+						else
+						{
+							continue;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return iCount;
+}
+/********************************************************************************/
+/* 	Worker Counting 											END 			*/
+/********************************************************************************/
 
 BuildingTypes CvCityAI::AI_bestAdvancedStartBuilding(int iPass)
 {
