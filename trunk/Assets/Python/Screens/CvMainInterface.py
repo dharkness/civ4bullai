@@ -5063,7 +5063,7 @@ class CvMainInterface:
 # BUG - Power Rating - end
 # BUG - Attitude Icons - start
 												if (ScoreOpt.isShowAttitude()):
-													if (not gc.getPlayer(ePlayer).isHuman()):
+													if (not gc.getPlayer(ePlayer).isHuman() and ePlayer != gc.getGame().getActivePlayer()):
 														iAtt = gc.getPlayer(ePlayer).AI_getAttitude(gc.getGame().getActivePlayer())
 														cAtt =  unichr(ord(unichr(CyGame().getSymbolID(FontSymbols.POWER_CHAR) + 4)) + iAtt)
 														szBuffer += cAtt

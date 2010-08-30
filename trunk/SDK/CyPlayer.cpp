@@ -2071,6 +2071,20 @@ bool CyPlayer::AI_demandRebukedWar(int /*PlayerTypes*/ ePlayer)
 
 AttitudeTypes CyPlayer::AI_getAttitude(int /*PlayerTypes*/ ePlayer)
 {
+	//Fuyu catching AIAutoplay weirdness
+	if (m_pPlayer)
+	{
+		FAssertMsg(m_pPlayer->getID() != (PlayerTypes)ePlayer, "shouldn't call this function on ourselves (Python)");
+		if (m_pPlayer->getID() == (PlayerTypes)ePlayer)
+		{
+#ifdef _DEBUG
+			throw new exception();
+#endif
+		   return NO_ATTITUDE;
+		}
+	}
+	//Fuyu end
+
 	return m_pPlayer ? m_pPlayer->AI_getAttitude((PlayerTypes)ePlayer) : NO_ATTITUDE;
 }
 
