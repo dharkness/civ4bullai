@@ -9654,19 +9654,26 @@ bool CvPlayer::isMilitaryFoodProduction() const
 }
 
 
-void CvPlayer::changeMilitaryFoodProductionCount(int iChange)											
+/********************************************************************************/
+/* 	New Civic AI						19.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeMilitaryFoodProductionCount(int iChange, bool bLimited)											
 {
 	if (iChange != 0)
 	{
 		m_iMilitaryFoodProductionCount = (m_iMilitaryFoodProductionCount + iChange);
 		FAssert(getMilitaryFoodProductionCount() >= 0);
 
-		if (getTeam() == GC.getGameINLINE().getActiveTeam())
+		if (!bLimited && getTeam() == GC.getGameINLINE().getActiveTeam())
 		{
 			gDLL->getInterfaceIFace()->setDirty(CityInfo_DIRTY_BIT, true);
 		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getHighestUnitLevel()	const																
@@ -9857,15 +9864,25 @@ int CvPlayer::getCorporationMaintenanceModifier() const
 }
 
 
-void CvPlayer::changeCorporationMaintenanceModifier(int iChange)
+/********************************************************************************/
+/* 	New Civic AI						19.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeCorporationMaintenanceModifier(int iChange, bool bLimited)
 {
 	if (iChange != 0)
 	{
 		m_iCorporationMaintenanceModifier += iChange;
 
-		updateMaintenance();
+		if (!bLimited)
+		{
+			updateMaintenance();
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getTotalMaintenance() const
@@ -10156,16 +10173,26 @@ bool CvPlayer::isNoForeignTrade() const
 }
 
 
-void CvPlayer::changeNoForeignTradeCount(int iChange)
+/********************************************************************************/
+/* 	New Civic AI						19.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeNoForeignTradeCount(int iChange, bool bLimited)
 {
 	if (iChange != 0)
 	{
 		m_iNoForeignTradeCount = (m_iNoForeignTradeCount + iChange);
 		FAssert(getNoForeignTradeCount() >= 0);
 
-		GC.getGameINLINE().updateTradeRoutes();
+		if (!bLimited)
+		{
+			GC.getGameINLINE().updateTradeRoutes();
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getNoCorporationsCount() const
@@ -10180,16 +10207,26 @@ bool CvPlayer::isNoCorporations() const
 }
 
 
-void CvPlayer::changeNoCorporationsCount(int iChange)
+/********************************************************************************/
+/* 	New Civic AI						19.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeNoCorporationsCount(int iChange, bool bLimited)
 {
 	if (iChange != 0)
 	{
 		m_iNoCorporationsCount += iChange;
 		FAssert(getNoCorporationsCount() >= 0);
 
-		updateCorporation();
+		if (!bLimited)
+		{
+			updateCorporation();
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getNoForeignCorporationsCount() const
@@ -10204,16 +10241,26 @@ bool CvPlayer::isNoForeignCorporations() const
 }
 
 
-void CvPlayer::changeNoForeignCorporationsCount(int iChange)
+/********************************************************************************/
+/* 	New Civic AI						19.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeNoForeignCorporationsCount(int iChange, bool bLimited)
 {
 	if (iChange != 0)
 	{
 		m_iNoForeignCorporationsCount += iChange;
 		FAssert(getNoForeignCorporationsCount() >= 0);
 
-		updateCorporation();
+		if (!bLimited)
+		{
+			updateCorporation();
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 int CvPlayer::getCoastalTradeRoutes() const
@@ -12951,7 +12998,11 @@ bool CvPlayer::isSpecialistValid(SpecialistTypes eIndex) const
 }
 
 
-void CvPlayer::changeSpecialistValidCount(SpecialistTypes eIndex, int iChange)
+/********************************************************************************/
+/* 	New Civic AI						19.08.2010				Fuyu			*/
+/********************************************************************************/
+//Fuyu bLimited
+void CvPlayer::changeSpecialistValidCount(SpecialistTypes eIndex, int iChange, bool bLimited)
 {
 	FAssertMsg(eIndex >= 0, "eIndex is expected to be non-negative (invalid Index)");
 	FAssertMsg(eIndex < GC.getNumSpecialistInfos(), "eIndex is expected to be within maximum bounds (invalid Index)");
@@ -12962,9 +13013,15 @@ void CvPlayer::changeSpecialistValidCount(SpecialistTypes eIndex, int iChange)
 		m_paiSpecialistValidCount[eIndex] = (m_paiSpecialistValidCount[eIndex] + iChange);
 		FAssertMsg(getSpecialistValidCount(eIndex) >= 0, "getSpecialistValidCount(eIndex) is expected to be non-negative (invalid Index)");
 
-		AI_makeAssignWorkDirty();
+		if (!bLimited)
+		{
+			AI_makeAssignWorkDirty();
+		}
 	}
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 
 bool CvPlayer::isResearchingTech(TechTypes eIndex) const	
@@ -17084,7 +17141,7 @@ void CvPlayer::verifyGoldCommercePercent()
 
 
 /********************************************************************************/
-/* 	New Civic AI						02.08.2010				Fuyu			*/
+/* 	New Civic AI						19.08.2010				Fuyu			*/
 /********************************************************************************/
 //Fuyu bLimited
 void CvPlayer::processCivics(CivicTypes eCivic, int iChange, bool bLimited)
@@ -17102,7 +17159,7 @@ void CvPlayer::processCivics(CivicTypes eCivic, int iChange, bool bLimited)
 		//changeStateReligionGreatPeopleRateModifier(kCivic.getStateReligionGreatPeopleRateModifier() * iChange);
 		//changeDistanceMaintenanceModifier(kCivic.getDistanceMaintenanceModifier() * iChange);
 		//changeNumCitiesMaintenanceModifier(kCivic.getNumCitiesMaintenanceModifier() * iChange);
-		//changeCorporationMaintenanceModifier(kCivic.getCorporationMaintenanceModifier() * iChange);
+		changeCorporationMaintenanceModifier(kCivic.getCorporationMaintenanceModifier() * iChange, bLimited);
 		changeExtraHealth(kCivic.getExtraHealth() * iChange, bLimited);
 		//changeFreeExperience(kCivic.getFreeExperience() * iChange);
 		//changeWorkerSpeedModifier(kCivic.getWorkerSpeedModifier() * iChange);
@@ -17115,7 +17172,7 @@ void CvPlayer::processCivics(CivicTypes eCivic, int iChange, bool bLimited)
 		//changeGoldPerUnit(kCivic.getGoldPerUnit() * iChange);
 		//changeGoldPerMilitaryUnit(kCivic.getGoldPerMilitaryUnit() * iChange);
 		changeHappyPerMilitaryUnit(kCivic.getHappyPerMilitaryUnit() * iChange,  bLimited);
-		//+changeMilitaryFoodProductionCount((kCivic.isMilitaryFoodProduction()) ? iChange : 0);
+		changeMilitaryFoodProductionCount(((kCivic.isMilitaryFoodProduction()) ? iChange : 0), bLimited);
 		//changeMaxConscript(getWorldSizeMaxConscript(eCivic) * iChange);
 		changeNoUnhealthyPopulationCount(((kCivic.isNoUnhealthyPopulation()) ? iChange : 0), bLimited);
 		changeBuildingOnlyHealthyCount(((kCivic.isBuildingOnlyHealthy()) ? iChange : 0), bLimited);
@@ -17126,11 +17183,11 @@ void CvPlayer::processCivics(CivicTypes eCivic, int iChange, bool bLimited)
 		}
 		//changeFreeSpecialist(kCivic.getFreeSpecialist() * iChange);
 		//changeTradeRoutes(kCivic.getTradeRoutes() * iChange);
-		//+changeNoForeignTradeCount(kCivic.isNoForeignTrade() * iChange);
-		//+changeNoCorporationsCount(kCivic.isNoCorporations() * iChange);
-		//+changeNoForeignCorporationsCount(kCivic.isNoForeignCorporations() * iChange);
+		changeNoForeignTradeCount(kCivic.isNoForeignTrade() * iChange, bLimited);
+		changeNoCorporationsCount(kCivic.isNoCorporations() * iChange, bLimited);
+		changeNoForeignCorporationsCount(kCivic.isNoForeignCorporations() * iChange, bLimited);
 		changeStateReligionCount(((kCivic.isStateReligion()) ? iChange : 0), bLimited);
-		//+changeNoNonStateReligionSpreadCount((kCivic.isNoNonStateReligionSpread()) ? iChange : 0);
+		changeNoNonStateReligionSpreadCount((kCivic.isNoNonStateReligionSpread()) ? iChange : 0);
 		changeStateReligionHappiness(kCivic.getStateReligionHappiness() * iChange, bLimited);
 		changeNonStateReligionHappiness(kCivic.getNonStateReligionHappiness() * iChange, bLimited);
 		//changeStateReligionUnitProductionModifier(kCivic.getStateReligionUnitProductionModifier() * iChange);
@@ -17173,20 +17230,20 @@ void CvPlayer::processCivics(CivicTypes eCivic, int iChange, bool bLimited)
 			}
 		}
 
-		//for (iI = 0; iI < GC.getNumHurryInfos(); iI++)
-		//{
-		//+	changeHurryCount(((HurryTypes)iI), ((kCivic.isHurry(iI)) ? iChange : 0));
-		//}
+		for (iI = 0; iI < GC.getNumHurryInfos(); iI++)
+		{
+			changeHurryCount(((HurryTypes)iI), ((kCivic.isHurry(iI)) ? iChange : 0));
+		}
 
-		//for (iI = 0; iI < GC.getNumSpecialBuildingInfos(); iI++)
-		//{
-		//+	changeSpecialBuildingNotRequiredCount(((SpecialBuildingTypes)iI), ((kCivic.isSpecialBuildingNotRequired(iI)) ? iChange : 0));
-		//}
+		for (iI = 0; iI < GC.getNumSpecialBuildingInfos(); iI++)
+		{
+			changeSpecialBuildingNotRequiredCount(((SpecialBuildingTypes)iI), ((kCivic.isSpecialBuildingNotRequired(iI)) ? iChange : 0));
+		}
 
-		//for (iI = 0; iI < GC.getNumSpecialistInfos(); iI++)
-		//{
-		//+	changeSpecialistValidCount(((SpecialistTypes)iI), ((kCivic.isSpecialistValid(iI)) ? iChange : 0));
-		//}
+		for (iI = 0; iI < GC.getNumSpecialistInfos(); iI++)
+		{
+			changeSpecialistValidCount(((SpecialistTypes)iI), ((kCivic.isSpecialistValid(iI)) ? iChange : 0), bLimited);
+		}
 
 		//for (iI = 0; iI < GC.getNumImprovementInfos(); iI++)
 		//{

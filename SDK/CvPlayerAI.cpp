@@ -10778,7 +10778,7 @@ int CvPlayerAI::AI_neededMissionaries(CvArea* pArea, ReligionTypes eReligion) co
         if (iCount > 0)
         {
             if (!bCultureVictory)
-	{
+			{
                 iCount = std::max(1, iCount / (bHoly ? 2 : 4));
             }
             return iCount;
@@ -11595,10 +11595,10 @@ int CvPlayerAI::AI_wakePlotTargetMissionAIs(CvPlot* pPlot, MissionAITypes eMissi
 CivicTypes CvPlayerAI::AI_bestCivic(CivicOptionTypes eCivicOption) const
 {
 	int iBestValue;
-	return AI_bestCivic( eCivicOption, &iBestValue );
+	return AI_bestCivic( eCivicOption, &iBestValue, false );
 }
 
-CivicTypes CvPlayerAI::AI_bestCivic(CivicOptionTypes eCivicOption, int* iBestValue) const
+CivicTypes CvPlayerAI::AI_bestCivic(CivicOptionTypes eCivicOption, int* iBestValue, bool bCivicOptionVacuum, CivicTypes* paeSelectedCivics) const
 {
 	CivicTypes eBestCivic;
 	int iValue;
@@ -11613,7 +11613,7 @@ CivicTypes CvPlayerAI::AI_bestCivic(CivicOptionTypes eCivicOption, int* iBestVal
 		{
 			if (canDoCivics((CivicTypes)iI))
 			{
-				iValue = AI_civicValue((CivicTypes)iI);
+				iValue = AI_civicValue((CivicTypes)iI, bCivicOptionVacuum, false, paeSelectedCivics);
 
 				if (iValue > (*iBestValue))
 				{
@@ -11635,7 +11635,10 @@ CivicTypes CvPlayerAI::AI_bestCivic(CivicOptionTypes eCivicOption, int* iBestVal
 /*                                                                                              */
 /* Civic AI, Victory Strategy AI                                                                */
 /************************************************************************************************/
-int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
+/********************************************************************************/
+/* 	New Civic AI						19.08.2010				Fuyu			*/
+/********************************************************************************/
+int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool bCompleteVacuum, CivicTypes* paeSelectedCivics) const
 {
 	PROFILE_FUNC();
 
@@ -11644,7 +11647,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 	int iTotalReligonCount;
 	int iHighestReligionCount;
 	int iWarmongerPercent;
-	int iHappiness;
+	//int iHappiness;
 	int iValue;
 	int iTempValue;
 	int iI, iJ;
@@ -11733,18 +11736,22 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 	iConnectedForeignCities = countPotentialForeignTradeCitiesConnected();
 	iTotalReligonCount = countTotalHasReligion();
 	ReligionTypes eBestReligion = AI_bestReligion();
-	if (eBestReligion == NO_RELIGION)
+	if (!kCivic.isStateReligion() && !isStateReligion())
+	{
+		eBestReligion = NO_RELIGION;
+	}
+	else if (eBestReligion == NO_RELIGION)
 	{
 		eBestReligion = getStateReligion();
 	}
 	iHighestReligionCount = ((eBestReligion == NO_RELIGION) ? 0 : getHasReligionCount(eBestReligion));
 	iWarmongerPercent = 25000 / std::max(100, (100 + GC.getLeaderHeadInfo(getPersonalityType()).getMaxWarRand())); 
 
+//Fuyu Civic AI: restructuring
+	//#0: constant values
 	iValue = (getNumCities() * 6);
 
 	iValue += (GC.getCivicInfo(eCivic).getAIWeight() * getNumCities());
-
-	iValue += (getCivicPercentAnger(eCivic, /*Fuyu fix: bIgnore */ true) / 10);
 
 	iValue += -(GC.getCivicInfo(eCivic).getAnarchyLength() * getNumCities());
 
@@ -11779,7 +11786,8 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 	iValue += -(kCivic.getGoldPerUnit() * getNumUnits());
 	iValue += -(kCivic.getGoldPerMilitaryUnit() * getNumMilitaryUnits() * iWarmongerPercent) / 200;
 
-	//iValue += ((kCivic.isMilitaryFoodProduction()) ? 0 : 0);
+
+
 	iTemp = getWorldSizeMaxConscript(eCivic);
 	if( iTemp > 0 && (pCapital != NULL) )
 	{
@@ -11809,221 +11817,12 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 			}
 		}
 	}
-	iValue += ((kCivic.isNoUnhealthyPopulation()) ? (getTotalPopulation() / 3) : 0);
 	if (bWarPlan)
 	{
 		iValue += ((kCivic.getExpInBorderModifier() * getNumMilitaryUnits()) / 200);
 	}
-	iValue += ((kCivic.isBuildingOnlyHealthy()) ? (getNumCities() * 3) : 0);
 	iValue += -((kCivic.getWarWearinessModifier() * getNumCities()) / ((bWarPlan) ? 10 : 50));
 	iValue += (kCivic.getFreeSpecialist() * getNumCities() * 12);
-	iValue += (kCivic.getTradeRoutes() * (std::max(0, iConnectedForeignCities - getNumCities() * 3) * 6 + (getNumCities() * 2))); 
-	iValue += -((kCivic.isNoForeignTrade()) ? (iConnectedForeignCities * 3) : 0);
-	if (kCivic.isNoCorporations())
-	{
-		iValue -= countHeadquarters() * (40 + 3 * getNumCities());
-	}
-	if (kCivic.isNoForeignCorporations())
-	{
-		for (int iCorp = 0; iCorp < GC.getNumCorporationInfos(); ++iCorp)
-		{
-			if (!GET_TEAM(getTeam()).hasHeadquarters((CorporationTypes)iCorp))
-			{
-				iValue += countCorporations((CorporationTypes)iCorp) * 3;
-			}
-		}
-	}
-	if (kCivic.getCorporationMaintenanceModifier() != 0)
-	{
-		int iCorpCount = 0;
-		int iHQCount = 0;
-		for (int iCorp = 0; iCorp < GC.getNumCorporationInfos(); ++iCorp)
-		{
-			if (GET_TEAM(getTeam()).hasHeadquarters((CorporationTypes)iCorp))
-			{
-				iHQCount++;
-			}
-			iCorpCount += countCorporations((CorporationTypes)iCorp);
-		}
-		iValue += (-kCivic.getCorporationMaintenanceModifier() * (iHQCount * (25 + getNumCities() * 2) + iCorpCount * 7)) / 25;
-
-	}
-
-	if (kCivic.getCivicPercentAnger() != 0)
-	{
-		int iNumOtherCities = GC.getGameINLINE().getNumCities() - getNumCities();
-		iValue += (30 * getNumCities() * getCivicPercentAnger(eCivic, true)) / kCivic.getCivicPercentAnger();
-		
-		int iTargetGameTurn = 2 * getNumCities() * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getGrowthPercent();
-		iTargetGameTurn /= GC.getGame().countCivPlayersEverAlive();
-		iTargetGameTurn += GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getGrowthPercent() * 30;
-		
-		iTargetGameTurn /= 100;
-		iTargetGameTurn = std::max(10, iTargetGameTurn);
-		
-		int iElapsedTurns = GC.getGame().getElapsedGameTurns();
-
-		if (iElapsedTurns > iTargetGameTurn)
-		{
-			iValue += (std::min(iTargetGameTurn, iElapsedTurns - iTargetGameTurn) * (iNumOtherCities * kCivic.getCivicPercentAnger())) / (15 * iTargetGameTurn);
-		}
-	}
-
-	if (kCivic.getExtraHealth() != 0)
-	{
-/************************************************************************************************/
-/* UNOFFICIAL_PATCH                       10/21/09                                jdog5000      */
-/*                                                                                              */
-/* Bugfix                                                                                       */
-/************************************************************************************************/
-/* orginal bts code
-		iValue += (getNumCities() * 6 * AI_getHealthWeight(isCivic(eCivic) ? -kCivic.getExtraHealth() : kCivic.getExtraHealth(), 1)) / 100;
-*/
-/* jdog
-		iValue += (getNumCities() * 6 * AI_getHealthWeight(kCivic.getExtraHealth(), 1)) / 100;
-*/
-		iValue += (getNumCities() * 6 * ((isCivic(eCivic)) ? -AI_getHealthWeight(-kCivic.getExtraHealth(), 1) : AI_getHealthWeight(kCivic.getExtraHealth(), 1) )) / 100;
-/************************************************************************************************/
-/* UNOFFICIAL_PATCH                        END                                                  */
-/************************************************************************************************/
-	}
-			
-	iTempValue = kCivic.getHappyPerMilitaryUnit() * 3;
-	if (iTempValue != 0)
-	{
-/************************************************************************************************/
-/* UNOFFICIAL_PATCH                       10/21/09                                jdog5000      */
-/*                                                                                              */
-/* Bugfix                                                                                       */
-/************************************************************************************************/
-/* orginal bts code
-		iValue += (getNumCities() * 9 * AI_getHappinessWeight(isCivic(eCivic) ? -iTempValue : iTempValue, 1)) / 100;
-*/
-/* jdog
-		iValue += (getNumCities() * 9 * AI_getHappinessWeight(iTempValue, 1)) / 100;
-*/
-		iValue += (getNumCities() * 9 * ((isCivic(eCivic)) ? -AI_getHappinessWeight(-iTempValue, 1) : AI_getHappinessWeight(iTempValue, 1) )) / 100;
-/************************************************************************************************/
-/* UNOFFICIAL_PATCH                        END                                                  */
-/************************************************************************************************/
-	}
-		
-	iTempValue = kCivic.getLargestCityHappiness();
-	if (iTempValue != 0)
-	{
-/************************************************************************************************/
-/* UNOFFICIAL_PATCH                       10/21/09                                jdog5000      */
-/*                                                                                              */
-/* Bugfix                                                                                       */
-/************************************************************************************************/
-/* orginal bts code
-		iValue += (12 * std::min(getNumCities(), GC.getWorldInfo(GC.getMapINLINE().getWorldSize()).getTargetNumCities()) * AI_getHappinessWeight(isCivic(eCivic) ? -iTempValue : iTempValue, 1)) / 100;
-*/
-/* jdog
-		iValue += (12 * std::min(getNumCities(), GC.getWorldInfo(GC.getMapINLINE().getWorldSize()).getTargetNumCities()) * AI_getHappinessWeight(iTempValue, 1)) / 100;
-
-*/
-		iValue += (12 * std::min(getNumCities(), GC.getWorldInfo(GC.getMapINLINE().getWorldSize()).getTargetNumCities()) * ((isCivic(eCivic)) ? -AI_getHappinessWeight(-iTempValue, 1) : AI_getHappinessWeight(iTempValue, 1) )) / 100;
-/************************************************************************************************/
-/* UNOFFICIAL_PATCH                        END                                                  */
-/************************************************************************************************/
-	}
-	
-	if (kCivic.getWarWearinessModifier() != 0)
-	{
-		int iAngerPercent = getWarWearinessPercentAnger();
-		int iPopulation = 3 + (getTotalPopulation() / std::max(1, getNumCities()));
-
-		int iTempValue = (-kCivic.getWarWearinessModifier() * iAngerPercent * iPopulation) / (GC.getPERCENT_ANGER_DIVISOR() * 100);
-		if (iTempValue != 0)
-		{
-/************************************************************************************************/
-/* UNOFFICIAL_PATCH                       10/21/09                                jdog5000      */
-/*                                                                                              */
-/* Bugfix                                                                                       */
-/************************************************************************************************/
-/* orginal bts code
-			iValue += (11 * getNumCities() * AI_getHappinessWeight(isCivic(eCivic) ? -iTempValue : iTempValue, 1)) / 100;
-*/
-/* jdog
-			iValue += (11 * getNumCities() * AI_getHappinessWeight(iTempValue, 1)) / 100;
-*/
-			iValue += (11 * getNumCities() * ((isCivic(eCivic)) ? -AI_getHappinessWeight(-iTempValue, 1) : AI_getHappinessWeight(iTempValue, 1) )) / 100;
-/************************************************************************************************/
-/* UNOFFICIAL_PATCH                        END                                                  */
-/************************************************************************************************/
-		}
-	}
-	
-	iValue += (kCivic.getNonStateReligionHappiness() * (iTotalReligonCount - iHighestReligionCount) * 5);
-
-	if (kCivic.isStateReligion())
-	{
-		if (iHighestReligionCount > 0)
-		{
-			iValue += iHighestReligionCount;
-
-			iValue += ((kCivic.isNoNonStateReligionSpread()) ? ((getNumCities() - iHighestReligionCount) * 2) : 0);
-			iValue += (kCivic.getStateReligionHappiness() * iHighestReligionCount * 4);
-			iValue += ((kCivic.getStateReligionGreatPeopleRateModifier() * iHighestReligionCount) / 20);
-			iValue += (kCivic.getStateReligionGreatPeopleRateModifier() / 4);
-			iValue += ((kCivic.getStateReligionUnitProductionModifier() * iHighestReligionCount) / 4);
-			iValue += ((kCivic.getStateReligionBuildingProductionModifier() * iHighestReligionCount) / 3);
-			iValue += (kCivic.getStateReligionFreeExperience() * iHighestReligionCount * ((bWarPlan) ? 6 : 2));
-
-			// Value civic based on current gains from having a state religion
-			for (int iI = 0; iI < GC.getNumVoteSourceInfos(); ++iI)
-			{
-				if (GC.getGameINLINE().isDiploVote((VoteSourceTypes)iI))
-				{
-					ReligionTypes eReligion = GC.getGameINLINE().getVoteSourceReligion((VoteSourceTypes)iI);
-
-					if( NO_RELIGION != eReligion && eReligion == eBestReligion )
-					{
-						// Are we leader of AP?
-						if( getTeam() == GC.getGameINLINE().getSecretaryGeneral((VoteSourceTypes)iI) )
-						{
-							iValue += 100;
-						}
-
-						// Any benefits we get from AP tied to state religion?
-						/*
-						for (int iYield = 0; iYield < NUM_YIELD_TYPES; ++iYield)
-						{
-							iTempValue = iHighestReligionCount*GC.getVoteSourceInfo((VoteSourceTypes)iI).getReligionYield(iYield);
-
-							iTempValue *= AI_yieldWeight((YieldTypes)iYield);
-							iTempValue /= 100;
-
-							iValue += iTempValue;
-						}
-
-						for (int iCommerce = 0; iCommerce < NUM_COMMERCE_TYPES; ++iCommerce)
-						{
-							iTempValue = (iHighestReligionCount*GC.getVoteSourceInfo((VoteSourceTypes)iI).getReligionCommerce(iCommerce))/2;
-
-							iTempValue *= AI_commerceWeight((CommerceTypes)iCommerce);
-							iTempValue = 100;
-
-							iValue += iTempValue;
-						}
-						*/
-					}
-				}
-			}
-
-			// Value civic based on wonders granting state religion boosts
-			for (int iCommerce = 0; iCommerce < NUM_COMMERCE_TYPES; ++iCommerce)
-			{
-				iTempValue = (iHighestReligionCount * getStateReligionBuildingCommerce((CommerceTypes)iCommerce))/2;
-
-				iTempValue *= AI_commerceWeight((CommerceTypes)iCommerce);
-				iTempValue /= 100;
-
-				iValue += iTempValue;
-			}
-		}
-	}
 
 	for (iI = 0; iI < NUM_YIELD_TYPES; iI++)
 	{
@@ -12100,27 +11899,261 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 		iValue += iTempValue;
 	}
 
-	for (iI = 0; iI < GC.getNumBuildingClassInfos(); iI++)
+	//makes the AI switch to Emancipation even if there is no unhappiness yet from not doing it
+	if (kCivic.getCivicPercentAnger() != 0)
 	{
-		iTempValue = kCivic.getBuildingHappinessChanges(iI);
-/************************************************************************************************/
-/* Afforess	                  Start		 01/17/10                                               */
-/************************************************************************************************/
-		iTempValue += kCivic.getBuildingHealthChanges(iI);
-/************************************************************************************************/
-/* Afforess	                     END                                                            */
-/************************************************************************************************/
-		if (iTempValue != 0)
+		int iNumOtherCities = GC.getGameINLINE().getNumCities() - getNumCities();
+		iValue += (30 * getNumCities() * getCivicPercentAnger(eCivic, true)) / kCivic.getCivicPercentAnger();
+		
+		int iTargetGameTurn = 2 * getNumCities() * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getGrowthPercent();
+		iTargetGameTurn /= GC.getGame().countCivPlayersEverAlive();
+		iTargetGameTurn += GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getGrowthPercent() * 30;
+		
+		iTargetGameTurn /= 100;
+		iTargetGameTurn = std::max(10, iTargetGameTurn);
+		
+		int iElapsedTurns = GC.getGame().getElapsedGameTurns();
+
+		if (iElapsedTurns > iTargetGameTurn)
 		{
-			// Nationalism
-			if( !isNationalWonderClass((BuildingClassTypes)iI) )
-			{
-				iValue += (iTempValue * getNumCities())/2;
-			}
-			iValue += (iTempValue * getBuildingClassCountPlusMaking((BuildingClassTypes)iI) * 2);
+			iValue += (std::min(iTargetGameTurn, iElapsedTurns - iTargetGameTurn) * (iNumOtherCities * kCivic.getCivicPercentAnger())) / (15 * iTargetGameTurn);
 		}
 	}
 
+	//Everything hereafter requires at least civic option vacuum
+
+	CivicTypes eCivicOptionCivic = getCivics((CivicOptionTypes)(kCivic.getCivicOptionType()));
+	CvCivicInfo& kCivicOptionCivic = GC.getCivicInfo(eCivicOptionCivic);
+	//if (!bCivicOptionVacuum)
+	//{
+	//	eCivicOptionCivic = getCivics((CivicOptionTypes)(kCivic.getCivicOptionType()));
+	//	kCivicOptionCivic = GC.getCivicInfo(eCivicOptionCivic);
+	//}
+
+
+	//#1: Happiness
+	if ( (kCivic.getCivicPercentAnger() != 0 && getCivicPercentAnger(eCivic, true) != 0)
+		|| kCivic.getHappyPerMilitaryUnit() != 0 || kCivic.getLargestCityHappiness() != 0
+		|| (kCivic.getWarWearinessModifier() != 0 && getWarWearinessPercentAnger() != 0)
+		|| kCivic.isAnyBuildingHappinessChange() || kCivic.isAnyFeatureHappinessChange()
+		|| kCivic.getNonStateReligionHappiness() != 0
+		|| (kCivic.getStateReligionHappiness() != 0 && (kCivic.isStateReligion() || isStateReligion())) )
+	{
+	//int CvPlayerAI::AI_getHappinessWeight(int iHappy, int iExtraPop) const
+		//int iWorstHappy = 0;
+		//int iBestHappy = 0;
+		//int iTotalUnhappy = 0;
+		//int iTotalHappy = 0;
+		int iExtraPop = 1;
+		int iLoop;
+		CvCity* pLoopCity;
+		int iCount = 0;
+		
+		//if (0 == iHappy)
+		//{
+		//	iHappy = 1;
+		//}
+		int iHappyValue = 0;
+		for (pLoopCity = firstCity(&iLoop); pLoopCity != NULL; pLoopCity = nextCity(&iLoop))
+		{
+			int iCityHappy = pLoopCity->happyLevel() - pLoopCity->unhappyLevel(iExtraPop);
+			
+			iCityHappy -= std::max(0, pLoopCity->getCommerceHappiness());
+
+			int iMilitaryHappinessDefenders = 0;
+			if (getHappyPerMilitaryUnit() != 0 || kCivic.getHappyPerMilitaryUnit() != 0)
+			{
+				//only count happiness from units that are expected to stay inside the city. Maximum 3
+				iMilitaryHappinessDefenders = std::min(3, (pLoopCity->plot()->plotCount(PUF_isMilitaryHappiness, -1, -1, getID(), NO_TEAM, PUF_isCityAIType)
+					- pLoopCity->plot()->plotCount(PUF_isUnitAIType, UNITAI_SETTLE, -1, getID()) - ((pLoopCity->getProductionUnitAI() == UNITAI_SETTLE)? 1 : 0)));
+				if (getHappyPerMilitaryUnit() != 0)
+				{
+					iCityHappy -= pLoopCity->getMilitaryHappiness();
+					iCityHappy += getHappyPerMilitaryUnit() * iMilitaryHappinessDefenders;
+				}
+			}
+			//eBestReligion may not be state religion but is treated as if it was
+			if (eBestReligion != NO_RELIGION && isStateReligion() && getStateReligion() != eBestReligion)
+			{
+				if (getStateReligion() != NO_RELIGION && pLoopCity->isHasReligion(getStateReligion()))
+				{
+					iCityHappy -= getStateReligionHappiness();
+					iCityHappy += getNonStateReligionHappiness();
+				}
+				if (pLoopCity->isHasReligion(eBestReligion))
+				{
+					iCityHappy -= getNonStateReligionHappiness();
+					iCityHappy += getStateReligionHappiness();
+				}
+			}
+
+			if (!bCivicOptionVacuum)
+			{
+				//int iCivicOptionHappy;
+				iCityHappy -= pLoopCity->getAdditionalHappinessByCivic(eCivicOptionCivic, false, bCivicOptionVacuum, eBestReligion, iExtraPop, std::max(0, iMilitaryHappinessDefenders));
+			}
+			int iHappinessFromOtherCivics = 0;
+			int iUnhappinessFromOtherCivics = 0;
+			if (!bCompleteVacuum)
+			{
+				for (iI = 0; iI < GC.getNumCivicOptionInfos(); iI++)
+				{
+					if (kCivic.getCivicOptionType() == iI)
+						continue;
+					CivicTypes eOtherCivic = ((paeSelectedCivics == NULL)? getCivics((CivicOptionTypes)iI) : paeSelectedCivics[iI]);
+					if (eOtherCivic != NULL && eOtherCivic != NO_CIVIC)
+					{
+						int iTempHappy = pLoopCity->getAdditionalHappinessByCivic(eOtherCivic, false, bCivicOptionVacuum, eBestReligion, iExtraPop, std::max(0, iMilitaryHappinessDefenders));
+						if (iTempHappy > 0)
+						{
+							iHappinessFromOtherCivics += iTempHappy;
+						}
+						else
+						{
+							iUnhappinessFromOtherCivics += iTempHappy; //negative values
+						}
+					}
+				}
+				iCityHappy -= (iHappinessFromOtherCivics + iUnhappinessFromOtherCivics); //happiness without any civics
+			}
+
+			//Happy calculation
+			int iHappy = pLoopCity->getAdditionalHappinessByCivic(eCivic, false, bCivicOptionVacuum, eBestReligion, iExtraPop, std::max(0, iMilitaryHappinessDefenders));
+
+			int iHappyNow = iCityHappy;
+			int iHappyThen = iCityHappy + iHappy;
+
+
+			if (!bCompleteVacuum)
+			{
+				iHappyThen += iUnhappinessFromOtherCivics;
+				if (iHappy > 0)
+				{
+					iHappyNow += iUnhappinessFromOtherCivics;
+					iHappyThen += iHappinessFromOtherCivics;
+				}
+			}
+
+			//Fuyu: max happy 5
+			iHappyNow = std::min(5, iHappyNow);
+			iHappyThen = std::min(5, iHappyThen);
+
+			//Integration
+			int iTempValue = (((100 * iHappyThen - 10 * iHappyThen * iHappyThen)) - (100 * iHappyNow - 10 * iHappyNow * iHappyNow));
+			if (!bCompleteVacuum)
+			{
+				if (iHappy > 0)
+				{
+					iHappyNow -= iUnhappinessFromOtherCivics;
+					iHappyThen -= iUnhappinessFromOtherCivics;
+				}
+				else
+				{
+					iHappyNow += iHappinessFromOtherCivics;
+					iHappyThen += iHappinessFromOtherCivics;
+				}
+				//Fuyu: max happy 5
+				iHappyNow = std::min(5, iHappyNow);
+				iHappyThen = std::min(5, iHappyThen);
+
+				iTempValue += (((100 * iHappyThen - 10 * iHappyThen * iHappyThen)) - (100 * iHappyNow - 10 * iHappyNow * iHappyNow));
+				iTempValue /= 2;
+			}
+
+			if (iHappy > 0)
+			{
+				if (!bCompleteVacuum)
+				{
+					iTempValue = (iTempValue * iHappy) / (iHappy + iHappinessFromOtherCivics);
+				}
+				iHappyValue += std::max(0, iTempValue) * /* weighting */ (pLoopCity->getPopulation() + iExtraPop + 2);
+			}
+			else
+			{
+				if (!bCompleteVacuum)
+				{
+					iTempValue = (iTempValue * iHappy) / std::min(-1, (iHappy + iUnhappinessFromOtherCivics));
+				}
+				iHappyValue += std::min(0, iTempValue) * /* weighting */ (pLoopCity->getPopulation() + iExtraPop + 2);
+			}
+
+			//iCount++;
+			iCount += (pLoopCity->getPopulation() + iExtraPop + 2);
+			//if (iCount > 6)
+			//{
+			//	break;
+			//}
+		}
+		
+		//return (0 == iCount) ? 50 * iHappy : iHappyValue / iCount;
+
+		//iValue += (getNumCities() * 12 * iHappyValue) / (100 * iCount);
+		// line below is equal to line above
+		iValue += (getNumCities() * 3 * iHappyValue) / (25 * iCount);
+
+	}
+
+
+
+
+	//happiness is handled in CvCity::getAdditionalHappinessByCivic
+/*
+	iValue += (getCivicPercentAnger(eCivic, true) / 10);
+
+	iTempValue = kCivic.getHappyPerMilitaryUnit() * 3;
+	if (iTempValue != 0)
+	{
+		iValue += (getNumCities() * 9 * ((isCivic(eCivic)) ? -AI_getHappinessWeight(-iTempValue, 1) : AI_getHappinessWeight(iTempValue, 1) )) / 100;
+	}
+
+	iTempValue = kCivic.getLargestCityHappiness();
+	if (iTempValue != 0)
+	{
+		iValue += (12 * std::min(getNumCities(), GC.getWorldInfo(GC.getMapINLINE().getWorldSize()).getTargetNumCities()) * ((isCivic(eCivic)) ? -AI_getHappinessWeight(-iTempValue, 1) : AI_getHappinessWeight(iTempValue, 1) )) / 100;
+	}
+
+	if (kCivic.getWarWearinessModifier() != 0)
+	{
+		int iAngerPercent = getWarWearinessPercentAnger();
+		int iPopulation = 3 + (getTotalPopulation() / std::max(1, getNumCities()));
+
+		int iTempValue = (-kCivic.getWarWearinessModifier() * iAngerPercent * iPopulation) / (GC.getPERCENT_ANGER_DIVISOR() * 100);
+		if (iTempValue != 0)
+		{
+			iValue += (11 * getNumCities() * ((isCivic(eCivic)) ? -AI_getHappinessWeight(-iTempValue, 1) : AI_getHappinessWeight(iTempValue, 1) )) / 100;
+		}
+	}
+	
+	if (!kCivic.isStateReligion() && !isStateReligion())
+	{
+		iHighestReligionCount = 0;
+	}
+
+	iValue += (kCivic.getNonStateReligionHappiness() * (iTotalReligonCount - iHighestReligionCount) * 5);
+	iValue += (kCivic.getStateReligionHappiness() * iHighestReligionCount * 4);
+*/
+
+	if (kCivic.isAnyBuildingHappinessChange())
+	{
+		for (iI = 0; iI < GC.getNumBuildingClassInfos(); iI++)
+		{
+			iTempValue = kCivic.getBuildingHappinessChanges(iI);
+			if (iTempValue != 0)
+			{
+				// Nationalism
+				if( !isLimitedWonderClass((BuildingClassTypes)iI) )
+				{
+					//+0.5 per city that does not yet have that building
+					iValue += (iTempValue * std::min(getNumCities(), (getNumCities()*GC.getCITY_MAX_NUM_BUILDINGS() - getBuildingClassCount((BuildingClassTypes)iI))))/2;
+				}
+				//happiness is handled in CvCity::getAdditionalHappinessByCivic
+				//iValue += (iTempValue * getBuildingClassCountPlusMaking((BuildingClassTypes)iI) * 2);
+			}
+		}
+	}
+
+	//happiness is handled in CvCity::getAdditionalHappinessByCivic
+/*
 	for (iI = 0; iI < GC.getNumFeatureInfos(); iI++)
 	{
 		// Environmentalism
@@ -12131,10 +12164,716 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 			iValue += (iHappiness * countCityFeatures((FeatureTypes)iI) * 5);
 		}
 	}
+*/
+	//#1: Happinesss - end
+
+
+	//#2: Health
+	if ( kCivic.isNoUnhealthyPopulation() || kCivic.isBuildingOnlyHealthy()
+		|| kCivic.getExtraHealth() != 0	|| kCivic.isAnyBuildingHealthChange() )
+	{
+	//int CvPlayerAI::AI_getHealthWeight(int iHealth, int iExtraPop) const
+
+		//int iWorstHealth = 0;
+		//int iBestHealth = 0;
+		//int iTotalUnhappy = 0;
+		//int iTotalHealth = 0;
+		int iExtraPop = 1;
+		int iLoop;
+		CvCity* pLoopCity;
+		int iCount = 0;
+		
+		//if (0 == iHealth)
+		//{
+		//	iHealth = 1;
+		//}
+		
+		int iCivicsNoUnhealthyPopulationCountNow = 0;
+		int iCivicsNoUnhealthyPopulationCountThen = 0;
+		int iCivicsBuildingOnlyHealthyCountNow = 0;
+		int iCivicsBuildingOnlyHealthyCountThen = 0;
+		
+		if (!bCompleteVacuum)
+		{
+			if (kCivic.isNoUnhealthyPopulation())
+			{
+				iCivicsNoUnhealthyPopulationCountThen++;
+			}
+			if (kCivic.isBuildingOnlyHealthy())
+			{
+				iCivicsBuildingOnlyHealthyCountThen++;
+			}
+			
+			for (iI = 0; iI < GC.getNumCivicOptionInfos(); iI++)
+			{
+				CvCivicInfo& kTempCivic = GC.getCivicInfo(((paeSelectedCivics == NULL)? getCivics((CivicOptionTypes)iI) : paeSelectedCivics[iI]));
+				if (kTempCivic.getCivicOptionType() == iI)
+				{
+					if (bCivicOptionVacuum)
+                        continue;
+					else 
+					{
+						if (kTempCivic.isNoUnhealthyPopulation())
+						{
+							iCivicsNoUnhealthyPopulationCountNow++;
+						}
+						if (kTempCivic.isBuildingOnlyHealthy())
+						{
+							iCivicsBuildingOnlyHealthyCountNow++;
+						}
+					}
+				}
+				else
+				{
+					if (kTempCivic.isNoUnhealthyPopulation())
+					{
+						iCivicsNoUnhealthyPopulationCountNow++;
+						iCivicsNoUnhealthyPopulationCountThen++;
+					}
+					if (kTempCivic.isBuildingOnlyHealthy())
+					{
+						iCivicsBuildingOnlyHealthyCountNow++;
+						iCivicsBuildingOnlyHealthyCountThen++;
+					}
+				}
+			}
+		}
+
+
+		int iHealthValue = 0;
+		for (pLoopCity = firstCity(&iLoop); pLoopCity != NULL; pLoopCity = nextCity(&iLoop))
+		{
+			int iCityHealth = pLoopCity->goodHealth() - pLoopCity->badHealth(false, iExtraPop);
+			
+			int iGoodHealthFromOtherCivics = 0;
+			int iBadHealthFromOtherCivics = 0;
+			int iGood; int iBad; int iBadBuilding;
+			int iGoodFromNoUnhealthyPopulation = 0;
+			int iGoodFromBuildingOnlyHealthy = 0;
+
+			//Health calculation (iGood encludes effects from NoUnhealthyPopulation and BuildingOnlyHealthy)
+			iGood = 0; iBad = 0; iBadBuilding = 0;
+			/*int iHealth =*/ pLoopCity->getAdditionalHealthByCivic(eCivic, iGood, iBad, iBadBuilding, false, iExtraPop, /* bCivicOptionVacuum */ true, iCivicsNoUnhealthyPopulationCountNow, iCivicsBuildingOnlyHealthyCountNow);
+			if (bCompleteVacuum)
+			{
+				//only culmulative iHealth needed
+				if (iGood > iBad)
+				{
+					iGood -= iBad;
+					iBad = 0;
+				}
+				else
+				{
+					iBad -= iGood;
+					iGood = 0;
+				}
+			}
+			if (iGood == 0 && iBad == 0)
+				continue;
+
+			int iTempAdditionalHealthByPlayerBuildingOnlyHealthy = 0;
+			if (!bCompleteVacuum)
+			{
+				if (!bCivicOptionVacuum)
+				{
+					int iTempGood = 0; int iTempBad = 0; int iTempBadBuilding = 0;
+					iCityHealth -= pLoopCity->getAdditionalHealthByCivic(eCivicOptionCivic, iTempGood, iTempBad, iTempBadBuilding, false, iExtraPop, /* bCivicOptionVacuum */ true, 0, 0);
+					iTempAdditionalHealthByPlayerBuildingOnlyHealthy -= iTempBadBuilding;
+				}
+				for (iI = 0; iI < GC.getNumCivicOptionInfos(); iI++)
+				{
+					if (kCivic.getCivicOptionType() == iI)
+						continue;
+					CivicTypes eOtherCivic = ((paeSelectedCivics == NULL)? getCivics((CivicOptionTypes)iI) : paeSelectedCivics[iI]);
+					if (eOtherCivic != NULL && eOtherCivic != NO_CIVIC)
+					{
+						//iGood = 0; iBad = 0; iBadBuilding = 0;
+						//int iTempHealth = pLoopCity->getAdditionalHealthByCivic(eOtherCivic, iGood, iBad, iBadBuilding, false, iExtraPop, /* bCivicOptionVacuum */ true, iIgnoreNoUnhealthyPopulationCount, iIgnoreBuildingOnlyHealthyCount);
+						//if (iGood > 0)
+						//{
+						//	iGoodHealthFromOtherCivics += iGood;
+						//}
+						//if (iBad > 0)
+						//{
+						//	iBadHealthFromOtherCivics -= iBad; //negative values
+						//}
+						int iTempBadBuilding = 0;
+						pLoopCity->getAdditionalHealthByCivic(eOtherCivic, iGoodHealthFromOtherCivics, iBadHealthFromOtherCivics, iTempBadBuilding, false, iExtraPop, /* bCivicOptionVacuum */ true, 0, 0);
+					}
+					iBadHealthFromOtherCivics = -iBadHealthFromOtherCivics; //negative values
+				}
+
+				//free iCityHealth from all current civic health effects
+				iCityHealth -= (iGoodHealthFromOtherCivics + iBadHealthFromOtherCivics); //does not include effects from NoUnhealthyPopulation or BuildingOnlyHealthy
+				if (iCivicsNoUnhealthyPopulationCountNow > 0)
+				{
+					iGoodFromNoUnhealthyPopulation = pLoopCity->getAdditionalHealthByPlayerNoUnhealthyPopulation(iExtraPop, iCivicsNoUnhealthyPopulationCountNow);
+					iCityHealth -= iGoodFromNoUnhealthyPopulation;
+				}
+				if (iCivicsBuildingOnlyHealthyCountNow > 0)
+				{
+					iGoodFromBuildingOnlyHealthy = pLoopCity->getAdditionalHealthByPlayerBuildingOnlyHealthy(iCivicsBuildingOnlyHealthyCountNow);
+					iCityHealth -= iGoodFromBuildingOnlyHealthy;
+				}
+			}
+
+			//Health calculation
+			//iGood = 0; iBad = 0; iBadBuilding = 0;
+			//int iHealth = pLoopCity->getAdditionalHealthByCivic(eCivic, iGood, iBad, iBadBuilding, false, iExtraPop, /* bCivicOptionVacuum */ true, iIgnoreNoUnhealthyPopulationCount, iIgnoreBuildingOnlyHealthyCount);
+			if (kCivic.isBuildingOnlyHealthy())
+			{
+				//iHealth += iTempAdditionalHealthByPlayerBuildingOnlyHealthy;
+				iGood += iTempAdditionalHealthByPlayerBuildingOnlyHealthy;
+			}
+
+			int iBadTotal = -iBad;
+			int iGoodTotal = iGood;
+
+			if (!bCompleteVacuum)
+			{
+				if (kCivic.isNoUnhealthyPopulation())
+				{
+					iGoodFromNoUnhealthyPopulation = pLoopCity->getAdditionalHealthByPlayerNoUnhealthyPopulation(iExtraPop, iCivicsNoUnhealthyPopulationCountNow);
+				}
+
+				if (kCivic.isBuildingOnlyHealthy())
+				{
+					iGoodFromBuildingOnlyHealthy = pLoopCity->getAdditionalHealthByPlayerBuildingOnlyHealthy(iCivicsBuildingOnlyHealthyCountNow);
+				}
+				iTempAdditionalHealthByPlayerBuildingOnlyHealthy += iBadBuilding;
+				iGoodFromBuildingOnlyHealthy += iTempAdditionalHealthByPlayerBuildingOnlyHealthy;
+
+				iBadTotal += iBadHealthFromOtherCivics;
+				iGoodTotal += iGoodHealthFromOtherCivics;
+				if (iCivicsNoUnhealthyPopulationCountThen > 0 && !kCivic.isNoUnhealthyPopulation())
+					iGoodTotal += iGoodFromNoUnhealthyPopulation;
+				if (iCivicsBuildingOnlyHealthyCountThen > 0 && !kCivic.isBuildingOnlyHealthy())
+					iGoodTotal += iGoodFromBuildingOnlyHealthy;
+			}
+
+			if (iGood > 0)
+			{
+				//add new civic health effects to iHealthNow/Then 
+				int iHealthNow = iCityHealth + iBadTotal;
+				int iHealthThen = iCityHealth + iGoodTotal + iBadTotal;
+
+				//Fuyu: max health 8
+				iHealthNow = std::min(8, iHealthNow);
+				iHealthThen = std::min(8, iHealthThen);
+
+				//Integration
+				int iTempValue = (((100 * iHealthThen - 6 * iHealthThen * iHealthThen)) - (100 * iHealthNow - 6 * iHealthNow * iHealthNow));
+				if (iBadTotal > 0)
+				{
+					iHealthNow -= iBadTotal;
+					iHealthThen -= iBadTotal;
+
+					//Fuyu: max health 8
+					iHealthNow = std::min(8, iHealthNow);
+					iHealthThen = std::min(8, iHealthThen);
+
+					iTempValue = (((100 * iHealthThen - 6 * iHealthThen * iHealthThen)) - (100 * iHealthNow - 6 * iHealthNow * iHealthNow));
+					iTempValue /= 2;
+				}
+
+
+				if (!bCompleteVacuum)
+				{
+					//iTempValue = (iTempValue * iGood) / (iGood + iGoodHealthFromOtherCivics);
+					int iTempValueFromNoUnhealthyPopulation = 0;
+					int iTempValueFromBuildingOnlyHealthy = 0;
+					int iTempValueFromRest;
+					int iGoodFromRest = iGood;
+					if (kCivic.isNoUnhealthyPopulation() && iCivicsNoUnhealthyPopulationCountThen > 1)
+					{
+						iTempValueFromNoUnhealthyPopulation = (iTempValue * iGoodFromNoUnhealthyPopulation) / (iCivicsNoUnhealthyPopulationCountThen * iGoodTotal);
+						iGoodFromRest -= iGoodFromNoUnhealthyPopulation;
+					}
+					if (kCivic.isBuildingOnlyHealthy() && iCivicsBuildingOnlyHealthyCountThen > 1)
+					{
+						iTempValueFromBuildingOnlyHealthy = (iTempValue * iGoodFromBuildingOnlyHealthy) / (iCivicsBuildingOnlyHealthyCountThen * iGoodTotal);
+						iGoodFromRest -= iGoodFromBuildingOnlyHealthy;
+					}
+					iTempValueFromRest = (iTempValue * iGood) / iGoodTotal;
+
+					iTempValue = iTempValueFromNoUnhealthyPopulation + iTempValueFromBuildingOnlyHealthy + iTempValueFromRest;
+				}
+				iHealthValue += std::max(0, iTempValue) * /* weighting */ (pLoopCity->getPopulation() + iExtraPop + 2);
+			}
+			if (iBad > 0)
+			{
+				//add new civic health effects to iHealthNow/Then 
+				int iHealthNow = iCityHealth;
+				int iHealthThen = iCityHealth + iBadTotal;
+
+				//Fuyu: max health 8
+				iHealthNow = std::min(8, iHealthNow);
+				iHealthThen = std::min(8, iHealthThen);
+
+				//Integration
+				int iTempValue = (((100 * iHealthThen - 6 * iHealthThen * iHealthThen)) - (100 * iHealthNow - 6 * iHealthNow * iHealthNow));
+				if (iGoodTotal > 0)
+				{
+					iHealthNow += iGoodTotal;
+					iHealthThen += iGoodTotal;
+
+					//Fuyu: max health 8
+					iHealthNow = std::min(8, iHealthNow);
+					iHealthThen = std::min(8, iHealthThen);
+
+					iTempValue = (((100 * iHealthThen - 6 * iHealthThen * iHealthThen)) - (100 * iHealthNow - 6 * iHealthNow * iHealthNow));
+					iTempValue /= 2;
+				}
+
+				if (!bCompleteVacuum)
+				{
+					iTempValue = (iTempValue * iBad) / std::max(1, (-iBadTotal)); //-iBadTotal == iBad - iBadHealthFromOtherCivics
+				}
+				iHealthValue += std::min(0, iTempValue) * /* weighting */ (pLoopCity->getPopulation() + iExtraPop + 2);
+			}
+			
+			//iCount++;
+			iCount += (pLoopCity->getPopulation() + iExtraPop + 2);
+			//if (iCount > 6)
+			//{
+			//	break;
+			//}
+		}
+		//return (0 == iCount) ? 50*iHealth : iHealthValue / iCount;
+
+		//iValue += (getNumCities() * 6 * iHealthValue) / (100 * iCount);
+		// line below is equal to line above
+		iValue += (getNumCities() * 3 * iHealthValue) / (50 * std::max(1, iCount));
+	}
+
+
+
+
+	//health is handled in CvCity::getAdditionalHealthByCivic
+/*
+	iValue += ((kCivic.isNoUnhealthyPopulation()) ? (getTotalPopulation() / 3) : 0);
+	iValue += ((kCivic.isBuildingOnlyHealthy()) ? (getNumCities() * 3) : 0);
+
+	if (kCivic.getExtraHealth() != 0)
+	{
+		iValue += (getNumCities() * 6 * ((isCivic(eCivic)) ? -AI_getHealthWeight(-kCivic.getExtraHealth(), 1) : AI_getHealthWeight(kCivic.getExtraHealth(), 1) )) / 100;
+	}
+*/
+
+	if (kCivic.isAnyBuildingHealthChange())
+	{
+		for (iI = 0; iI < GC.getNumBuildingClassInfos(); iI++)
+		{
+			iTempValue += kCivic.getBuildingHealthChanges(iI);
+			if (iTempValue != 0)
+			{
+				// Nationalism
+				if( !isLimitedWonderClass((BuildingClassTypes)iI) )
+				{
+						//+0.5 per city that does not yet have that building
+						iValue += (iTempValue * std::min(getNumCities(), (getNumCities()*GC.getCITY_MAX_NUM_BUILDINGS() - getBuildingClassCount((BuildingClassTypes)iI))))/2;
+				}
+				//health is handled in CvCity::getAdditionalHealthByCivic
+				//iValue += (iTempValue * getBuildingClassCountPlusMaking((BuildingClassTypes)iI) * 2);
+			}
+		}
+	}
+	//#2: Health - end
+
+
+	//#3: Trade
+	int iTempNoForeignTradeCount = getNoForeignTradeCount();
+	if (!bCivicOptionVacuum)
+	{
+		iTempNoForeignTradeCount -= ((kCivicOptionCivic.isNoForeignTrade())? 1 : 0);
+	}
+
+	//if (isNoForeignTrade())
+	if (iTempNoForeignTradeCount > 0)
+	{
+		if (kCivic.isNoForeignTrade())
+		{
+			if (!bCompleteVacuum)
+			{
+				iValue -= (iConnectedForeignCities * 3)/(1 + iTempNoForeignTradeCount);
+			}
+			//no additional negative value from NoForeignTrade
+			iValue += (kCivic.getTradeRoutes() * (/*std::max(0, iConnectedForeignCities - getNumCities() * 3) * 6 + */ (getNumCities() * 2)));
+
+		}
+		else
+		{
+			//kCivic.getTradeRoutes() should be 0
+			FAssertMsg(kCivic.getTradeRoutes() == 0, "kCivic.getTradeRoutes() is supposed to be 0 if kPlayer.isNoForeignTrade() is true");
+			iValue += (kCivic.getTradeRoutes() * (std::max(0, iConnectedForeignCities - getNumCities() * 3) * 6 + (getNumCities() * 2))); 
+		}
+	}
+	else
+	{
+		if (kCivic.isNoForeignTrade())
+		{
+			iValue -= iConnectedForeignCities * 3;
+			iValue += (kCivic.getTradeRoutes() * (/*std::max(0, iConnectedForeignCities - getNumCities() * 3) * 6 + */ (getNumCities() * 2))); 
+		}
+		else
+		{
+			iValue += (kCivic.getTradeRoutes() * (std::max(0, iConnectedForeignCities - getNumCities() * 3) * 6 + (getNumCities() * 2))); 
+		}
+	}
+
+
+/*
+	iValue += (kCivic.getTradeRoutes() * (std::max(0, iConnectedForeignCities - getNumCities() * 3) * 6 + (getNumCities() * 2))); 
+	iValue += -((kCivic.isNoForeignTrade()) ? (iConnectedForeignCities * 3) : 0);
+*/
+	//#3: Trade - end
+
+
+	//#4: Corporations
+
+	if (kCivic.isNoCorporations() || kCivic.isNoForeignCorporations() || kCivic.getCorporationMaintenanceModifier() != 0)
+	{
+		int iHQCount = 0;
+		int iOwnCorpCount = 0;
+		int iForeignCorpCount = 0;
+		for (int iCorp = 0; iCorp < GC.getNumCorporationInfos(); ++iCorp)
+		{
+			if (GET_TEAM(getTeam()).hasHeadquarters((CorporationTypes)iCorp))
+			{
+				iHQCount++;
+				iOwnCorpCount += countCorporations((CorporationTypes)iCorp);
+			}
+			else
+			{
+				iForeignCorpCount += countCorporations((CorporationTypes)iCorp);
+			}
+		}
+
+		if (!bCompleteVacuum)
+		{
+
+			int iTempNoForeignCorporationsCount = 0;
+			iTempNoForeignCorporationsCount += getNoForeignCorporationsCount();
+			if (!bCivicOptionVacuum)
+			{
+				if (kCivicOptionCivic.isNoForeignCorporations())
+				{
+					iTempNoForeignCorporationsCount--;
+				}
+			}
+			iTempNoForeignCorporationsCount = std::max(0, iTempNoForeignCorporationsCount);
+
+			int iTempNoCorporationsCount = 0;
+			iTempNoCorporationsCount += getNoCorporationsCount();
+			if (!bCivicOptionVacuum)
+			{
+				if (kCivicOptionCivic.isNoCorporations())
+				{
+					iTempNoCorporationsCount--;
+				}
+			}
+			iTempNoCorporationsCount = std::max(0, iTempNoCorporationsCount);
+
+			int iTempCorporationValue = 0;
+			if (kCivic.isNoCorporations())
+			{
+				iTempCorporationValue = 0;
+				iTempCorporationValue -= iHQCount * (40 + 3 * getNumCities());
+				iValue += iTempCorporationValue/(1 + iTempNoCorporationsCount);
+
+				if (kCivic.isNoForeignCorporations()) //makes no sense but we still handle this. Consintency > all
+				{
+					FAssertMsg(false, "Civics are not supposed to be NoCorporations and NoForeignCorporations at the same time");
+					iTempCorporationValue = iForeignCorpCount * 3;
+					iValue += iTempCorporationValue/(2 + iTempNoForeignCorporationsCount + iTempNoCorporationsCount);
+				}
+				else if (iTempNoForeignCorporationsCount > 0)
+				{
+					iTempCorporationValue = -iForeignCorpCount * 3;
+					iValue += iTempCorporationValue/(1 + iTempNoForeignCorporationsCount + iTempNoCorporationsCount);
+				}
+
+				FAssertMsg((kCivic.getCorporationMaintenanceModifier() == 0), "NoCorporation civics are not supposed to be have a maintenace modifier");
+				//subtracting value from already applied kPlayer.getCorporationMaintenanceModifier()
+				if ((getCorporationMaintenanceModifier() + kCivic.getCorporationMaintenanceModifier()) != 0)
+				{
+					iTempCorporationValue = 0;
+					iTempCorporationValue -= (-(getCorporationMaintenanceModifier() + kCivic.getCorporationMaintenanceModifier()) * (iHQCount * (25 + getNumCities() * 2) + iOwnCorpCount * 7)) / 25;
+					iValue += iTempCorporationValue/(2*(1 + iTempNoCorporationsCount));
+
+					iTempCorporationValue = 0;
+					iTempCorporationValue -= (-(getCorporationMaintenanceModifier() + kCivic.getCorporationMaintenanceModifier()) * (iForeignCorpCount * 7)) / 25;
+					iValue += iTempCorporationValue/(2*(1 + ((kCivic.isNoForeignCorporations())? 1 : 0) + iTempNoForeignCorporationsCount + iTempNoCorporationsCount));
+				}
+			}
+			else if (kCivic.isNoForeignCorporations())
+			{
+				iTempCorporationValue = iForeignCorpCount * 3;
+				iValue += iTempCorporationValue/(1 + iTempNoForeignCorporationsCount + iTempNoCorporationsCount);
+
+				if ((getCorporationMaintenanceModifier() + kCivic.getCorporationMaintenanceModifier()) != 0)
+				{
+					iTempCorporationValue = 0;
+					iTempCorporationValue -= (-(getCorporationMaintenanceModifier() + kCivic.getCorporationMaintenanceModifier()) * (iForeignCorpCount * 7)) / 25;
+					iValue += iTempCorporationValue/(2*(1 + iTempNoForeignCorporationsCount + iTempNoCorporationsCount));
+				}
+			}
+
+			if (kCivic.getCorporationMaintenanceModifier() != 0)
+			{
+				iTempCorporationValue = 0;
+				iTempCorporationValue += (-kCivic.getCorporationMaintenanceModifier() * (iForeignCorpCount * 7)) / 25;
+				if (kCivic.isNoForeignCorporations() || kCivic.isNoCorporations() || iTempNoForeignCorporationsCount > 0 || iTempNoCorporationsCount > 0)
+					iTempValue /= 2;
+				iValue += iTempCorporationValue;
+
+				iTempCorporationValue = 0;
+				iTempCorporationValue += (-kCivic.getCorporationMaintenanceModifier() * (iHQCount * (25 + getNumCities() * 2) + iOwnCorpCount * 7)) / 25;
+				if (kCivic.isNoCorporations() || iTempNoCorporationsCount > 0)
+					iTempValue /= 2;
+				iValue += iTempCorporationValue;
+			}
+		}
+		else //CompleteVacuum
+		{
+			if (isNoCorporations())
+			{
+				//no value from anything corporation-related
+			}
+			else if (isNoForeignCorporations()) 
+			{
+
+				if (kCivic.isNoCorporations())
+				{
+					iValue -= iHQCount * (40 + 3 * getNumCities());
+
+					//subtracting value from already set kPlayer.isNoForeignCorporations()
+					iValue -= iForeignCorpCount * 3;
+
+					//subtracting value from already applied kPlayer.getCorporationMaintenanceModifier()
+					if (getCorporationMaintenanceModifier() != 0)
+					{
+						iValue -= (-getCorporationMaintenanceModifier() * (iHQCount * (25 + getNumCities() * 2) + iOwnCorpCount * 7)) / 25;
+					}
+				}
+				else if (kCivic.getCorporationMaintenanceModifier() != 0)
+				{
+					iValue += (-kCivic.getCorporationMaintenanceModifier() * (iHQCount * (25 + getNumCities() * 2) + iOwnCorpCount * 7)) / 25;
+				}
+			}
+			else
+			{
+				if (kCivic.isNoCorporations())
+				{
+					iValue -= countHeadquarters() * (40 + 3 * getNumCities());
+
+					//subtracting value from already applied kPlayer.getCorporationMaintenanceModifier()
+					if (getCorporationMaintenanceModifier() != 0)
+					{
+						iValue -= (-getCorporationMaintenanceModifier() * (iHQCount * (25 + getNumCities() * 2) + (iOwnCorpCount + iForeignCorpCount) * 7)) / 25;
+					}
+				}
+				else if (kCivic.isNoForeignCorporations())
+				{
+					iValue += iForeignCorpCount * 3;
+
+					//subtracting value from already applied kPlayer.getCorporationMaintenanceModifier(), adding limited value for kCivic.getCorporationMaintenanceModifier()
+					if (getCorporationMaintenanceModifier() != 0 || kCivic.getCorporationMaintenanceModifier() != 0)
+					{
+						iValue -= (-getCorporationMaintenanceModifier() * (iForeignCorpCount * 7)) / 25;
+						iValue += (-kCivic.getCorporationMaintenanceModifier() * (iHQCount * (25 + getNumCities() * 2) + iOwnCorpCount * 7)) / 25;
+					}
+				}
+				else
+				{
+					if (kCivic.getCorporationMaintenanceModifier() != 0)
+					{
+						iValue += (-kCivic.getCorporationMaintenanceModifier() * (iHQCount * (25 + getNumCities() * 2) + (iOwnCorpCount + iForeignCorpCount) * 7)) / 25;
+					}
+				}
+			}
+		}
+	}
+
+
+/*
+	if (kCivic.isNoCorporations())
+	{
+		iValue -= countHeadquarters() * (40 + 3 * getNumCities());
+	}
+	if (kCivic.isNoForeignCorporations())
+	{
+		for (int iCorp = 0; iCorp < GC.getNumCorporationInfos(); ++iCorp)
+		{
+			if (!GET_TEAM(getTeam()).hasHeadquarters((CorporationTypes)iCorp))
+			{
+				iValue += countCorporations((CorporationTypes)iCorp) * 3;
+			}
+		}
+	}
+	if (kCivic.getCorporationMaintenanceModifier() != 0)
+	{
+		int iCorpCount = 0;
+		int iHQCount = 0;
+		for (int iCorp = 0; iCorp < GC.getNumCorporationInfos(); ++iCorp)
+		{
+			if (GET_TEAM(getTeam()).hasHeadquarters((CorporationTypes)iCorp))
+			{
+				iHQCount++;
+			}
+			iCorpCount += countCorporations((CorporationTypes)iCorp);
+		}
+		iValue += (-kCivic.getCorporationMaintenanceModifier() * (iHQCount * (25 + getNumCities() * 2) + iCorpCount * 7)) / 25;
+	}
+*/
+	//#4: Corporations - end
+
+
+	//#5: state religion
+	int iTempStateReligionCount = 0;
+	if (!bCompleteVacuum)
+	{
+		iTempStateReligionCount += getStateReligionCount();
+		if (!bCivicOptionVacuum)
+		{
+			iTempStateReligionCount -= ((kCivicOptionCivic.isStateReligion())? 1 : 0);
+		}
+	}
+
+	if (kCivic.isStateReligion() || iTempStateReligionCount > 0)
+	{
+		if (iHighestReligionCount > 0)
+		{
+
+			//iValue += ((kCivic.isNoNonStateReligionSpread() && !isNoNonStateReligionSpread()) ? ((getNumCities() - iHighestReligionCount) * 2) : 0);
+			if (kCivic.isNoNonStateReligionSpread())
+			{
+				int iTempNoNonStateReligionSpreadCount = 0;
+				if (!bCompleteVacuum)
+				{
+					iTempNoNonStateReligionSpreadCount += getNoNonStateReligionSpreadCount();
+					if (!bCivicOptionVacuum)
+					{
+						iTempNoNonStateReligionSpreadCount -= ((kCivicOptionCivic.isNoNonStateReligionSpread())? 1 : 0);
+					}
+				}
+				iTempNoNonStateReligionSpreadCount = std::max(0, iTempNoNonStateReligionSpreadCount);
+
+				iValue += ((getNumCities() - iHighestReligionCount) * 2)/(1 + iTempNoNonStateReligionSpreadCount);
+			}
+			//iValue += (kCivic.getStateReligionHappiness() * iHighestReligionCount * 4);
+			iValue += ((kCivic.getStateReligionGreatPeopleRateModifier() * iHighestReligionCount) / 20);
+			iValue += (kCivic.getStateReligionGreatPeopleRateModifier() / 4);
+			iValue += ((kCivic.getStateReligionUnitProductionModifier() * iHighestReligionCount) / 4);
+			iValue += ((kCivic.getStateReligionBuildingProductionModifier() * iHighestReligionCount) / 3);
+			iValue += (kCivic.getStateReligionFreeExperience() * iHighestReligionCount * ((bWarPlan) ? 6 : 2));
+
+			int iTempReligionValue = 0;
+
+			if (kCivic.isStateReligion())
+			{
+				iTempReligionValue += iHighestReligionCount;
+
+				// Value civic based on current gains from having a state religion
+				for (int iI = 0; iI < GC.getNumVoteSourceInfos(); ++iI)
+				{
+					if (GC.getGameINLINE().isDiploVote((VoteSourceTypes)iI))
+					{
+						ReligionTypes eReligion = GC.getGameINLINE().getVoteSourceReligion((VoteSourceTypes)iI);
+
+						if( NO_RELIGION != eReligion && eReligion == eBestReligion )
+						{
+							// Are we leader of AP?
+							if( getTeam() == GC.getGameINLINE().getSecretaryGeneral((VoteSourceTypes)iI) )
+							{
+								iTempReligionValue += 100;
+							}
+
+							// Any benefits we get from AP tied to state religion?
+							/*
+							for (int iYield = 0; iYield < NUM_YIELD_TYPES; ++iYield)
+							{
+								iTempValue = iHighestReligionCount*GC.getVoteSourceInfo((VoteSourceTypes)iI).getReligionYield(iYield);
+
+								iTempValue *= AI_yieldWeight((YieldTypes)iYield);
+								iTempValue /= 100;
+
+								iTempReligionValue += iTempValue;
+							}
+
+							for (int iCommerce = 0; iCommerce < NUM_COMMERCE_TYPES; ++iCommerce)
+							{
+								iTempValue = (iHighestReligionCount*GC.getVoteSourceInfo((VoteSourceTypes)iI).getReligionCommerce(iCommerce))/2;
+
+								iTempValue *= AI_commerceWeight((CommerceTypes)iCommerce);
+								iTempValue = 100;
+
+								iTempReligionValue += iTempValue;
+							}
+							*/
+						}
+					}
+				}
+
+				// Value civic based on wonders granting state religion boosts
+				for (int iCommerce = 0; iCommerce < NUM_COMMERCE_TYPES; ++iCommerce)
+				{
+					iTempValue = (iHighestReligionCount * getStateReligionBuildingCommerce((CommerceTypes)iCommerce))/2;
+
+					iTempValue *= AI_commerceWeight((CommerceTypes)iCommerce);
+					iTempValue /= 100;
+
+					iTempReligionValue += iTempValue;
+				}
+			}
+			if (bCompleteVacuum)
+			{
+				iValue += iTempReligionValue;
+			}
+			else
+			{
+				iValue += iTempReligionValue/(1 + iTempStateReligionCount);
+			}
+
+		}
+	}
+	//#5: state religion - end
+
+
+	//#6: other possibly non-constant factors
+
+	//iValue += ((kCivic.isMilitaryFoodProduction()) ? 0 : 0);
+	if (kCivic.isMilitaryFoodProduction() && (!isMilitaryFoodProduction() || !bCompleteVacuum))
+	{
+
+		int iTempMilitaryFoodProductionCount = 0;
+		if (!bCompleteVacuum)
+		{
+			iTempMilitaryFoodProductionCount += getMilitaryFoodProductionCount();
+			if (!bCivicOptionVacuum)
+			{
+				if (kCivicOptionCivic.isMilitaryFoodProduction())
+				{
+					iTempMilitaryFoodProductionCount--;
+				}
+			}
+			iTempMilitaryFoodProductionCount = std::max(0, iTempMilitaryFoodProductionCount);
+		}
+
+		if (AI_isDoStrategy(AI_STRATEGY_LAST_STAND)) //when is it wanted, and how much is it worth in those cases?
+		{
+			iValue += getNumCities()/(1 + iTempMilitaryFoodProductionCount);
+		}
+		else
+		{
+			//We want to grow so we don't want this
+			iValue -= 10*getNumCities()/((bCompleteVacuum)? 1 : (1 + getMilitaryFoodProductionCount()));
+		}
+	}
 
 	for (iI = 0; iI < GC.getNumHurryInfos(); iI++)
 	{
-		if (kCivic.isHurry(iI))
+		if (kCivic.isHurry(iI) && (!canHurry((HurryTypes)iI) /* Fuyu: only add value if we can't already use this hurry type */ || !bCompleteVacuum))
 		{
 			iTempValue = 0;
 
@@ -12143,28 +12882,72 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 				iTempValue += ((((AI_avoidScience()) ? 50 : 25) * getNumCities()) / GC.getHurryInfo((HurryTypes)iI).getGoldPerProduction());
 			}
 			iTempValue += (GC.getHurryInfo((HurryTypes)iI).getProductionPerPopulation() * getNumCities() * (bWarPlan ? 2 : 1)) / 5;
-			iValue += iTempValue;
+
+			int iTempHurryCount = 0;
+			if (!bCompleteVacuum)
+			{
+				iTempHurryCount += getHurryCount((HurryTypes)iI);
+				if (!bCivicOptionVacuum)
+				{
+					if (kCivicOptionCivic.isHurry(iI))
+					{
+						iTempHurryCount--;
+					}
+				}
+				iTempHurryCount = std::max(0, iTempHurryCount);
+			}
+
+			iValue += iTempValue/(1 + iTempHurryCount);
 		}
 	}
 
 	for (iI = 0; iI < GC.getNumSpecialBuildingInfos(); iI++)
 	{
-		if (kCivic.isSpecialBuildingNotRequired(iI))
+		if (kCivic.isSpecialBuildingNotRequired(iI) && (!isSpecialBuildingNotRequired((SpecialBuildingTypes)iI) /* Fuyu: only add value if we actually gain something*/ || !bCompleteVacuum))
 		{
-			iValue += ((getNumCities() / 2) + 1); // XXX
+			int iTempSpecialBuildingNotRequiredCount = 0;
+			if (!bCompleteVacuum)
+			{
+				iTempSpecialBuildingNotRequiredCount += getSpecialBuildingNotRequiredCount((SpecialBuildingTypes)iI);
+				if (!bCivicOptionVacuum)
+				{
+					if (kCivicOptionCivic.isSpecialBuildingNotRequired(iI))
+					{
+						iTempSpecialBuildingNotRequiredCount--;
+					}
+				}
+				iTempSpecialBuildingNotRequiredCount = std::max(0, iTempSpecialBuildingNotRequiredCount);
+			}
+			iValue += ((getNumCities() / 2) + 1)/(1 + iTempSpecialBuildingNotRequiredCount); // XXX
 		}
+
 	}
 
 	for (iI = 0; iI < GC.getNumSpecialistInfos(); iI++) 
 	{ 
 		iTempValue = 0; 
-		if (kCivic.isSpecialistValid(iI)) 
+		if (kCivic.isSpecialistValid(iI) && (!isSpecialistValid((SpecialistTypes)iI) /* Fuyu: only add value if we actually gain something*/ || !bCompleteVacuum)) 
 		{ 
 			iTempValue += ((getNumCities() *  (bCultureVictory3 ? 10 : 1)) + 6);
-		} 
-		iValue += (iTempValue / 2); 
+		}
+		int iTempSpecialistValidCount = 0;
+		if (!bCompleteVacuum)
+		{
+			iTempSpecialistValidCount += getSpecialistValidCount((SpecialistTypes)iI);
+			if (!bCivicOptionVacuum)
+			{
+				if (kCivicOptionCivic.isSpecialistValid(iI))
+				{
+					iTempSpecialistValidCount--;
+				}
+			}
+			iTempSpecialistValidCount = std::max(0, iTempSpecialistValidCount);
+		}
+		iValue += (iTempValue / 2)/(1 + iTempSpecialistValidCount);
 	} 
 
+
+	//#7: final modifiers
 	if (GC.getLeaderHeadInfo(getPersonalityType()).getFavoriteCivic() == eCivic)
 	{
 		if (!kCivic.isStateReligion() || iHighestReligionCount > 0)
@@ -12178,11 +12961,15 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 
 	if (AI_isDoVictoryStrategy(AI_VICTORY_CULTURE2) && (GC.getCivicInfo(eCivic).isNoNonStateReligionSpread()))
 	{
+		//is this really necessary, even if already running culture3/4 ?
 	    iValue /= 10;	    
 	}
 
 	return iValue;
 }
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
@@ -13907,13 +14694,30 @@ void CvPlayerAI::AI_doCivics()
 		iThreshold += 13;
 	}
 
+/********************************************************************************/
+/* 	New Civic AI						19.08.2010				Fuyu			*/
+/********************************************************************************/
+	bool bDoRevolution = false;
 	int iCurValue;
 	int iBestValue;
+
+	//initializing
 	for (iI = 0; iI < GC.getNumCivicOptionInfos(); iI++)
 	{
-		paeBestCivic[iI] = AI_bestCivic((CivicOptionTypes)iI, &iBestValue);
-		iCurValue = AI_civicValue( getCivics((CivicOptionTypes)iI) );
-		
+		iCurCivicsValue += AI_civicValue( getCivics((CivicOptionTypes)iI) );
+		paeBestCivic[iI] = getCivics((CivicOptionTypes)iI);
+	}
+
+
+	for (iI = 0; iI < GC.getNumCivicOptionInfos(); iI++)
+	{
+		//civic option vacuum
+		if (getCivics((CivicOptionTypes)iI) != NO_CIVIC)
+			processCivics(getCivics((CivicOptionTypes)iI), -1, /* bLimited */ true);
+
+		paeBestCivic[iI] = AI_bestCivic((CivicOptionTypes)iI, &iBestValue, /* bCivicOptionVacuum */ true, paeBestCivic);
+		iCurValue = AI_civicValue( getCivics((CivicOptionTypes)iI), /* bCivicOptionVacuum */ true, false, paeBestCivic );
+
 		iCurValue += (iCurValue * iThreshold) / 100;
 
 		if ( paeBestCivic[iI] == NO_CIVIC || iBestValue < iCurValue )
@@ -13922,13 +14726,92 @@ void CvPlayerAI::AI_doCivics()
 			iBestValue = iCurValue;
 		}
 
-		iCurCivicsValue += iCurValue;
-		iBestCivicsValue += iBestValue;
+		if (paeBestCivic[iI] != NO_CIVIC && paeBestCivic[iI] != getCivics((CivicOptionTypes)iI))
+		{
+			bDoRevolution = true;
+		}
+
+		if (paeBestCivic[iI] != NO_CIVIC)
+			processCivics(paeBestCivic[iI], 1, /* bLimited */ true);
+
+		//iCurCivicsValue += iCurValue;
+		//iBestCivicsValue += iBestValue;
 	}
 
+	//repeat? just to be sure we aren't doing anything stupid
+	bool bChange = (bDoRevolution);
+	int iPass = 0;
+	while (bChange && iPass < GC.getNumCivicOptionInfos())
+	{
+		iPass++;
+		FAssertMsg(iPass <= 2, "Civic decision takes too long.");
+		bChange = false;
+		iBestCivicsValue = 0;
+
+		iThreshold = std::min(15, iThreshold); //20 -> 15
+
+		CivicTypes eNewBestCivic;
+
+		for (iI = 0; iI < GC.getNumCivicOptionInfos(); iI++)
+		{
+			if (paeBestCivic[iI] != NO_CIVIC)
+				processCivics(paeBestCivic[iI], -1, /* bLimited */ true);
+
+			eNewBestCivic = AI_bestCivic((CivicOptionTypes)iI, &iBestValue, /* bCivicOptionVacuum */ true, paeBestCivic);
+
+			iCurValue = AI_civicValue( getCivics((CivicOptionTypes)iI), /* bCivicOptionVacuum */ true, false, paeBestCivic );
+			if (paeBestCivic[iI] == getCivics((CivicOptionTypes)iI))
+			{
+				iCurValue += (iCurValue * iThreshold) / 100;
+			}
+
+			if ( eNewBestCivic == NO_CIVIC || iBestValue < iCurValue )
+			{
+				if (paeBestCivic[iI] != getCivics((CivicOptionTypes)iI))
+				{
+					bChange = true;
+					paeBestCivic[iI] = getCivics((CivicOptionTypes)iI);
+					if (eNewBestCivic == NO_CIVIC) //when does this happen?
+					{
+						iBestValue = iCurValue;
+					}
+				}
+			}
+			else
+			{
+				if (paeBestCivic[iI] != eNewBestCivic)
+				{
+					bChange = true;
+					paeBestCivic[iI] = eNewBestCivic;
+				}
+			}
+			iBestCivicsValue += iBestValue;
+
+			if (paeBestCivic[iI] != NO_CIVIC)
+				processCivics(paeBestCivic[iI], 1, /* bLimited */ true);
+		}
+	}
+
+	for (iI = 0; iI < GC.getNumCivicOptionInfos(); iI++)
+	{
+		if (paeBestCivic[iI] != getCivics((CivicOptionTypes)iI))
+		{
+			if (paeBestCivic[iI] != NO_CIVIC)
+				processCivics(paeBestCivic[iI], -1, /* bLimited */ true);
+
+			if (getCivics((CivicOptionTypes)iI) != NO_CIVIC)
+				processCivics(getCivics((CivicOptionTypes)iI), 1, /* bLimited */ true);
+		}
+	}
+
+	//safety check, should never change bDoRevolution
+	bDoRevolution = (bDoRevolution && (iBestCivicsValue > iCurCivicsValue));
 
 	// XXX AI skips revolution???
-	if (canRevolution(paeBestCivic))
+	if (bDoRevolution && canRevolution(paeBestCivic))
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 	{
 		revolution(paeBestCivic);
 		AI_setCivicTimer((getMaxAnarchyTurns() == 0) ? (GC.getDefineINT("MIN_REVOLUTION_TURNS") * 2) : CIVIC_CHANGE_DELAY);
@@ -21259,10 +22142,49 @@ bool CvPlayerAI::AI_isCivicCanChangeOtherValues(CivicTypes eCivicSelected, Relig
 		return true;
 	}
 
-	//religion?
-	//trade?
-	//corporation?
-	//maintenance?
+	//trade
+	if (kCivicSelected.isNoForeignTrade())
+	{
+		return true;
+	}
+
+	//corporation
+	if (kCivicSelected.isNoCorporations() || kCivicSelected.isNoForeignCorporations() || kCivicSelected.getCorporationMaintenanceModifier() != 0)
+	{
+		return true;
+	}
+
+	//religion
+	if (kCivicSelected.isStateReligion())
+	{
+		return true;
+	}
+	if (kCivicSelected.isNoNonStateReligionSpread())
+	{
+		return true;
+	}
+
+	//other
+	if (kCivicSelected.isMilitaryFoodProduction())
+	{
+		return true;
+	}
+
+	int iI;
+	for (iI = 0; iI < GC.getNumHurryInfos(); iI++)
+	{
+		if (kCivicSelected.isHurry(iI))
+		{
+			return true;
+		}
+	}
+	for (iI = 0; iI < GC.getNumSpecialBuildingInfos(); iI++)
+	{
+		if (kCivicSelected.isSpecialBuildingNotRequired(iI))
+		{
+			return true;
+		}
+	}
 
 	return false;
 
@@ -21306,10 +22228,77 @@ bool CvPlayerAI::AI_isCivicValueRecalculationRequired(CivicTypes eCivic, CivicTy
 		}
 	}
 
-	//religion?
-	//trade?
-	//corporation?
-	//maintenance?
+	//trade
+	if (kCivic.isNoForeignTrade())
+	{
+		if (kCivicSelected.isNoForeignTrade())
+		{
+			return true;
+		}
+	}
+
+	//corporation
+	if (kCivic.isNoCorporations() || kCivic.isNoForeignCorporations() || kCivic.getCorporationMaintenanceModifier() != 0)
+	{
+		if (kCivicSelected.isNoCorporations() || kCivicSelected.isNoForeignCorporations() || kCivicSelected.getCorporationMaintenanceModifier() != 0)
+		{
+			return true;
+		}
+	}
+
+	//religion
+	if (kCivic.isStateReligion())
+	{
+		if (kCivicSelected.isStateReligion())
+		{
+			return true;
+		}
+		if (kCivic.isNoNonStateReligionSpread() && kCivicSelected.isNoNonStateReligionSpread())
+		{
+			return true;
+		}
+	}
+	else
+	{
+		if (kCivicSelected.isStateReligion())
+		{
+			if (kCivic.isNoNonStateReligionSpread())
+			{
+				return true;
+			}
+			if (getStateReligionCount() > 1)
+			{
+				if ( (kCivic.getStateReligionHappiness() != 0 && kCivic.getStateReligionHappiness() != kCivic.getNonStateReligionHappiness())
+					|| kCivic.getStateReligionGreatPeopleRateModifier() != 0 || kCivic.getStateReligionUnitProductionModifier() != 0
+					|| kCivic.getStateReligionBuildingProductionModifier() != 0 || kCivic.getStateReligionFreeExperience() != 0 ) 
+				{
+					return true;
+				}
+			}
+		}
+	}
+
+	//other kCivicSelected
+	if (kCivic.isMilitaryFoodProduction() && kCivicSelected.isMilitaryFoodProduction())
+	{
+		return true;
+	}
+
+	int iI;
+	for (iI = 0; iI < GC.getNumHurryInfos(); iI++)
+	{
+		if (kCivic.isHurry(iI) && kCivicSelected.isHurry(iI))
+		{
+			return true;
+		}
+	}
+	for (iI = 0; iI < GC.getNumSpecialBuildingInfos(); iI++)
+	{
+		if (kCivic.isSpecialBuildingNotRequired(iI) && kCivicSelected.isSpecialBuildingNotRequired(iI))
+		{
+			return true;
+		}
+	}
 
 	return false;
 }
@@ -21348,7 +22337,9 @@ int CvPlayerAI::AI_getHappinessWeight(int iHappy, int iExtraPop) const
 		int iTempValue = (((100 * iHappyThen - 10 * iHappyThen * iHappyThen)) - (100 * iHappyNow - 10 * iHappyNow * iHappyNow));
 		if (iHappy > 0)
 		{
-			iValue += std::max(0, iTempValue);
+			//Fuyu weighting
+			//iValue += std::max(0, iTempValue);
+			iValue += std::max(0, iTempValue) * (pLoopCity->getPopulation() + iExtraPop + 2);
 		}
 		else
 		{
@@ -21361,17 +22352,24 @@ int CvPlayerAI::AI_getHappinessWeight(int iHappy, int iExtraPop) const
 			iValue += std::max(0, -iTempValue);
 */
 			// Negative happy changes should produce a negative value, not the same value as positive
-			iValue += std::min(0, iTempValue);
+
+			//Fuyu weighting
+			//iValue += std::min(0, iTempValue);
+			iValue += std::min(0, iTempValue) * (pLoopCity->getPopulation() + iExtraPop + 2);
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */
 /************************************************************************************************/
 		}
-		
-		iCount++;
+
+		//Fuyu weighting
+		//iCount++
+		iCount += (pLoopCity->getPopulation() + iExtraPop + 2);
+/*
 		if (iCount > 6)
 		{
 			break;
 		}
+*/
 	}
 	
 	return (0 == iCount) ? 50 * iHappy : iValue / iCount;
@@ -21396,14 +22394,17 @@ int CvPlayerAI::AI_getHealthWeight(int iHealth, int iExtraPop) const
 	{
 		int iCityHealth = pLoopCity->goodHealth() - pLoopCity->badHealth(false, iExtraPop);
 		
-		int iHealthNow = iCityHealth;
-		int iHealthThen = iCityHealth + iHealth;
+		//Fuyu: max health 8
+		int iHealthNow = std::min(8, iCityHealth);
+		int iHealthThen = std::min(8, iCityHealth + iHealth);
 		
 		//Integration
 		int iTempValue = (((100 * iHealthThen - 6 * iHealthThen * iHealthThen)) - (100 * iHealthNow - 6 * iHealthNow * iHealthNow));
 		if (iHealth > 0)
 		{
-			iValue += std::max(0, iTempValue);
+			//Fuyu weighting
+			//iValue += std::max(0, iTempValue);
+			iValue += std::max(0, iTempValue) * (pLoopCity->getPopulation() + iExtraPop + 2);
 		}
 		else
 		{
@@ -21416,16 +22417,24 @@ int CvPlayerAI::AI_getHealthWeight(int iHealth, int iExtraPop) const
 			iValue += std::max(0, -iTempValue);
 */
 			// Negative health changes should produce a negative value, not the same value as positive
-			iValue += std::min(0, iTempValue);
+
+			//Fuyu weighting
+			//iValue += std::min(0, iTempValue);
+			iValue += std::min(0, iTempValue) * (pLoopCity->getPopulation() + iExtraPop + 2);
 /************************************************************************************************/
 /* UNOFFICIAL_PATCH                        END                                                  */
 /************************************************************************************************/
 		}
-		iCount++;
+
+		//Fuyu weighting
+		//iCount++;
+		iCount += (pLoopCity->getPopulation() + iExtraPop + 2);
+/*
 		if (iCount > 6)
 		{
 			break;
 		}
+*/
 	}
 	
 /************************************************************************************************/
