@@ -243,12 +243,18 @@ public:
 /*                                                                                              */
 /* Civic AI                                                                                     */
 /************************************************************************************************/
-	CivicTypes AI_bestCivic(CivicOptionTypes eCivicOption, int* iBestValue) const;
+	CivicTypes AI_bestCivic(CivicOptionTypes eCivicOption, int* iBestValue, bool bCivicOptionVacuum = false, CivicTypes* paeSelectedCivics = NULL) const;
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
 	CivicTypes AI_bestCivic(CivicOptionTypes eCivicOption) const;
-	int AI_civicValue(CivicTypes eCivic) const;
+/********************************************************************************/
+/* 	New Civic AI						19.08.2010				Fuyu			*/
+/********************************************************************************/
+	int AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum = false, bool bCompleteVacuum = false, CivicTypes* paeSelectedCivics = NULL) const;
+/********************************************************************************/
+/* 	New Civic AI												END 			*/
+/********************************************************************************/
 
 	ReligionTypes AI_bestReligion() const;
 	int AI_religionValue(ReligionTypes eReligion) const;

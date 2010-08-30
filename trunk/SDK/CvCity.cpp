@@ -4717,12 +4717,13 @@ int CvCity::badHealth(bool bNoAngry, int iExtra) const
 		iTotalHealth += iHealth;
 	}
 
+/* Fuyu once is enough
 	iHealth = getExtraBuildingBadHealth();
 	if (iHealth < 0)
 	{
 		iTotalHealth += iHealth;
 	}
-
+*/
 	return (unhealthyPopulation(bNoAngry, iExtra) - iTotalHealth);
 }
 
@@ -6754,7 +6755,7 @@ int CvCity::getExtraBuildingBadHappiness() const
 
 
 /********************************************************************************/
-/* 	New Civic AI						02.08.2010				Fuyu			*/
+/* 	New Civic AI						19.08.2010				Fuyu			*/
 /********************************************************************************/
 //Fuyu bLimited
 void CvCity::updateExtraBuildingHappiness(bool bLimited)
@@ -6803,6 +6804,336 @@ void CvCity::updateExtraBuildingHappiness(bool bLimited)
 		}
 	}
 }
+
+int CvCity::getAdditionalHappinessByCivic(CivicTypes eCivic, bool bDifferenceToCurrent, bool bCivicOptionVacuum, ReligionTypes eStateReligion, int iExtraPop, int iMilitaryHappinessUnits) const
+{
+	if (bDifferenceToCurrent)
+	{
+		return getAdditionalHappinessByCivic(eCivic, false, bCivicOptionVacuum, eStateReligion, iExtraPop, iMilitaryHappinessUnits) - getAdditionalHappinessByCivic( GET_PLAYER(getOwnerINLINE()).getCivics((CivicOptionTypes)(GC.getCivicInfo(eCivic).getCivicOptionType())) , false, bCivicOptionVacuum, eStateReligion, iExtraPop, iMilitaryHappinessUnits);
+	}
+
+	if (eCivic == NO_CIVIC)
+	{
+		return 0;
+	}
+
+	CvCivicInfo& kCivic = GC.getCivicInfo(eCivic);
+	CvPlayer& kOwner = GET_PLAYER(getOwnerINLINE());
+	if (eStateReligion == NO_RELIGION)
+	{
+		eStateReligion = kOwner.getStateReligion();
+	}
+	if (!bCivicOptionVacuum && !kCivic.isStateReligion() && kOwner.getStateReligionCount() == 1)
+	{
+		if ( GC.getCivicInfo( kOwner.getCivics((CivicOptionTypes)(kCivic.getCivicOptionType())) ).isStateReligion() )
+		{
+			eStateReligion = NO_RELIGION;
+		}
+	}
+
+	int iHappy = 0;
+	int iI = 0;
+
+			//#1.a: Military Happiness
+			if (kCivic.getHappyPerMilitaryUnit() != 0)
+			{
+				if (iMilitaryHappinessUnits < 0) //default -1
+				{
+					iMilitaryHappinessUnits = getMilitaryHappinessUnits();
+				}
+				iHappy += iMilitaryHappinessUnits * kCivic.getHappyPerMilitaryUnit();
+			}
+
+
+			//#1.b: CivicPercentAnger and WarWearinessModifier
+			if ((kCivic.getCivicPercentAnger() != 0 && kOwner.getCivicPercentAnger(eCivic, true) != 0)
+				|| (kCivic.getWarWearinessModifier() != 0 && kOwner.getWarWearinessPercentAnger() != 0))
+			{
+				//int CvCity::unhappyLevel(int iExtra) const
+				int iAngerPercent = 0;
+
+				iAngerPercent += getOvercrowdingPercentAnger(iExtraPop);
+				iAngerPercent += getNoMilitaryPercentAnger();
+				iAngerPercent += getCulturePercentAnger();
+				iAngerPercent += getReligionPercentAnger();
+				iAngerPercent += getHurryPercentAnger(iExtraPop);
+				iAngerPercent += getConscriptPercentAnger(iExtraPop);
+				iAngerPercent += getDefyResolutionPercentAnger(iExtraPop);
+				int iOldWarWearinessAngerPercent;
+				if ( !bCivicOptionVacuum && kOwner.getWarWearinessPercentAnger() != 0
+					&& GC.getCivicInfo( kOwner.getCivics((CivicOptionTypes)(kCivic.getCivicOptionType())) ).getWarWearinessModifier() != 0 )
+				{
+					//int CvCity::getWarWearinessPercentAnger() const
+					iOldWarWearinessAngerPercent = kOwner.getWarWearinessPercentAnger();
+
+					iOldWarWearinessAngerPercent *= std::max(0, (getWarWearinessModifier() + kOwner.getWarWearinessModifier() - GC.getCivicInfo( kOwner.getCivics((CivicOptionTypes)(kCivic.getCivicOptionType())) ).getWarWearinessModifier() + 100));
+					iOldWarWearinessAngerPercent /= 100;
+				}
+				else
+				{
+					iOldWarWearinessAngerPercent = getWarWearinessPercentAnger();
+				}
+				iAngerPercent += iOldWarWearinessAngerPercent;
+
+				for (iI = 0; iI < GC.getNumCivicInfos(); iI++)
+				{
+					iAngerPercent += kOwner.getCivicPercentAnger((CivicTypes)iI, ( (CivicTypes)iI == eCivic || (!bCivicOptionVacuum && (CivicTypes)iI == kOwner.getCivics((CivicOptionTypes)(kCivic.getCivicOptionType()))) ));
+				}
+
+				int iUnhappinessNow = ((iAngerPercent * (getPopulation() + iExtraPop)) / GC.getPERCENT_ANGER_DIVISOR());
+				iAngerPercent -= kOwner.getCivicPercentAnger(eCivic, true);
+
+				if (kOwner.getWarWearinessPercentAnger() != 0 && kCivic.getWarWearinessModifier() != 0)
+				{
+					//int CvCity::getWarWearinessPercentAnger() const
+					int iNewWarWearinessAngerPercent = kOwner.getWarWearinessPercentAnger();
+
+					iNewWarWearinessAngerPercent *= std::max(0, (getWarWearinessModifier() + kOwner.getWarWearinessModifier() + kCivic.getWarWearinessModifier() - ((bCivicOptionVacuum)? 0 : GC.getCivicInfo( kOwner.getCivics((CivicOptionTypes)(kCivic.getCivicOptionType())) ).getWarWearinessModifier() ) + 100));
+					iNewWarWearinessAngerPercent /= 100;
+					iAngerPercent -= iOldWarWearinessAngerPercent;
+					iAngerPercent += iNewWarWearinessAngerPercent;
+				}
+				int iUnhappinessThen = ((iAngerPercent * (getPopulation() + iExtraPop)) / GC.getPERCENT_ANGER_DIVISOR());
+				iHappy += iUnhappinessNow - iUnhappinessThen;
+			}
+
+			//#1.c: LargestCityHappiness
+			if (kCivic.getLargestCityHappiness() != 0)
+			{
+				//int CvCity::getLargestCityHappiness() const
+				if (findPopulationRank() <= GC.getWorldInfo(GC.getMapINLINE().getWorldSize()).getTargetNumCities())
+				{
+					iHappy += kCivic.getLargestCityHappiness();
+				}
+			}
+
+			//#1.d: BuildingHappinessChanges
+			if (kCivic.isAnyBuildingHappinessChange())
+			{
+				CvCivilizationInfo& kCivilization = GC.getCivilizationInfo(getCivilizationType());
+				for (iI = 0; iI < GC.getNumBuildingClassInfos(); iI++)
+				{
+					int iTempHappy = kCivic.getBuildingHappinessChanges(iI);
+					if (iTempHappy != 0)
+					{
+						BuildingTypes eLoopBuilding = (BuildingTypes)kCivilization.getCivilizationBuildings(iI);
+						if (eLoopBuilding != NO_BUILDING)
+						{
+							iHappy += iTempHappy * getNumBuilding(eLoopBuilding);
+						}
+					}
+				}
+			}
+
+			//#1.e: FeatureHappinessChanges
+			if (kCivic.isAnyFeatureHappinessChange())
+			{
+				CvPlot* pLoopPlot;
+				for (iI = 0; iI < GC.getNumFeatureInfos(); iI++)
+				{
+					int iTempHappy = kCivic.getFeatureHappinessChanges(iI);
+
+					if (iTempHappy != 0)
+					{
+						int iCount = 0;
+						for (int iJ = 0; iJ < NUM_CITY_PLOTS; iJ++)
+						{
+							pLoopPlot = plotCity(getX_INLINE(), getY_INLINE(), iJ);
+
+							if (pLoopPlot != NULL)
+							{
+								if (pLoopPlot->getFeatureType() == (FeatureTypes)iI)
+								{
+									iCount++;
+								}
+							}
+						}
+						iHappy += iTempHappy * iCount;
+					}
+				}
+			}
+
+			//#1.f: Religious Happiness
+			if (kCivic.getStateReligionHappiness() != 0 || kCivic.getNonStateReligionHappiness() != 0)
+			{
+				for (iI = 0; iI < GC.getNumReligionInfos(); iI++)
+				{
+					if (isHasReligion((ReligionTypes)iI))
+					{
+						if ((ReligionTypes)iI == eStateReligion /* redundant? -> */ && (ReligionTypes)iI != NO_RELIGION)
+						{
+							iHappy += kCivic.getStateReligionHappiness();
+						}
+						else
+						{
+							iHappy += kCivic.getNonStateReligionHappiness();
+						}
+					}
+				}
+			}
+
+	return iHappy;
+}
+
+
+int CvCity::getAdditionalHealthByCivic(CivicTypes eCivic, bool bDifferenceToCurrent) const
+{
+	int iGood = 0; int iBad = 0; int iBadBuilding = 0;
+	return getAdditionalHealthByCivic(eCivic, iGood, iBad, iBadBuilding, bDifferenceToCurrent);
+}
+
+int CvCity::getAdditionalHealthByCivic(CivicTypes eCivic, int& iGood, int& iBad, int& iBadBuilding, bool bDifferenceToCurrent, int iExtraPop, bool bCivicOptionVacuum, int iIgnoreNoUnhealthyPopulationCount, int iIgnoreBuildingOnlyHealthyCount) const
+{
+	if (bDifferenceToCurrent)
+	{
+		int iHealthNew = getAdditionalHealthByCivic(eCivic, iGood, iBad, iBadBuilding, false, iExtraPop, bCivicOptionVacuum, iIgnoreNoUnhealthyPopulationCount, iIgnoreBuildingOnlyHealthyCount);
+
+		int iTempGood = 0; int iTempBad = 0; int iTempBadBuilding = 0;
+		int iHealthOld = getAdditionalHealthByCivic( GET_PLAYER(getOwnerINLINE()).getCivics((CivicOptionTypes)(GC.getCivicInfo(eCivic).getCivicOptionType())) , iTempGood, iTempBad, iTempBadBuilding, false, iExtraPop, bCivicOptionVacuum, iIgnoreNoUnhealthyPopulationCount, iIgnoreBuildingOnlyHealthyCount);
+		iGood += iTempBad;
+		iBad += iTempGood;
+		iBadBuilding -= iTempBadBuilding; //can become negative
+
+		return iHealthNew - iHealthOld;
+	}
+
+
+	if (eCivic == NO_CIVIC)
+	{
+		return 0;
+	}
+
+	CvCivicInfo& kCivic = GC.getCivicInfo(eCivic);
+	CvPlayer& kOwner = GET_PLAYER(getOwnerINLINE());
+	int iHealth = 0;
+
+	if (!bCivicOptionVacuum)
+	{
+		if ( kOwner.isCivic(eCivic) || GC.getCivicInfo(kOwner.getCivics((CivicOptionTypes)kCivic.getCivicOptionType())).isNoUnhealthyPopulation() )
+		{
+			iIgnoreNoUnhealthyPopulationCount++;
+		}
+		if ( kOwner.isCivic(eCivic) || GC.getCivicInfo(kOwner.getCivics((CivicOptionTypes)kCivic.getCivicOptionType())).isBuildingOnlyHealthy() )
+		{
+			iIgnoreBuildingOnlyHealthyCount++;
+		}
+	}
+
+	//#2.a: ExtraHealth
+	addGoodOrBad(kCivic.getExtraHealth(), iGood, iBad);
+
+	//#2.b: NoUnhealthyPopulation
+	if (kCivic.isNoUnhealthyPopulation())
+	{
+		if ((iIgnoreNoUnhealthyPopulationCount != 0) )
+		{
+			if (kOwner.getNoUnhealthyPopulationCount() <= iIgnoreNoUnhealthyPopulationCount && getNoUnhealthyPopulationCount() <= 0)
+			{
+				//std::max(0, ((getPopulation() + iExtra - ((bNoAngry) ? angryPopulation(iExtra) : 0))))
+				iGood += std::max(0, ((getPopulation() + iExtraPop)));
+			}
+		}
+		else
+		{
+			iGood += unhealthyPopulation(false, iExtraPop);
+		}
+	}
+
+	//#2.c: BuildingOnlyHealthy
+	if (kCivic.isBuildingOnlyHealthy())
+	{
+		if (iIgnoreBuildingOnlyHealthyCount != 0 )
+		{
+			int iOwnerBuildingOnlyHealthyCount = kOwner.getBuildingOnlyHealthyCount();
+			if (iOwnerBuildingOnlyHealthyCount <= iIgnoreBuildingOnlyHealthyCount && getBuildingOnlyHealthyCount() <= 0)
+			{
+				kOwner.changeBuildingOnlyHealthyCount(-iOwnerBuildingOnlyHealthyCount, true);
+				iGood -= totalBadBuildingHealth();
+				kOwner.changeBuildingOnlyHealthyCount( iOwnerBuildingOnlyHealthyCount, true);
+			}
+		}
+		else
+		{
+			iGood -= totalBadBuildingHealth();
+		}
+	}
+
+	//#2.d: BuildingHealthChanges
+	if (kCivic.isAnyBuildingHealthChange())
+	{
+		CvCivilizationInfo& kCivilization = GC.getCivilizationInfo(getCivilizationType());
+		for (int iI = 0; iI < GC.getNumBuildingClassInfos(); iI++)
+		{
+			int iTempHealth = kCivic.getBuildingHealthChanges(iI);
+
+			if (iTempHealth > 0)
+			{
+				BuildingTypes eLoopBuilding = (BuildingTypes)kCivilization.getCivilizationBuildings(iI);
+				if (eLoopBuilding != NO_BUILDING)
+				{
+					iGood += iTempHealth * getNumBuilding(eLoopBuilding);
+				}
+			}
+			else if (iTempHealth < 0 && (getBuildingOnlyHealthyCount() <= 0 || kOwner.getBuildingOnlyHealthyCount() <= iIgnoreBuildingOnlyHealthyCount))
+			{
+				BuildingTypes eLoopBuilding = (BuildingTypes)kCivilization.getCivilizationBuildings(iI);
+				if (eLoopBuilding != NO_BUILDING)
+				{
+					iTempHealth *= getNumBuilding(eLoopBuilding);
+					iBad -= iTempHealth;
+					iBadBuilding -= iTempHealth;
+					if (kCivic.isBuildingOnlyHealthy())
+					{
+						iGood += iTempHealth;
+					}
+				}
+			}
+		}
+	}
+	iHealth = iGood - iBad;
+
+	return iHealth;
+}
+
+int CvCity::getAdditionalHealthByPlayerNoUnhealthyPopulation(int iExtraPop, int iIgnoreNoUnhealthyPopulationCount) const
+{
+	int iHealth = 0;
+	if ((iIgnoreNoUnhealthyPopulationCount != 0) )
+	{
+		if (GET_PLAYER(getOwnerINLINE()).getNoUnhealthyPopulationCount() <= iIgnoreNoUnhealthyPopulationCount && getNoUnhealthyPopulationCount() <= 0)
+		{
+			//std::max(0, ((getPopulation() + iExtra - ((bNoAngry) ? angryPopulation(iExtra) : 0))))
+			iHealth += std::max(0, ((getPopulation() + iExtraPop)));
+		}
+	}
+	else
+	{
+		iHealth += unhealthyPopulation(false, iExtraPop);
+	}
+	return iHealth;
+}
+
+int CvCity::getAdditionalHealthByPlayerBuildingOnlyHealthy(int iIgnoreBuildingOnlyHealthyCount) const
+{
+	int iHealth = 0;
+	if (iIgnoreBuildingOnlyHealthyCount != 0 )
+	{
+		CvPlayer& kOwner = GET_PLAYER(getOwnerINLINE());
+		int iOwnerBuildingOnlyHealthyCount = kOwner.getBuildingOnlyHealthyCount();
+		if (iOwnerBuildingOnlyHealthyCount <= iIgnoreBuildingOnlyHealthyCount && getBuildingOnlyHealthyCount() <= 0)
+		{
+			kOwner.changeBuildingOnlyHealthyCount(-iOwnerBuildingOnlyHealthyCount, true);
+			iHealth -= totalBadBuildingHealth();
+			kOwner.changeBuildingOnlyHealthyCount( iOwnerBuildingOnlyHealthyCount, true);
+		}
+	}
+	else
+	{
+		iHealth -= totalBadBuildingHealth();
+	}
+	return iHealth;
+}
+
 /********************************************************************************/
 /* 	New Civic AI												END 			*/
 /********************************************************************************/
