@@ -847,8 +847,10 @@ class RefusesToTalk(AbstractStatefulAlert):
 		"""
 		eActiveTeam, activeTeam = PlayerUtil.getActiveTeamAndID()
 		for eTeam in eTeams:
-			if eActiveTeam != eTeam and not activeTeam.isHasMet(eTeam):
-				return
+			#Fuyu Assert failure fix
+			if eActiveTeam != eTeam and eTeam != -1:
+				if not activeTeam.isHasMet(eTeam):
+					return
 		self.check()
 
 	def check(self):
@@ -920,8 +922,10 @@ class WorstEnemy(AbstractStatefulAlert):
 		"""
 		eActiveTeam, activeTeam = PlayerUtil.getActiveTeamAndID()
 		for eTeam in eTeams:
-			if eActiveTeam != eTeam and not activeTeam.isHasMet(eTeam):
-				return
+			#Fuyu Assert failure fix
+			if eActiveTeam != eTeam and eTeam != -1:
+				if not activeTeam.isHasMet(eTeam):
+					return
 		self.check()
 
 	def check(self):
@@ -939,8 +943,9 @@ class WorstEnemy(AbstractStatefulAlert):
 					eOldEnemy = -1
 					enemies[eTeam] = -1
 				#Fuyu Assert failure fix
-				if eActiveTeam != eNewEnemy and eNewEnemy != -1 and not activeTeam.isHasMet(eNewEnemy):
-					eNewEnemy = -1
+				if eActiveTeam != eNewEnemy and eNewEnemy != -1:
+					if not activeTeam.isHasMet(eNewEnemy):
+						eNewEnemy = -1
 				if eOldEnemy != eNewEnemy:
 					enemies[eTeam] = eNewEnemy
 					if eNewEnemy == -1:
