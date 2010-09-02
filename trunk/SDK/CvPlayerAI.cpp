@@ -11932,12 +11932,13 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 
 
 	//#1: Happiness
-	if ( (kCivic.getCivicPercentAnger() != 0 && getCivicPercentAnger(eCivic, true) != 0)
+	if ( (getNumCities() > 0) &&
+		( (kCivic.getCivicPercentAnger() != 0 && getCivicPercentAnger(eCivic, true) != 0)
 		|| kCivic.getHappyPerMilitaryUnit() != 0 || kCivic.getLargestCityHappiness() != 0
 		|| (kCivic.getWarWearinessModifier() != 0 && getWarWearinessPercentAnger() != 0)
 		|| kCivic.isAnyBuildingHappinessChange() || kCivic.isAnyFeatureHappinessChange()
 		|| kCivic.getNonStateReligionHappiness() != 0
-		|| (kCivic.getStateReligionHappiness() != 0 && (kCivic.isStateReligion() || isStateReligion())) )
+		|| (kCivic.getStateReligionHappiness() != 0 && (kCivic.isStateReligion() || isStateReligion())) ) )
 	{
 	//int CvPlayerAI::AI_getHappinessWeight(int iHappy, int iExtraPop) const
 		//int iWorstHappy = 0;
@@ -12087,9 +12088,16 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 		
 		//return (0 == iCount) ? 50 * iHappy : iHappyValue / iCount;
 
-		//iValue += (getNumCities() * 12 * iHappyValue) / (100 * iCount);
-		// line below is equal to line above
-		iValue += (getNumCities() * 3 * iHappyValue) / (25 * iCount);
+		if (iCount <= 0)
+		{
+			//iValue += (getNumCities() * 12 * 50*iHappy) / 100; //always 0 because getNumCities() is 0
+		}
+		else
+		{
+			//iValue += (getNumCities() * 12 * iHappyValue) / (100 * iCount);
+			// line below is equal to line above
+			iValue += (getNumCities() * 3 * iHappyValue) / (25 * iCount);
+		}
 
 	}
 
@@ -12169,8 +12177,9 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 
 
 	//#2: Health
-	if ( kCivic.isNoUnhealthyPopulation() || kCivic.isBuildingOnlyHealthy()
-		|| kCivic.getExtraHealth() != 0	|| kCivic.isAnyBuildingHealthChange() )
+	if ( getNumCities() > 0 &&
+		( kCivic.isNoUnhealthyPopulation() || kCivic.isBuildingOnlyHealthy()
+		|| kCivic.getExtraHealth() != 0	|| kCivic.isAnyBuildingHealthChange() ) )
 	{
 	//int CvPlayerAI::AI_getHealthWeight(int iHealth, int iExtraPop) const
 
@@ -12441,9 +12450,16 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 		}
 		//return (0 == iCount) ? 50*iHealth : iHealthValue / iCount;
 
-		//iValue += (getNumCities() * 6 * iHealthValue) / (100 * iCount);
-		// line below is equal to line above
-		iValue += (getNumCities() * 3 * iHealthValue) / (50 * std::max(1, iCount));
+		if (iCount <= 0)
+		{
+			//iValue += (getNumCities() * 6 * 50*iHealth) / 100; //always 0 because getNumCities() is 0
+		}
+		else
+		{
+			//iValue += (getNumCities() * 6 * iHealthValue) / (100 * iCount);
+			// line below is equal to line above
+			iValue += (getNumCities() * 3 * iHealthValue) / (50 * iCount);
+		}
 	}
 
 
