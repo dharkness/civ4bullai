@@ -11724,6 +11724,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 		}
 	}
 
+/*
 	if( !bWarPlan )
 	{
 		// Aggressive players will stick with war civics
@@ -11732,6 +11733,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 			bWarPlan = true;
 		}
 	}
+*/
 
 	iConnectedForeignCities = countPotentialForeignTradeCitiesConnected();
 	iTotalReligonCount = countTotalHasReligion();
@@ -11760,8 +11762,8 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 	int iTemp = 0;
 	CvCity* pCapital = getCapitalCity();
 	iValue += ((kCivic.getGreatPeopleRateModifier() * getNumCities()) / 10);
-	iValue += ((kCivic.getGreatGeneralRateModifier() * getNumMilitaryUnits()) / 50);
-	iValue += ((kCivic.getDomesticGreatGeneralRateModifier() * getNumMilitaryUnits()) / 100);
+	iValue += ((kCivic.getGreatGeneralRateModifier() * getNumMilitaryUnits()) / (50 * ((bWarPlan)? 1 : 8)) );
+	iValue += ((kCivic.getDomesticGreatGeneralRateModifier() * getNumMilitaryUnits()) / (100 * ((bWarPlan)? 1 : 5)) );
 	iValue += -((kCivic.getDistanceMaintenanceModifier() * std::max(0, (getNumCities() - 3))) / 8);
 	iValue += -((kCivic.getNumCitiesMaintenanceModifier() * std::max(0, (getNumCities() - 3))) / 8);
 	iTemp = kCivic.getFreeExperience();
@@ -11924,11 +11926,6 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 
 	CivicTypes eCivicOptionCivic = getCivics((CivicOptionTypes)(kCivic.getCivicOptionType()));
 	CvCivicInfo& kCivicOptionCivic = GC.getCivicInfo(eCivicOptionCivic);
-	//if (!bCivicOptionVacuum)
-	//{
-	//	eCivicOptionCivic = getCivics((CivicOptionTypes)(kCivic.getCivicOptionType()));
-	//	kCivicOptionCivic = GC.getCivicInfo(eCivicOptionCivic);
-	//}
 
 
 	//#1: Happiness
@@ -12040,7 +12037,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 			iHappyThen = std::min(5, iHappyThen);
 
 			//Integration
-			int iTempValue = (((100 * iHappyThen - 10 * iHappyThen * iHappyThen)) - (100 * iHappyNow - 10 * iHappyNow * iHappyNow));
+			iTempValue = (((100 * iHappyThen - 10 * iHappyThen * iHappyThen)) - (100 * iHappyNow - 10 * iHappyNow * iHappyNow));
 			if (!bCompleteVacuum)
 			{
 				if (iHappy > 0)
@@ -12177,7 +12174,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 
 
 	//#2: Health
-	if ( getNumCities() > 0 &&
+	if ( (getNumCities() > 0) &&
 		( kCivic.isNoUnhealthyPopulation() || kCivic.isBuildingOnlyHealthy()
 		|| kCivic.getExtraHealth() != 0	|| kCivic.isAnyBuildingHealthChange() ) )
 	{
@@ -12371,7 +12368,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 				iHealthThen = std::min(8, iHealthThen);
 
 				//Integration
-				int iTempValue = (((100 * iHealthThen - 6 * iHealthThen * iHealthThen)) - (100 * iHealthNow - 6 * iHealthNow * iHealthNow));
+				iTempValue = (((100 * iHealthThen - 6 * iHealthThen * iHealthThen)) - (100 * iHealthNow - 6 * iHealthNow * iHealthNow));
 				if (iBadTotal > 0)
 				{
 					iHealthNow -= iBadTotal;
@@ -12480,7 +12477,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 	{
 		for (iI = 0; iI < GC.getNumBuildingClassInfos(); iI++)
 		{
-			iTempValue += kCivic.getBuildingHealthChanges(iI);
+			iTempValue = kCivic.getBuildingHealthChanges(iI);
 			if (iTempValue != 0)
 			{
 				// Nationalism

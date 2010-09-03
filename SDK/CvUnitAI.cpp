@@ -1225,6 +1225,71 @@ void CvUnitAI::AI_settleMove()
 
 	if (GET_PLAYER(getOwnerINLINE()).getNumCities() == 0)
 	{
+/************************************************************************************************/
+/* Afforess & Fuyu	                  Start      08/26/10                                       */
+/*                                                                                              */
+/* Check Adjacent Tiles for Better Spot                                                         */
+/************************************************************************************************/
+		if (canMove())
+		{
+			//Force Recalculation
+			plot()->setFoundValue(getOwnerINLINE(), -1);
+			int iCurrentValue = plot()->getFoundValue(getOwnerINLINE());
+			CvPlot* pBestPlot = NULL;
+			for (int iPlot = 0; iPlot < NUM_DIRECTION_TYPES; iPlot++)
+			{
+				CvPlot* pAdjacentPlot = plotDirection(getX_INLINE(), getY_INLINE(), ((DirectionTypes)iPlot));
+				if (pAdjacentPlot != NULL)
+				{
+					//Don't give up coast or river
+					if ( (plot()->isRiver() && !pAdjacentPlot->isRiver()) || (plot()->isCoastalLand(GC.getMIN_WATER_SIZE_FOR_OCEAN()) && !pAdjacentPlot->isCoastalLand(GC.getMIN_WATER_SIZE_FOR_OCEAN())) )
+						continue;
+					
+					//Force Recalculation
+					pAdjacentPlot->setFoundValue(getOwnerINLINE(), -1);
+					int iPlotValue = pAdjacentPlot->getFoundValue(getOwnerINLINE());
+
+					//Only settle on top of a bonus if it actually makes sense
+					if (pAdjacentPlot->getBonusType(NO_TEAM) != NO_BONUS)
+					{
+						if (pAdjacentPlot->calculateNatureYield(YIELD_FOOD, getTeam(), true) > 0)
+						{
+							iPlotValue *= 90;
+							iPlotValue /= 100;
+						}
+						else
+						{
+							iPlotValue *= 95;
+							iPlotValue /= 100;
+						}
+					}
+
+					if (iPlotValue > iCurrentValue)
+					{
+						//Can this unit reach the plot this turn? (getPathLastNode()->m_iData2 == 1)
+						//Will this unit still have movement points left to found the city the same turn? (getPathLastNode()->m_iData1 > 0))
+						if (pAdjacentPlot->movementCost(this, plot()) < movesLeft() || generatePath(pAdjacentPlot) && (getPathLastNode()->m_iData2 == 1) && (getPathLastNode()->m_iData1 > 0))
+						{
+							iCurrentValue = iPlotValue;
+							pBestPlot = pAdjacentPlot;
+						}
+					}
+				}
+			}
+			if (pBestPlot != NULL)
+			{
+				if( gUnitLogLevel >= 2 )
+				{
+					logBBAI("    Settler not founding in place but moving to the better adjacent tile %d, %d", pBestPlot->getX_INLINE(), pBestPlot->getY_INLINE());
+				}
+				getGroup()->pushMission(MISSION_MOVE_TO, pBestPlot->getX_INLINE(), pBestPlot->getY_INLINE(), MOVE_SAFE_TERRITORY, false, false, MISSIONAI_FOUND, pBestPlot);
+				return;
+			}
+		}
+/************************************************************************************************/
+/* Afforess & Fuyu	                     END                                                    */
+/************************************************************************************************/
+
 		// RevDCM TODO: What makes sense for rebels here?
 		if (canFound(plot()))
 		{

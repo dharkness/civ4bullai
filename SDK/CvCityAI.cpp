@@ -7680,6 +7680,22 @@ void CvCityAI::AI_updateBestBuild()
 		}
 	}
 
+    if (getProductionBuilding() != NO_BUILDING)
+    {
+/********************************************************************************/
+/*	Better Evaluation							09.03.2010		Fuyu		    */
+/********************************************************************************/
+/* original code
+    	iHappyAdjust += getBuildingHappiness(getProductionBuilding());
+    	iHealthAdjust += getBuildingHealth(getProductionBuilding());    	
+*/
+    	iHappyAdjust += getAdditionalHappinessByBuilding(getProductionBuilding());
+    	iHealthAdjust += getAdditionalHealthByBuilding(getProductionBuilding());
+/********************************************************************************/
+/*	BE	END																		*/
+/********************************************************************************/
+    }
+
 	//XXX rewrite this to fix too many farms issue
 	int iSpecialistAdjustment = 0;
 	if (iWorkableFoodPlotCount > 0)
@@ -7691,38 +7707,23 @@ void CvCityAI::AI_updateBestBuild()
 	
 	int iBonusFoodDiff = ((iBonusFoodSurplus + iFeatureFoodSurplus) - (iBonusFoodDeficit + iHillFoodDeficit / 2));
 
-	int iHealth = goodHealth() - badHealth();
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      08/30/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      09/02/10                         jdog5000 & Fuyu      */
 /*                                                                                              */
 /* City AI                                                                                      */
 /************************************************************************************************/
+	int iHealth = goodHealth() - badHealth() + getEspionageHealthCounter() + std::max(0, iHealthAdjust);
 	int iTargetSize = iGoodTileCount;
 
-	if( getEspionageHealthCounter() > 0 )
-	{
-		iTargetSize = std::min(iTargetSize, 2 + getPopulation());
-	}
-	else
-	{
-		iTargetSize = std::min(iTargetSize, 2 + getPopulation() + (iHealth)/2);
-	}
-
+	iTargetSize = std::min(iTargetSize, 2 + getPopulation() + (iHealth + 1)/2);
+	
 	if( iTargetSize < getPopulation() )
 	{
 		iTargetSize = std::max(iTargetSize, getPopulation() - (AI_countWorkedPoorTiles()/2));
 	}
 	
 	// Target city size should not be perturbed by espionage, other short term effects
-	if( getEspionageHappinessCounter() > 0 )
-	{
-		iTargetSize = std::min(iTargetSize, getPopulation());
-	}
-	else
-	{
-		iTargetSize = std::min(iTargetSize, getPopulation()+(happyLevel()-unhappyLevel()));
-	}
-	
+	iTargetSize = std::min(iTargetSize, getPopulation() + (happyLevel() - unhappyLevel() + getEspionageHappinessCounter() + std::max(0, iHappyAdjust)));
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
@@ -7757,7 +7758,7 @@ void CvCityAI::AI_updateBestBuild()
 		iFoodMultiplier += 10 * (2 - iBonusFoodDiff);
 	}
 	
-	int iExtraFoodForGrowth = (std::max(0, iTargetSize - getPopulation()) + 3) / 4;
+	int iExtraFoodForGrowth = (std::max(0, iTargetSize - getPopulation()) + 2) / 3; //Fuyu: was "+ 3) / 4"
 	if (getPopulation() < iTargetSize)
 	{
 		iExtraFoodForGrowth ++;
@@ -7932,22 +7933,6 @@ void CvCityAI::AI_updateBestBuild()
         bChop = ((area()->getAreaAIType(getTeam()) == AREAAI_OFFENSIVE) || (area()->getAreaAIType(getTeam()) == AREAAI_DEFENSIVE) || (area()->getAreaAIType(getTeam()) == AREAAI_MASSING));
     }
     
-    if (getProductionBuilding() != NO_BUILDING)
-    {
-/********************************************************************************/
-/*	Better Evaluation							09.03.2010		Fuyu		    */
-/********************************************************************************/
-/* original code
-    	iHappyAdjust += getBuildingHappiness(getProductionBuilding());
-    	iHealthAdjust += getBuildingHealth(getProductionBuilding());    	
-*/
-    	iHappyAdjust += getAdditionalHappinessByBuilding(getProductionBuilding());
-    	iHealthAdjust += getAdditionalHealthByBuilding(getProductionBuilding());
-/********************************************************************************/
-/*	BE	END																		*/
-/********************************************************************************/
-    }
-
 	for (iI = 0; iI < NUM_CITY_PLOTS; iI++)
 	{
 		m_aiBestBuildValue[iI] = 0;
