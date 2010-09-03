@@ -6663,29 +6663,37 @@ int CvCityAI::AI_getTargetSize()
 	CvPlayerAI& kPlayer = GET_PLAYER(getOwnerINLINE());
 	int iTargetSize = AI_getGoodTileCount();
 	
-	if( getEspionageHealthCounter() > 0 )
+/********************************************************************************/
+/*	Better Evaluation							09.03.2010		Fuyu		    */
+/********************************************************************************/
+	int iHappyAdjust = 0;
+	int iHealthAdjust = 0;
+	if (getProductionBuilding() != NO_BUILDING)
 	{
-		iTargetSize = std::min(iTargetSize, 2 + getPopulation());
+		iHappyAdjust += getAdditionalHappinessByBuilding(getProductionBuilding());
+		iHealthAdjust += getAdditionalHealthByBuilding(getProductionBuilding());
 	}
-	else
-	{
-		iTargetSize = std::min(iTargetSize, 2 + getPopulation() + (goodHealth() - badHealth())/2);
-	}
-
+/********************************************************************************/
+/*	BE	END																		*/
+/********************************************************************************/
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                      09/02/10                         jdog5000 & Fuyu      */
+/*                                                                                              */
+/* City AI                                                                                      */
+/************************************************************************************************/
+	//iTargetSize = std::min(iTargetSize, 2 + getPopulation() + goodHealth() - badHealth() + getEspionageHealthCounter() + std::max(0, iHealthAdjust));
+	iTargetSize -= std::max(0, (iTargetSize - (1 + getPopulation() + goodHealth() - badHealth() + getEspionageHealthCounter() + std::max(0, iHealthAdjust))) / 2);
+	
 	if( iTargetSize < getPopulation() )
 	{
 		iTargetSize = std::max(iTargetSize, getPopulation() - (AI_countWorkedPoorTiles()/2));
 	}
 	
 	// Target city size should not be perturbed by espionage, other short term effects
-	if( getEspionageHappinessCounter() > 0 )
-	{
-		iTargetSize = std::min(iTargetSize, getPopulation());
-	}
-	else
-	{
-		iTargetSize = std::min(iTargetSize, getPopulation()+(happyLevel()-unhappyLevel()));
-	}
+	iTargetSize = std::min(iTargetSize, getPopulation() + (happyLevel() - unhappyLevel() + getEspionageHappinessCounter() + std::max(0, iHappyAdjust)));
+/************************************************************************************************/
+/* BETTER_BTS_AI_MOD                       END                                                  */
+/************************************************************************************************/
 
 	if (kPlayer.getAdvancedStartPoints() >= 0)
 	{
@@ -6863,36 +6871,36 @@ void CvCityAI::AI_getYieldMultipliers( int &iFoodMultiplier, int &iProductionMul
 	}
 
 	int iHealth = goodHealth() - badHealth();
+/********************************************************************************/
+/*	Better Evaluation							09.03.2010		Fuyu		    */
+/********************************************************************************/
+	int iHappyAdjust = 0;
+	int iHealthAdjust = 0;
+	if (getProductionBuilding() != NO_BUILDING)
+	{
+		iHappyAdjust += getAdditionalHappinessByBuilding(getProductionBuilding());
+		iHealthAdjust += getAdditionalHealthByBuilding(getProductionBuilding());
+	}
+/********************************************************************************/
+/*	BE	END																		*/
+/********************************************************************************/
 /************************************************************************************************/
-/* BETTER_BTS_AI_MOD                      08/30/09                                jdog5000      */
+/* BETTER_BTS_AI_MOD                      09/02/10                         jdog5000 & Fuyu      */
 /*                                                                                              */
 /* City AI                                                                                      */
 /************************************************************************************************/
 	int iTargetSize = iGoodTileCount;
 
-	if( getEspionageHealthCounter() > 0 )
-	{
-		iTargetSize = std::min(iTargetSize, 2+ getPopulation());
-	}
-	else
-	{
-		iTargetSize = std::min(iTargetSize, 2 + getPopulation() + (iHealth)/2);
-	}
-
+	//iTargetSize = std::min(iTargetSize, 2 + getPopulation() + goodHealth() - badHealth() + getEspionageHealthCounter() + std::max(0, iHealthAdjust));
+	iTargetSize -= std::max(0, (iTargetSize - (1 + getPopulation() + goodHealth() - badHealth() + getEspionageHealthCounter() + std::max(0, iHealthAdjust))) / 2);
+	
 	if( iTargetSize < getPopulation() )
 	{
 		iTargetSize = std::max(iTargetSize, getPopulation() - (AI_countWorkedPoorTiles()/2));
 	}
 	
 	// Target city size should not be perturbed by espionage, other short term effects
-	if( getEspionageHappinessCounter() > 0 )
-	{
-		iTargetSize = std::min(iTargetSize, getPopulation());
-	}
-	else
-	{
-		iTargetSize = std::min(iTargetSize, getPopulation()+(happyLevel()-unhappyLevel()));
-	}
+	iTargetSize = std::min(iTargetSize, getPopulation() + (happyLevel() - unhappyLevel() + getEspionageHappinessCounter() + std::max(0, iHappyAdjust)));
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
@@ -7712,10 +7720,11 @@ void CvCityAI::AI_updateBestBuild()
 /*                                                                                              */
 /* City AI                                                                                      */
 /************************************************************************************************/
-	int iHealth = goodHealth() - badHealth() + getEspionageHealthCounter() + std::max(0, iHealthAdjust);
+	int iHealth = goodHealth() - badHealth();
 	int iTargetSize = iGoodTileCount;
 
-	iTargetSize = std::min(iTargetSize, 2 + getPopulation() + (iHealth + 1)/2);
+	//iTargetSize = std::min(iTargetSize, 2 + getPopulation() + goodHealth() - badHealth() + getEspionageHealthCounter() + std::max(0, iHealthAdjust));
+	iTargetSize -= std::max(0, (iTargetSize - (1 + getPopulation() + goodHealth() - badHealth() + getEspionageHealthCounter() + std::max(0, iHealthAdjust))) / 2);
 	
 	if( iTargetSize < getPopulation() )
 	{
