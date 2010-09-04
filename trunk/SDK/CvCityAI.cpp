@@ -6871,36 +6871,12 @@ void CvCityAI::AI_getYieldMultipliers( int &iFoodMultiplier, int &iProductionMul
 	}
 
 	int iHealth = goodHealth() - badHealth();
-/********************************************************************************/
-/*	Better Evaluation							09.03.2010		Fuyu		    */
-/********************************************************************************/
-	int iHappyAdjust = 0;
-	int iHealthAdjust = 0;
-	if (getProductionBuilding() != NO_BUILDING)
-	{
-		iHappyAdjust += getAdditionalHappinessByBuilding(getProductionBuilding());
-		iHealthAdjust += getAdditionalHealthByBuilding(getProductionBuilding());
-	}
-/********************************************************************************/
-/*	BE	END																		*/
-/********************************************************************************/
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                      09/02/10                         jdog5000 & Fuyu      */
 /*                                                                                              */
 /* City AI                                                                                      */
 /************************************************************************************************/
-	int iTargetSize = iGoodTileCount;
-
-	//iTargetSize = std::min(iTargetSize, 2 + getPopulation() + goodHealth() - badHealth() + getEspionageHealthCounter() + std::max(0, iHealthAdjust));
-	iTargetSize -= std::max(0, (iTargetSize - (1 + getPopulation() + goodHealth() - badHealth() + getEspionageHealthCounter() + std::max(0, iHealthAdjust))) / 2);
-	
-	if( iTargetSize < getPopulation() )
-	{
-		iTargetSize = std::max(iTargetSize, getPopulation() - (AI_countWorkedPoorTiles()/2));
-	}
-	
-	// Target city size should not be perturbed by espionage, other short term effects
-	iTargetSize = std::min(iTargetSize, getPopulation() + (happyLevel() - unhappyLevel() + getEspionageHappinessCounter() + std::max(0, iHappyAdjust)));
+	int iTargetSize = AI_getTargetSize();
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/
