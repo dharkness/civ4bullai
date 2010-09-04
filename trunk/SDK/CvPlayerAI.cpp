@@ -1695,16 +1695,19 @@ void CvPlayerAI::AI_conquerCity(CvCity* pCity)
 			int iLoop;
 			int iHighCultureCount = 1;
 
-			for( pLoopCity = GET_PLAYER(pCity->getPreviousOwner()).firstCity(&iLoop); pLoopCity != NULL; pLoopCity = GET_PLAYER(pCity->getPreviousOwner()).nextCity(&iLoop) )
+			if( GET_TEAM(getTeam()).AI_getEnemyPowerPercent(false) > 75 )
 			{
-				if( 2*pLoopCity->getCulture(pCity->getPreviousOwner()) > pLoopCity->getCultureThreshold(GC.getGameINLINE().culturalVictoryCultureLevel()) )
+				for( pLoopCity = GET_PLAYER(pCity->getPreviousOwner()).firstCity(&iLoop); pLoopCity != NULL; pLoopCity = GET_PLAYER(pCity->getPreviousOwner()).nextCity(&iLoop) )
 				{
-					iHighCultureCount++;
-					if( iHighCultureCount >= GC.getGameINLINE().culturalVictoryNumCultureCities() )
+					if( 2*pLoopCity->getCulture(pCity->getPreviousOwner()) > pLoopCity->getCultureThreshold(GC.getGameINLINE().culturalVictoryCultureLevel()) )
 					{
-						//Raze city enemy needs for cultural victory unless we greatly over power them
-						logBBAI( "  Razing enemy cultural victory city" );
-						bRaze = true;
+						iHighCultureCount++;
+						if( iHighCultureCount >= GC.getGameINLINE().culturalVictoryNumCultureCities() )
+						{
+							//Raze city enemy needs for cultural victory unless we greatly over power them
+							logBBAI( "  Razing enemy cultural victory city" );
+							bRaze = true;
+						}
 					}
 				}
 			}
@@ -11762,8 +11765,13 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 	int iTemp = 0;
 	CvCity* pCapital = getCapitalCity();
 	iValue += ((kCivic.getGreatPeopleRateModifier() * getNumCities()) / 10);
-	iValue += ((kCivic.getGreatGeneralRateModifier() * getNumMilitaryUnits()) / (50 * ((bWarPlan)? 1 : 8)) );
-	iValue += ((kCivic.getDomesticGreatGeneralRateModifier() * getNumMilitaryUnits()) / (100 * ((bWarPlan)? 1 : 5)) );
+
+	//Only if wars ongoing, as suggested by Munch
+	if (bWarPlan || isMinorCiv())
+	{
+		iValue += ((kCivic.getGreatGeneralRateModifier() * getNumMilitaryUnits()) / 50 );
+		iValue += ((kCivic.getDomesticGreatGeneralRateModifier() * getNumMilitaryUnits()) / 100 );
+	}
 	iValue += -((kCivic.getDistanceMaintenanceModifier() * std::max(0, (getNumCities() - 3))) / 8);
 	iValue += -((kCivic.getNumCitiesMaintenanceModifier() * std::max(0, (getNumCities() - 3))) / 8);
 	iTemp = kCivic.getFreeExperience();
