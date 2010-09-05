@@ -4178,25 +4178,26 @@ class StartingPlotFinder :
                 oldWorldValue += self.startingAreaList[i].rawValue
 
             #calulate value per player of old world
-            oldWorldValuePerPlayer = oldWorldValue/len(shuffledPlayers)
+            #oldWorldValuePerPlayer = oldWorldValue/len(shuffledPlayers)
 
             #Sort startingAreaList by rawValue
             self.startingAreaList.sort(lambda x, y: cmp(x.rawValue, y.rawValue))
 
             #Get rid of areas that have less value than oldWorldValuePerPlayer
-            #(Fuyu change: less than 2*oldWorldValuePerPlayer)
+            #(Fuyu change: less than 2*RemainingOldWorldValuePerPlayer)
             #as they are too small to put a player on, however leave at least
             #half as many continents as there are players, just in case the
             #continents are *all* quite small.
-            #(Fuyu change: at least half of total old world value)
+            #(Fuyu change: at least two third of total old world value)
             #
             #numAreas = max(1,len(self.startingAreaList) - len(shuffledPlayers)/3)
 
             oldWorldRemovedValue = 0
             for i in range(len(self.startingAreaList)):
-                if self.startingAreaList[0].rawValue < (2*oldWorldValuePerPlayer):
+                #if self.startingAreaList[0].rawValue < (2*oldWorldValuePerPlayer):
+                if self.startingAreaList[0].rawValue < ((2*(oldWorldValue-oldWorldRemovedValue))/len(shuffledPlayers)):
                     oldWorldRemovedValue += self.startingAreaList[0].rawValue
-                    if oldWorldRemovedValue > oldWorldValue/2:
+                    if oldWorldRemovedValue > oldWorldValue/3:
                         oldWorldRemovedValue -= self.startingAreaList[0].rawValue
                         break
                     else:

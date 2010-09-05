@@ -11970,8 +11970,12 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 			if (getHappyPerMilitaryUnit() != 0 || kCivic.getHappyPerMilitaryUnit() != 0)
 			{
 				//only count happiness from units that are expected to stay inside the city. Maximum 3
-				iMilitaryHappinessDefenders = std::min(3, (pLoopCity->plot()->plotCount(PUF_isMilitaryHappiness, -1, -1, getID(), NO_TEAM, PUF_isCityAIType)
+				iMilitaryHappinessDefenders = std::max(0, (pLoopCity->plot()->plotCount(PUF_isMilitaryHappiness, -1, -1, getID(), NO_TEAM, PUF_isCityAIType)
 					- pLoopCity->plot()->plotCount(PUF_isUnitAIType, UNITAI_SETTLE, -1, getID()) - ((pLoopCity->getProductionUnitAI() == UNITAI_SETTLE)? 1 : 0)));
+				if (iMilitaryHappinessDefenders >= 4)
+					iMilitaryHappinessDefenders = 3;
+				else
+					iMilitaryHappinessDefenders = std::min(2, iMilitaryHappinessDefenders);
 				if (getHappyPerMilitaryUnit() != 0)
 				{
 					iCityHappy -= pLoopCity->getMilitaryHappiness();
@@ -11996,7 +12000,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic, bool bCivicOptionVacuum, bool b
 			if (!bCivicOptionVacuum)
 			{
 				//int iCivicOptionHappy;
-				iCityHappy -= pLoopCity->getAdditionalHappinessByCivic(eCivicOptionCivic, false, bCivicOptionVacuum, eBestReligion, iExtraPop, std::max(0, iMilitaryHappinessDefenders));
+				iCityHappy -= pLoopCity->getAdditionalHappinessByCivic(eCivicOptionCivic, false, bCivicOptionVacuum, eBestReligion, iExtraPop, iMilitaryHappinessDefenders);
 			}
 			int iHappinessFromOtherCivics = 0;
 			int iUnhappinessFromOtherCivics = 0;
@@ -14722,6 +14726,40 @@ void CvPlayerAI::AI_doCivics()
 	int iCurValue;
 	int iBestValue;
 
+/*
+	//Might be good to have if many civics from different cathegories affect each other much and become available at the same time
+	// otherwise this is not needed and therefore commented out
+	//To use this, simply uncomment and replace any "iI" or "(CivicOptionTypes)iI" in the rest of this this function
+	// with "(paeShuffledCivicOptions[iI])"
+	CivicOptionTypes* paeShuffledCivicOptions = new Array[GC.getNumCivicOptionInfos()];
+	for (iI = 0; iI < GC.getNumCivicOptionInfos(); iI++)
+	{
+		paeShuffledCivicOptions[iI] = (CivicOptionTypes)iI;
+	}
+	int iNumPermutations = 1;
+	for (iI = GC.getNumCivicOptionInfos(); iI > 1; iI--)
+	{
+		iNumPermutations *= iI;
+	}
+	int iPermutation = GC.getGame().getSorenRandNum(iNumPermutations, "AI Civic Option Shuffling");
+	//mapping each possible iPermutation to one possible permutation
+	int iPermutationWidth;
+	CivicOptionTypes eTempShuffleCivicOption;
+	for (iI = GC.getNumCivicOptionInfos(); (iI > 0 && iPermutation > 0); iI--)
+	{
+		iPermutationWidth = iPermutation % iI;
+		iNumPermutations /= iI;
+		iPermutation %= iNumPermutations;
+		if (iPermutationWidth > 0)
+		{
+			eTempShuffleCivicOption = paeShuffledCivicOptions[iI];
+			paeShuffledCivicOptions[iI] = paeShuffledCivicOptions[(iI+iPermutationWidth)];
+			paeShuffledCivicOptions[(iI+iPermutationWidth)] = eTempShuffleCivicOption;
+		}
+	}
+	SAFE_DELETE_ARRAY(paeShuffledCivicOptions); //<- not to be forgotten at the end of this function
+*/
+
 	//initializing
 	for (iI = 0; iI < GC.getNumCivicOptionInfos(); iI++)
 	{
@@ -14813,20 +14851,24 @@ void CvPlayerAI::AI_doCivics()
 		}
 	}
 
+	int iCivicChanges = 0;
 	for (iI = 0; iI < GC.getNumCivicOptionInfos(); iI++)
 	{
 		if (paeBestCivic[iI] != getCivics((CivicOptionTypes)iI))
 		{
 			if (paeBestCivic[iI] != NO_CIVIC)
+			{
+				iCivicChanges++;
 				processCivics(paeBestCivic[iI], -1, /* bLimited */ true);
+			}
 
 			if (getCivics((CivicOptionTypes)iI) != NO_CIVIC)
 				processCivics(getCivics((CivicOptionTypes)iI), 1, /* bLimited */ true);
 		}
 	}
 
-	//safety check, should never change bDoRevolution
-	bDoRevolution = (bDoRevolution && (iBestCivicsValue > iCurCivicsValue));
+	//should give at least a bit of extra value
+	bDoRevolution = (bDoRevolution && ( (iBestCivicsValue * 100) > (( (101 + ((iCivicChanges*iThreshold)/(3*GC.getNumCivicOptionInfos()))) * iCurCivicsValue) / GC.getNumCivicOptionInfos()) ) );
 
 	// XXX AI skips revolution???
 	if (bDoRevolution && canRevolution(paeBestCivic))
