@@ -5796,7 +5796,7 @@ int CvCity::getSavedMaintenanceTimes100ByBuilding(BuildingTypes eBuilding) const
 	if (iModifier != 0 && !isDisorder() && !isWeLoveTheKingDay() && (getPopulation() > 0))
 	{
 		int iNewMaintenance = calculateBaseMaintenanceTimes100() * std::max(0, getMaintenanceModifier() + iModifier + 100) / 100;
-		return (getMaintenanceTimes100() - iNewMaintenance);
+		return getMaintenanceTimes100() - iNewMaintenance;
 	}
 
 	return 0;
@@ -8833,6 +8833,16 @@ void CvCity::setCultureLevel(CultureLevelTypes eNewValue, bool bUpdatePlotGroups
 /************************************************************************************************/
 			}
 		}
+
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                       08/08/10                              EmperorFool     */
+/*                                                                                              */
+/* Bugfix, already called by AI_doTurn()                                                        */
+/************************************************************************************************/
+		AI_updateBestBuild();
+/************************************************************************************************/
+/* UNOFFICIAL_PATCH                        END                                                  */
+/************************************************************************************************/
 	}
 }
 

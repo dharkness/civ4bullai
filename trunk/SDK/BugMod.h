@@ -21,7 +21,7 @@ Defines common constants and functions for use throughout the BUG Mod.
 #define PYBugModule				PYCivModule
 
 // Increment this by 1 each time you commit new/changed functions/constants in the Python API.
-#define BUG_DLL_API_VERSION		5
+#define BUG_DLL_API_VERSION		6
 
 // Used to signal the BULL saved game format is used
 #define BUG_DLL_SAVE_FORMAT		64
@@ -29,6 +29,6 @@ Defines common constants and functions for use throughout the BUG Mod.
 // These are display-only values, and the version should be changed for each release.
 #define BUG_DLL_NAME			L"BULL"
 #define BUG_DLL_VERSION			L"1.2+"
-#define BUG_DLL_BUILD			L"200"
+#define BUG_DLL_BUILD			L"215"
 
 #endif

@@ -220,6 +220,11 @@ bool CvXMLLoadUtility::SetGlobalDefines()
 	{
 		//return false;
 	}
+
+	if (!ReadGlobalDefines("xml\\BUG_GlobalDefines.xml", cache))
+	{
+		//return false;
+	}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
 /************************************************************************************************/

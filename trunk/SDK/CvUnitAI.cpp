@@ -1226,61 +1226,66 @@ void CvUnitAI::AI_settleMove()
 	if (GET_PLAYER(getOwnerINLINE()).getNumCities() == 0)
 	{
 /************************************************************************************************/
-/* Afforess & Fuyu	                  Start      08/26/10                                       */
+/* Afforess & Fuyu	                  Start      09/18/10                                       */
 /*                                                                                              */
-/* Check Adjacent Tiles for Better Spot                                                         */
+/* Check for Good City Sites Near Starting Location                                             */
 /************************************************************************************************/
-		if (canMove())
+		int iGameSpeedPercent = ( (2 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent()) + GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getConstructPercent() + GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent() ) / 4;
+		int iMaxFoundTurn = (iGameSpeedPercent + 50) / 150; //quick 0, normal/epic 1, marathon 2
+		if ( canMove() && !GET_PLAYER(getOwnerINLINE()).AI_isPlotCitySite(plot()) && GC.getGameINLINE().getElapsedGameTurns() <= iMaxFoundTurn )
 		{
-			//Force Recalculation
-			plot()->setFoundValue(getOwnerINLINE(), -1);
-			int iCurrentValue = plot()->getFoundValue(getOwnerINLINE());
+			int iBestValue = 0;
+			int iBestFoundTurn = 0;
 			CvPlot* pBestPlot = NULL;
-			for (int iPlot = 0; iPlot < NUM_DIRECTION_TYPES; iPlot++)
+
+			for (int iCitySite = 0; iCitySite < GET_PLAYER(getOwnerINLINE()).AI_getNumCitySites(); iCitySite++)
 			{
-				CvPlot* pAdjacentPlot = plotDirection(getX_INLINE(), getY_INLINE(), ((DirectionTypes)iPlot));
-				if (pAdjacentPlot != NULL)
+				CvPlot* pCitySite = GET_PLAYER(getOwnerINLINE()).AI_getCitySite(iCitySite);
+				if (pCitySite->getArea() == getArea() || canMoveAllTerrain())
 				{
-					//Don't give up coast or river
-					if ( (plot()->isRiver() && !pAdjacentPlot->isRiver()) || (plot()->isCoastalLand(GC.getMIN_WATER_SIZE_FOR_OCEAN()) && !pAdjacentPlot->isCoastalLand(GC.getMIN_WATER_SIZE_FOR_OCEAN())) )
-						continue;
-					
-					//Force Recalculation
-					pAdjacentPlot->setFoundValue(getOwnerINLINE(), -1);
-					int iPlotValue = pAdjacentPlot->getFoundValue(getOwnerINLINE());
-
-					//Only settle on top of a bonus if it actually makes sense
-					if (pAdjacentPlot->getBonusType(NO_TEAM) != NO_BONUS)
-					{
-						if (pAdjacentPlot->calculateNatureYield(YIELD_FOOD, getTeam(), true) > 0)
-						{
-							iPlotValue *= 90;
-							iPlotValue /= 100;
-						}
-						else
-						{
-							iPlotValue *= 95;
-							iPlotValue /= 100;
-						}
-					}
-
-					if (iPlotValue > iCurrentValue)
+					//int iPlotValue = GET_PLAYER(getOwnerINLINE()).AI_foundValue(pCitySite->getX_INLINE(), pCitySite->getY_INLINE());
+					int iPlotValue = pCitySite->getFoundValue(getOwnerINLINE());
+					if (iPlotValue > iBestValue)
 					{
 						//Can this unit reach the plot this turn? (getPathLastNode()->m_iData2 == 1)
 						//Will this unit still have movement points left to found the city the same turn? (getPathLastNode()->m_iData1 > 0))
-						if (pAdjacentPlot->movementCost(this, plot()) < movesLeft() || generatePath(pAdjacentPlot) && (getPathLastNode()->m_iData2 == 1) && (getPathLastNode()->m_iData1 > 0))
+						if (generatePath(pCitySite))
 						{
-							iCurrentValue = iPlotValue;
-							pBestPlot = pAdjacentPlot;
+							int iFoundTurn = GC.getGameINLINE().getElapsedGameTurns() + getPathLastNode()->m_iData2 - ((getPathLastNode()->m_iData1 > 0)? 1 : 0);
+							if (iFoundTurn <= iMaxFoundTurn)
+							{
+								iPlotValue *= 100; //more precision
+								//the slower the game speed, the less penality the plotvalue gets for long walks towards it. On normal it's -18% per turn
+								iPlotValue *= 100 - std::min( 100, ( (1800/iGameSpeedPercent) * iFoundTurn ) );
+								iPlotValue /= 100;
+								if (iPlotValue > iBestValue)
+								{
+									iBestValue = iPlotValue;
+									iBestFoundTurn = iFoundTurn;
+									pBestPlot = pCitySite;
+								}
+							}
 						}
 					}
 				}
 			}
+
+			if (pBestPlot != NULL)
+			{
+				//Don't give up coast or river, don't settle on bonus with food
+				if ( (plot()->isRiver() && !pBestPlot->isRiver())
+					|| (plot()->isCoastalLand(GC.getMIN_WATER_SIZE_FOR_OCEAN()) && !pBestPlot->isCoastalLand(GC.getMIN_WATER_SIZE_FOR_OCEAN()))
+					|| (pBestPlot->getBonusType(NO_TEAM) != NO_BONUS && pBestPlot->calculateNatureYield(YIELD_FOOD, getTeam(), true) > 0) )
+				{
+					pBestPlot = NULL;
+				}
+			}
+
 			if (pBestPlot != NULL)
 			{
 				if( gUnitLogLevel >= 2 )
 				{
-					logBBAI("    Settler not founding in place but moving to the better adjacent tile %d, %d", pBestPlot->getX_INLINE(), pBestPlot->getY_INLINE());
+					logBBAI("    Settler not founding in place but moving %d, %d to nearby city site at %d, %d (%d turns away) with value %d)", (pBestPlot->getX_INLINE() - plot()->getX_INLINE()), (pBestPlot->getY_INLINE() - plot()->getY_INLINE()), pBestPlot->getX_INLINE(), pBestPlot->getY_INLINE(), iBestFoundTurn, iBestValue);
 				}
 				getGroup()->pushMission(MISSION_MOVE_TO, pBestPlot->getX_INLINE(), pBestPlot->getY_INLINE(), MOVE_SAFE_TERRITORY, false, false, MISSIONAI_FOUND, pBestPlot);
 				return;

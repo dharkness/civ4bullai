@@ -49,8 +49,19 @@ CHANGES
 
 New Features:
 
+- City Tiles
+	Activate by selecting one or more city bars on the map
+	The area of tiles that each city can work are highlighted (similar to selecting a Settler)
+	A colored circle on each tile represents its status: worked vs. not worked and improved vs. improvable vs. not improvable
+	Customize the colors and transparencies in Assets/XML/GlobalDefinesAlt.xml
+- Working City
+	Tile hover shows which city controls it and highlights the name in cyan if a citizen is working it
+- Recommended Build
+	Highlights which improvement an automated worker will build in the tile hover text
 - Actual Effects
 	Added health effects from actions that remove a feature (e.g. chopping a Forest or building a Farm on a Jungle)
+- Double Commerce
+	Shows the year each building was built in its hover and how many years until its commerce (typically culture) doubles
 
 Improvements:
 
@@ -63,14 +74,12 @@ Bug Fixes:
 	Fixed bug that caused decay to be carried over to items of the same type if built consecutively
 - Actual Effects
 	Added extra modifier from buildings boosted by power when city already has power (e.g. rebuilding a Factory that was destroyed)
-- BTS Fixes
+- Pre-Chop
+	Workers in different selection groups also stop chopping
+- Miscellaneous
+	Fixed doubling of specialist name in the Remove Specialist button
 	Fixed missing normal prereq building in Building hover when a building requires a minimum number of other buildings
 	Added "Will remove the <improvement>" to Clear Feature Action hover when the feature is required by the improvement
-
-Merged Mods:
-
-- Events with Images
-	Added release version [optional]
 
 
 MODDING
@@ -78,7 +87,9 @@ MODDING
 New Features:
 
 - Events with Images
-	You can now add an image to any random event using the new <EventArt> tag.
+	You can now add an image to any random event using the new <EventArt> tag
+- Female Great People
+	You can now add female great people using the new <bFemale> tag
 - API
 	Added CvCity::calculateFeatureHealthPercent(int& iGood, int& iBad)
 	Added CvCity::calculateFeatureHealthPercentChange(int& iGood, int& iBad, CvPlot* pIgnorePlot = NULL)
@@ -96,9 +107,18 @@ Improvements:
 
 - API
 	Added separate functions in CvCity to calculate spoiled food, starvation, and angry population from health and happiness changes
+	Added getDefineFLOAT() and getDefineSTRING()
+- Compilation
+	Switched to Danny Daemonic's makefile; added differences at top
+	Created static libraries for CxImage
+	Included additional static libraries required by CxImage
+- Map Regeneration
+	Added call to gameStart event immediately before creating the initial autosave
 
 Bug Fixes:
 
+- API
+	CvCity::getSavedMaintenanceTimes100ByBuilding() now allows buildings that increase maintenance
 - Python API
 	Fixed exposed name of CvCity::getAdditionalSpoiledFoodByBuilding(BuildingTypes eBuilding)
 

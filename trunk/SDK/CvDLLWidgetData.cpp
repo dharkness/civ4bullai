@@ -3494,14 +3494,17 @@ void CvDLLWidgetData::parseChangeSpecialistHelp(CvWidgetDataStruct &widgetDataSt
 		}
 		else
 		{
-			szBuffer.assign(gDLL->getText("TXT_KEY_MISC_REMOVE_SPECIALIST", GC.getSpecialistInfo((SpecialistTypes) widgetDataStruct.m_iData1).getTextKeyWide()));
-
 // BUG - Remove Specialist Hover - start
 			if (getBugOptionBOOL("MiscHover__RemoveSpecialist", true, "BUG_CITY_SCREEN_REMOVE_SPECIALIST_HOVER"))
 			{
+				szBuffer.assign(gDLL->getText("TXT_KEY_MISC_REMOVE_SPECIALIST", L""));
 // BUG - Specialist Actual Effects - start
 				GAMETEXT.parseSpecialistHelpActual(szBuffer, ((SpecialistTypes)(widgetDataStruct.m_iData1)), pHeadSelectedCity, false, widgetDataStruct.m_iData2);
 // BUG - Specialist Actual Effects - end
+			}
+			else
+			{
+				szBuffer.assign(gDLL->getText("TXT_KEY_MISC_REMOVE_SPECIALIST", GC.getSpecialistInfo((SpecialistTypes) widgetDataStruct.m_iData1).getTextKeyWide()));
 			}
 // BUG - Remove Specialist Hover - end
 
@@ -4938,7 +4941,7 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 	szBuffer.append(szTempBuffer);
 	szBuffer.append(gDLL->getText("TXT_KEY_MOD_SHAM_SPOILER"));
 #endif
-	szBuffer.append(NEWLINE L"====== BULLAI [Build 114] ======");
+	szBuffer.append(NEWLINE L"====== BULLAI [Build 116] ======");
 	// separator line
 	szBuffer.append(NEWLINE L"==============================" NEWLINE);
 // BUG - Version Info - end
