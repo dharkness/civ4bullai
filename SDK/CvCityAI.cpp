@@ -1337,6 +1337,42 @@ void CvCityAI::AI_chooseProduction()
 		}
 	}
 
+	if( !(bDefenseWar && iWarSuccessRatio < -50) && !bDanger )
+	{
+		if ((iExistingWorkers == 0))
+		{
+			int iLandBonuses = AI_countNumImprovableBonuses(true, kPlayer.getCurrentResearch());
+			if ((iLandBonuses > 1) || (getPopulation() > 3 && iNeededWorkers > 0))
+			{
+				if (!bChooseWorker && AI_chooseUnit(UNITAI_WORKER))
+				{
+					if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker 1", getName().GetCString());
+					return;
+				}
+				bChooseWorker = true;
+			}
+
+			if (!bWaterDanger && (iNeededSeaWorkers > iExistingSeaWorkers) && (getPopulation() < 3))
+			{
+				if (AI_chooseUnit(UNITAI_WORKER_SEA))
+				{
+					if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker sea 1", getName().GetCString());
+					return;
+				}
+			}
+
+			if (iLandBonuses >= 1  && getPopulation() > 1)
+    		{
+				if (!bChooseWorker && AI_chooseUnit(UNITAI_WORKER))
+				{
+					if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker 2", getName().GetCString());
+					return;
+				}
+				bChooseWorker = true;
+    		}
+		}
+	}
+
 	// Early game worker logic
 	if( isCapital() && (GC.getGame().getElapsedGameTurns() < ((30 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent()) / 100)))
 	{
@@ -1384,42 +1420,6 @@ void CvCityAI::AI_chooseProduction()
 /********************************************************************************/
 /* 	Build more early sea workers								END			    */
 /********************************************************************************/
-		}
-	}
-
-	if( !(bDefenseWar && iWarSuccessRatio < -50) && !bDanger )
-	{
-		if ((iExistingWorkers == 0))
-		{
-			int iLandBonuses = AI_countNumImprovableBonuses(true, kPlayer.getCurrentResearch());
-			if ((iLandBonuses > 1) || (getPopulation() > 3 && iNeededWorkers > 0))
-			{
-				if (!bChooseWorker && AI_chooseUnit(UNITAI_WORKER))
-				{
-					if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker 1", getName().GetCString());
-					return;
-				}
-				bChooseWorker = true;
-			}
-
-			if (!bWaterDanger && (iNeededSeaWorkers > iExistingSeaWorkers) && (getPopulation() < 3))
-			{
-				if (AI_chooseUnit(UNITAI_WORKER_SEA))
-				{
-					if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker sea 1", getName().GetCString());
-					return;
-				}
-			}
-
-			if (iLandBonuses >= 1  && getPopulation() > 1)
-    		{
-				if (!bChooseWorker && AI_chooseUnit(UNITAI_WORKER))
-				{
-					if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose worker 2", getName().GetCString());
-					return;
-				}
-				bChooseWorker = true;
-    		}
 		}
 	}
 
@@ -1653,7 +1653,7 @@ void CvCityAI::AI_chooseProduction()
 	
 	//do a check for one tile island type thing?
     //this can be overridden by "wait and grow more"
-    if (bDanger && (iExistingWorkers == 0) && (isCapital() || (iNeededWorkers > 0) || (iNeededSeaWorkers > iExistingSeaWorkers)))
+    if (!bDanger && (iExistingWorkers == 0) && (isCapital() || (iNeededWorkers > 0) || (iNeededSeaWorkers > iExistingSeaWorkers)))
     {
 		if( !(bDefenseWar && iWarSuccessRatio < -30) && !(kPlayer.AI_isDoStrategy(AI_STRATEGY_TURTLE)) )
 		{
@@ -7743,7 +7743,7 @@ void CvCityAI::AI_updateBestBuild()
 		iFoodMultiplier += 10 * (2 - iBonusFoodDiff);
 	}
 	
-	int iExtraFoodForGrowth = (std::max(0, iTargetSize - getPopulation()) + 2) / 3; //Fuyu: was "+ 3) / 4"
+	int iExtraFoodForGrowth = (std::max(0, iTargetSize - getPopulation()) + 3) / 4;
 	if (getPopulation() < iTargetSize)
 	{
 		iExtraFoodForGrowth ++;
@@ -12527,10 +12527,13 @@ int CvCityAI::AI_cityThreat(bool bDangerPercent)
 						break;
 					}
 
-					// Beef up border security next to powerful rival
+					// Beef up border security next to powerful rival, (Fuyu) just not too much if our units are weaker on average
 					if( GET_PLAYER((PlayerTypes)iI).getPower() > GET_PLAYER(getOwnerINLINE()).getPower() )
 					{
-						iTempValue *= std::min( 400, (100 * GET_PLAYER((PlayerTypes)iI).getPower())/std::max(1, GET_PLAYER(getOwnerINLINE()).getPower()) );
+						int iTempMultiplier = std::min( 400, (100 * GET_PLAYER((PlayerTypes)iI).getPower())/std::max(1, GET_PLAYER(getOwnerINLINE()).getPower()) );
+						iTempMultiplier += range(( (100 * GET_PLAYER((PlayerTypes)iI).getNumMilitaryUnits())/std::max(1, GET_PLAYER(getOwnerINLINE()).getNumMilitaryUnits()) ), 100, iTempMultiplier);
+						iTempMultiplier /= 2;
+						iTempValue *= iTempMultiplier;
 						iTempValue /= 100;
 					}
 

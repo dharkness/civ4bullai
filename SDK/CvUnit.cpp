@@ -7755,6 +7755,13 @@ int CvUnit::workRate(bool bMax) const
 }
 
 
+// BUG - Female Great People - start
+bool CvUnit::isFemale() const
+{
+	return m_pUnitInfo->isFemale();
+}
+// BUG - Female Great People - end
+
 bool CvUnit::isAnimal() const
 {
 	return m_pUnitInfo->isAnimal();
@@ -13352,6 +13359,18 @@ bool CvUnit::isBetterDefenderThan(const CvUnit* pDefender, const CvUnit* pAttack
 // which we still check in the original method)
 bool CvUnit::LFBisBetterDefenderThan(const CvUnit* pDefender, const CvUnit* pAttacker, int* pBestDefenderRank) const
 {
+	//Fuyu: combat limits!
+	if (pAttacker != NULL && pDefender != NULL)
+	{
+		if ((GC.getMAX_HIT_POINTS() > pAttacker->combatLimit()))
+		{
+			if (getDamage() >= pAttacker->combatLimit() && pDefender->getDamage() < pAttacker->combatLimit())
+				return false;
+			else if (pDefender->getDamage() >= pAttacker->combatLimit() && getDamage() < pAttacker->combatLimit())
+				return true;
+		}
+	}
+
 	// We adjust ranking based on ratio of our adjusted strength compared to twice that of attacker
 	// Effect is if we're over twice as strong as attacker, we increase our ranking
 	// (more likely to be picked as defender) - otherwise, we reduce our ranking (less likely)

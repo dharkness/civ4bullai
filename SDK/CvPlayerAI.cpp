@@ -2571,6 +2571,44 @@ int CvPlayerAI::AI_foundValue(int iX, int iY, int iMinRivalRange, bool bStarting
                 iGreed += 20 * (GC.getTraitInfo((TraitTypes)iI).getCommerceChange(COMMERCE_CULTURE));
             }
         }
+/********************************************************************************/
+/* 	Better City Placement?						24.07.2010			Fuyu		*/
+/********************************************************************************/
+		//Fuyu: be greedier
+		if (!isFoundedFirstCity())
+		{
+			//here I'm assuming that the capital gets a palace that has significant culture output, thus popping the final level 2 really quickly
+			iGreed = std::max(iGreed, 145);
+		}
+		else
+		{
+			for (iI = 0; (iGreed < 140 && iI < GC.getNumProcessInfos()); iI++)
+			{
+				if (canMaintain((ProcessTypes)iI))
+				{
+					iGreed = std::max(iGreed, 100 + 20 * std::min(2, (GC.getProcessInfo((ProcessTypes)iI).getProductionToCommerceModifier(COMMERCE_CULTURE)/100)) );
+				}
+			}
+
+			for (iI = 0; (iGreed < 140 && iI < GC.getNumSpecialistInfos()); iI++)
+			{
+				if (isSpecialistValid((SpecialistTypes)iI))
+				{
+					iGreed = std::max(iGreed, 100 + 10 * std::min(4, (GC.getSpecialistInfo((SpecialistTypes)iI).getCommerceChange(COMMERCE_CULTURE) + getSpecialistExtraCommerce(COMMERCE_CULTURE))) );
+				}
+			}
+
+			if (iGreed < 140 && AI_isAreaAlone(pArea))
+			{
+				//assuming that the player actually has access to something that can make a city produce culture
+				iGreed = std::max(iGreed, 125 + (5 * std::min(3, pArea->getCitiesPerPlayer(getID()) )) );
+			}
+		}
+
+		iGreed = range(iGreed, 100, 150);
+/********************************************************************************/
+/* 	Better City Placement?										END 			*/
+/********************************************************************************/
     }
     //iClaimThreshold is the culture required to pop the 2nd borders.
     int iClaimThreshold = GC.getGameINLINE().getCultureThreshold((CultureLevelTypes)(std::min(2, (GC.getNumCultureLevelInfos() - 1))));
@@ -10168,9 +10206,9 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI, CvArea* pArea
 					int iTempBombardValue = 0;
 					if (iTotalBombard < iGoalTotalBombard) //still less than 200 bombard points
 					{
-						iTempBombardValue = iBombardValue * (iGoalTotalBombard + 4 * (iGoalTotalBombard - iTotalBombard));
+						iTempBombardValue = iBombardValue * (iGoalTotalBombard + 7 * (iGoalTotalBombard - iTotalBombard));
 						iTempBombardValue /= iGoalTotalBombard;
-						//iTempBombardValue is at most (5 * iBombardValue)
+						//iTempBombardValue is at most (8 * iBombardValue)
 					}
 					else
 					{
@@ -10180,9 +10218,9 @@ int CvPlayerAI::AI_unitValue(UnitTypes eUnit, UnitAITypes eUnitAI, CvArea* pArea
 
 					if (iActualBombardFraction < iAIDesiredBombardFraction)
 					{
-						iBombardValue *= (iAIDesiredBombardFraction + 4 * (iAIDesiredBombardFraction - iActualBombardFraction));
+						iBombardValue *= (iAIDesiredBombardFraction + 5 * (iAIDesiredBombardFraction - iActualBombardFraction));
 						iBombardValue /= iAIDesiredBombardFraction;
-						//new iBombardValue is at most (5 * old iBombardValue)
+						//new iBombardValue is at most (6 * old iBombardValue)
 					}
 					else
 					{
