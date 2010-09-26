@@ -1230,7 +1230,9 @@ void CvUnitAI::AI_settleMove()
 /*                                                                                              */
 /* Check for Good City Sites Near Starting Location                                             */
 /************************************************************************************************/
-		int iGameSpeedPercent = ( (2 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent()) + GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getConstructPercent() + GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent() ) / 4;
+		int iGameSpeedPercent = ( (2 * GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getTrainPercent())
+			+ GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getConstructPercent()
+			+ GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getResearchPercent() ) / 4;
 		int iMaxFoundTurn = (iGameSpeedPercent + 50) / 150; //quick 0, normal/epic 1, marathon 2
 		if ( canMove() && !GET_PLAYER(getOwnerINLINE()).AI_isPlotCitySite(plot()) && GC.getGameINLINE().getElapsedGameTurns() <= iMaxFoundTurn )
 		{

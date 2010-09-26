@@ -18,12 +18,12 @@
 	<Define>
 		<!-- Minimum stack strength ratio at which AI will attack enemy city it is next to, higher means less suicide.  BTS default: 120 -->
 		<DefineName>BBAI_ATTACK_CITY_STACK_RATIO</DefineName>
-		<iDefineIntVal>120</iDefineIntVal>
+		<iDefineIntVal>135</iDefineIntVal>
 	</Define>
 	<Define>
 		<!-- Minimum attack odds of best attacker for AI to skip bombarding a city and just attack.  BBAI default: 12 -->
 		<DefineName>BBAI_SKIP_BOMBARD_BEST_ATTACK_ODDS</DefineName>
-		<iDefineIntVal>10</iDefineIntVal>
+		<iDefineIntVal>15</iDefineIntVal>
 	</Define>
 	<Define>
 		<!-- Base ratio of stack strengths for AI considering skipping bombard and just attacking enemy city.
@@ -35,7 +35,7 @@
 	<Define>
 		<!-- Minimum stack strength ratio for AI to skip bombarding city and just attack, higher is more conservative.  BBAI default: 150 -->
 		<DefineName>BBAI_SKIP_BOMBARD_MIN_STACK_RATIO</DefineName>
-		<iDefineIntVal>150</iDefineIntVal>
+		<iDefineIntVal>200</iDefineIntVal>
 	</Define>
 	<Define>
 		<!-- Approximate fraction by number of units of attack stacks which AI aims to consist of bombard units.  default: 15 -->

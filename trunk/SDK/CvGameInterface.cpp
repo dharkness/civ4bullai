@@ -278,6 +278,7 @@ void CvGame::updateColoredPlots()
 									BonusTypes ePlotBonus = pLoopPlot->getBonusType(eOwnerTeam);
 									FeatureTypes ePlotFeature = pLoopPlot->getFeatureType();
 									ImprovementTypes ePlotImprovement = pLoopPlot->getImprovementType();
+									RouteTypes ePlotRoute = pLoopPlot->getRouteType();
 
 									if (ePlotImprovement == GC.getDefineINT("RUINS_IMPROVEMENT"))
 									{
@@ -308,8 +309,8 @@ void CvGame::updateColoredPlots()
 												bCanBeImproved = true;
 												bCanProvideBonus = true;
 											}
-											else if (eBestRoute != NO_ROUTE && !pLoopPlot->isWater() && ePlotImprovement != NO_IMPROVEMENT 
-													&& GC.getImprovementInfo(ePlotImprovement).isImprovementBonusTrade(ePlotBonus))
+											else if ( eBestRoute != NO_ROUTE && ePlotRoute == NO_ROUTE && !pLoopPlot->isWater() && !pLoopPlot->isConnectedTo(pSelectedCity)
+												&& ePlotImprovement != NO_IMPROVEMENT && GC.getImprovementInfo(ePlotImprovement).isImprovementBonusTrade(ePlotBonus) )
 											{
 												bCanProvideBonus = true;
 											}
@@ -327,12 +328,26 @@ void CvGame::updateColoredPlots()
 												if (eBestRoute != NO_ROUTE)
 												{
 													// will the route increase yields?
-													for (int iJ = 0; iJ < NUM_YIELD_TYPES; iJ++)
+													if (ePlotRoute == NO_ROUTE)
 													{
-														if (kPlotImprovement.getRouteYieldChanges(eBestRoute, iJ) > 0)
+														for (int iJ = 0; iJ < NUM_YIELD_TYPES; iJ++)
 														{
-															bCanBeImproved = true;
-															break;
+															if (kPlotImprovement.getRouteYieldChanges(eBestRoute, iJ) > 0)
+															{
+																bCanBeImproved = true;
+																break;
+															}
+														}
+													}
+													else
+													{
+														for (int iJ = 0; iJ < NUM_YIELD_TYPES; iJ++)
+														{
+															if (kPlotImprovement.getRouteYieldChanges(eBestRoute, iJ) > kPlotImprovement.getRouteYieldChanges(ePlotRoute, iJ))
+															{
+																bCanBeImproved = true;
+																break;
+															}
 														}
 													}
 												}
@@ -355,17 +370,22 @@ void CvGame::updateColoredPlots()
 											{
 												if (bBestBuildRemovesFeature)
 												{
-													if (GC.getFeatureInfo(ePlotFeature).isOnlyBad())
-													{
-														// does the best build clear a bad feature?
-														bCanBeImproved = true;
-													}
-													else if (ePlotBonus != NO_BONUS && eBestImprovement != NO_IMPROVEMENT 
-															&& GC.getImprovementInfo(eBestImprovement).isImprovementBonusTrade(ePlotBonus))
+													if (ePlotBonus != NO_BONUS && eBestImprovement != NO_IMPROVEMENT 
+                                                        && GC.getImprovementInfo(eBestImprovement).isImprovementBonusTrade(ePlotBonus))
 													{
 														// does the best build provide a bonus
 														bCanBeImproved = true;
 														bCanProvideBonus = true;
+													}
+													else if (GC.getFeatureInfo(ePlotFeature).isOnlyBad())
+													{
+														// does the best build clear a bad feature?
+														bCanBeImproved = true;
+													}
+													else if (eBestImprovement != NO_IMPROVEMENT)
+													{
+														//Fuyu: count chops too if an improvement is placed instead
+														bCanBeImproved = true;
 													}
 												}
 												else if (eBestRoute == NO_ROUTE)

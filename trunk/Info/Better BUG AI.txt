@@ -1,47 +1,50 @@
-Better BUG AI 1.02a (2010-07-25)
+Better BUG AI 1.02b (2010-09-26)
 --------------------------
 http://forums.civfanatics.com/showthread.php?t=354019
 
 
 Components:
-Better BTS AI 1.02a r595
+Better BTS AI 1.02a r597
 * AI Logging
-BULL 1.2+ r200
+BULL 1.3 r219
 * Fractional Trade Routes
 * New Sentry Actions
 * City Governours Build Workers
-BUG 4.4 r2236
+BUG 4.5 r2245
 
 -----------------------------------------------------------------------------------------------------------------
 my own changes:
  * CityAI:
     * The AI no longer considers unhealthy buildings that would make the city shrink, and also
      factors in future unheathiness from power when evaluating buildings that would recieve a bonus
-     from power.
-    * Happy/Health valuation for buildings and improvements are sightly changed.
-    * The AI should build a bit more workers.
+     from power
+    * Happy/Health valuation for buildings and improvements are sightly changed
+    * The AI should build a bit more workers
     * Worker AI: hopefully there is now less improvement oscillation between forest preserve and lumbermills,
-     and less hamlets/villages/towns get turned to workshops.
+     and less hamlets/villages/towns get turned to workshops
     * Considering currently constructed building and checking Health level against happy level
-     for the BULL feature 'Health Effects from Removing Features'.
+     for the BULL feature 'Health Effects from Removing Features'
 	* Early defender logic: Warriors blocking a unitai no longer causes troubles
  * PlayerAI:
-    * Using a sightly different valuation of siege units for UNITAI_ATTACK_CITY.
-    * Using a sightly different values for targetCityValue.
+    * Using a sightly different valuation of siege units for UNITAI_ATTACK_CITY
+    * Using a sightly different values for targetCityValue
+	* Improved Civic AI
  * UnitAI:
-    * AI should try to break blockades more often.
+    * AI should try to break blockades more often
+    * Improved city placement, including capital
  * Gamespeed scaling:
-    * Chance of nuclear plants to blow up and global warming chance scale to gamespeed.
+    * Chance of nuclear plants to blow up and global warming chance scale to gamespeed
  * other:
-    * Minimum total production modifiers is still 0% here (UP/BetterAI changed it to -50%).
+    * Minimum total production modifiers is still 0% here (UP/BetterAI changed it to -50%)
     * Features with AppearanceProbability of 10000 will be replaced after destruction of city,
-     even if not riverside (original UP: only riverside).
+     even if not riverside (original UP: only riverside)
+	* AI Players can capture workers from other AI players even if they are not inside a city
     * xml changes:
           o CIV4UnitInfos.xml: changed iPower for Catapult(5->6), Cannon(12->14), Artillery(18->19) and
            MobileArtillery(26->28) because they seem to better account for the actual military strength of
-           these units. (Does not affect AI unit building behaviour).
+           these units. (Does not affect AI unit building behaviour)
 !         o CIV4UnitInfos.xml: SAM Infantry is now available as an upgrade to the Grenadier (previously Infantry)
-            - to avoid massive upgrading of riflemen to SAM when the AI hits Rocketery before Assembly line.
+            - to avoid massive upgrading of riflemen to SAM when the AI hits Rocketery before Assembly line
 ------------------------------------------------------------------------------------------------------------------
 The source files for the DLL of this release are available at sourceforge project bullai.
 http link: http://bullai.svn.sourceforge.net/viewvc/bullai/trunk/SDK/

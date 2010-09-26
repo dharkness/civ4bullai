@@ -4941,7 +4941,7 @@ void CvDLLWidgetData::parseFlagHelp(CvWidgetDataStruct &widgetDataStruct, CvWStr
 	szBuffer.append(szTempBuffer);
 	szBuffer.append(gDLL->getText("TXT_KEY_MOD_SHAM_SPOILER"));
 #endif
-	szBuffer.append(NEWLINE L"====== BULLAI [Build 116] ======");
+	szBuffer.append(NEWLINE L"====== BULLAI [Build 117] ======");
 	// separator line
 	szBuffer.append(NEWLINE L"==============================" NEWLINE);
 // BUG - Version Info - end
