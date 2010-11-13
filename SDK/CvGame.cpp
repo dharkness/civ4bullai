@@ -5974,7 +5974,7 @@ void CvGame::doGlobalWarming()
 	for (int iI = 0; iI < iGlobalWarmingValue; iI++)
 	{
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                                                               jdog5000      */
+/* UNOFFICIAL_PATCH                                                          LunarMongoose      */
 /*                                                                                              */
 /* Gamespeed scaling                                                                            */
 /************************************************************************************************/
@@ -5983,8 +5983,8 @@ void CvGame::doGlobalWarming()
 		{
 */
 		int iOdds = GC.getDefineINT("GLOBAL_WARMING_PROB") - iGlobalWarmingDefense;
-		iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getVictoryDelayPercent();
-		iOdds /= 100;
+		iOdds *= 100;
+		iOdds /= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getVictoryDelayPercent();
 
 		if (getSorenRandNum(100, "Global Warming") < iOdds)
 		{
@@ -6120,7 +6120,7 @@ void CvGame::doGlobalWarming()
 	for (int iI = 0; iI < iNuclearWinterValue; iI++)
 	{
 /************************************************************************************************/
-/* UNOFFICIAL_PATCH                                                               jdog5000      */
+/* UNOFFICIAL_PATCH                                                          LunarMongoose      */
 /*                                                                                              */
 /* Gamespeed scaling                                                                            */
 /************************************************************************************************/
@@ -6129,8 +6129,8 @@ void CvGame::doGlobalWarming()
 		{
 */
 		int iOdds = GC.getDefineINT("NUCLEAR_WINTER_PROB"); //Fuyu: iGlobalWarmingDefense does no longer protect from nuclear winters
-		iOdds *= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getVictoryDelayPercent();
-		iOdds /= 100;
+		iOdds *= 100;
+		iOdds /= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getVictoryDelayPercent();
 
 		if (getSorenRandNum(100, "Nuclear Fallout") < iOdds)
 		{
